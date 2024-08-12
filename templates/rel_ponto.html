@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Horário de Funcionários</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #4a4a4a;
+        }
+
+        table {
+            width: 80%;
+            max-width: 800px;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden; /* Para bordas arredondadas */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            color: #555;
+            font-weight: 500;
+        }
+
+        td {
+            background-color: #fff;
+        }
+
+        input[type="text"], input[type="time"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        input[type="text"].filter-input {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #28a745;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        button:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Registro de Horário de Funcionários</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Funcionário</th>
+                <th>Data</th>
+                <th>Entrada</th>
+                <th>Saída Almoço</th>
+                <th>Entrada Almoço</th>
+                <th>Saída</th>
+            </tr>
+            <tr>
+                <th><input type="text" class="filter-input" id="filterId" ></th>
+                <th><input type="text" class="filter-input" id="filterFuncionario" ></th>
+                <th><input type="text" class="filter-input" id="filterData"></th>
+                <th><input type="text" class="filter-input" id="filterEntrada"></th>
+                <th><input type="text" class="filter-input" id="filterSaidaAlmoco"></th>
+                <th><input type="text" class="filter-input" id="filterEntradaAlmoco" ></th>
+                <th><input type="text" class="filter-input" id="filterSaida"></th>
+            </tr>
+        </thead>
+        <tbody id="employee-table-body">
+            <!-- Os dados serão preenchidos aqui -->
+        </tbody>
+    </table>
+    <button id="save-button">Salvar</button>
+
+    <script>
+       function juntarDataHora(data, hora) {
+           const [dia, mes, ano] = data.split('/');
+           const dataHoraStr = `${ano}-${mes}-${dia} ${hora}:00`;
+           const dataHora = new Date(dataHoraStr);
+           return dataHora;
+       }
+
+        function formatarDataAmericana(dataHora) {
+            const ano = dataHora.getFullYear();
+            const mes = String(dataHora.getMonth() + 1).padStart(2, '0');
+            const dia = String(dataHora.getDate()).padStart(2, '0');
+            const horas = String(dataHora.getHours()).padStart(2, '0');
+            const minutos = String(dataHora.getMinutes()).padStart(2, '0');
+            return `${ano}-${mes}-${dia} ${horas}:${minutos}:00`;
+        }
+
+        async function fetchData() {
+            const response = await fetch('/data');
+            const data = await response.json();
+            const tableBody = document.getElementById('employee-table-body');
+            tableBody.innerHTML = '';
+
+            for (const key in data) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${data[key].cdPonto}</td>
+                    <td>${data[key].dsCardName}</td>
+                    <td>${data[key].dsData}</td>
+                    <td><input type="time" value="${data[key].dsRegistro01}"></td>
+                    <td><input type="time" value="${data[key].dsRegistro02}"></td>
+                    <td><input type="time" value="${data[key].dsRegistro03}"></td>
+                    <td><input type="time" value="${data[key].dsRegistro04}"></td>
+                `;
+                tableBody.appendChild(row);
+            }
+        }
+
+        document.getElementById('save-button').addEventListener('click', async function() {
+            const employeeData = [];
+            document.querySelectorAll('tbody tr').forEach(row => {
+                const idponto = row.cells[0].textContent;
+                const employeeName = row.cells[1].textContent;
+                const dsData = row.cells[2].textContent;
+                const entrada = row.querySelector('input[type="time"]').value;
+                const saida = row.querySelectorAll('input[type="time"]')[1].value;
+                const entradaa = row.querySelectorAll('input[type="time"]')[2].value;
+                const saidaf = row.querySelectorAll('input[type="time"]')[3].value;
+
+                employeeData.push({
+                    cdPonto: idponto,
+                    cdAcessoIntelbras: null,
+                    dsCardname: employeeName,
+                    dsData: dsData,
+                    dsRegistro01: juntarDataHora(dsData, entrada),
+                    dsRegistro02: saida,
+                    dsRegistro03: entradaa,
+                    dsRegistro04: saidaf,
+                });
+            });
+
+            try {
+                const response = await fetch('/data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(employeeData)
+                });
+
+                const result = await response.json();
+                alert(result.message);
+            } catch (error) {
+                console.error('Erro ao salvar os dados:', error);
+                alert('Ocorreu um erro ao salvar os dados. Tente novamente.');
+            }
+        });
+
+        function filterTable() {
+            const idFilter = document.getElementById('filterId').value.toUpperCase();
+            const funcionarioFilter = document.getElementById('filterFuncionario').value.toUpperCase();
+            const dataFilter = document.getElementById('filterData').value.toUpperCase();
+            const entradaFilter = document.getElementById('filterEntrada').value.toUpperCase();
+            const saidaAlmocoFilter = document.getElementById('filterSaidaAlmoco').value.toUpperCase();
+            const entradaAlmocoFilter = document.getElementById('filterEntradaAlmoco').value.toUpperCase();
+            const saidaFilter = document.getElementById('filterSaida').value.toUpperCase();
+
+            const table = document.getElementById('employee-table-body');
+            const tr = table.getElementsByTagName('tr');
+
+            for (let i = 0; i < tr.length; i++) {
+                let td, txtValue;
+                const currentRow = tr[i];
+                const cells = currentRow.getElementsByTagName('td');
+                let shouldDisplay = true;
+
+                // Check each cell against their respective filter
+                const filters = [idFilter, funcionarioFilter, dataFilter, entradaFilter, saidaAlmocoFilter, entradaAlmocoFilter, saidaFilter];
+                for (let j = 0; j < filters.length; j++) {
+                    if (filters[j]) {
+                        td = cells[j];
+                        if (td) {
+                            txtValue = td.textContent || td.innerText;
+                            if (txtValue.toUpperCase().indexOf(filters[j]) === -1) {
+                                shouldDisplay = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                currentRow.style.display = shouldDisplay ? '' : 'none';
+            }
+        }
+
+        // Adiciona eventos de escuta a cada campo de filtragem
+        document.querySelectorAll('.filter-input').forEach(input => {
+            input.addEventListener('keyup', filterTable);
+        });
+
+        // Carregar dados ao iniciar
+        fetchData();
+    </script>
+</body>
+</html>

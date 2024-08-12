@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <div class="container">
+        <h2>Cadastro de Clientes</h2>
+        <hr>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <form method="POST" action="" class="border p-4 mt-2">
+                    {{ form_cliente.csrf_token }}
+                    <legend>Cadastro de Cliente</legend>
+                    <fieldset>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form_cliente.cdCliente.label(class="form-control-label") }}
+                                {{ form_cliente.cdCliente(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_cliente.dsNome.label(class="form-control-label") }}
+                                {{ form_cliente.dsNome(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_cliente.nrCnpj.label(class="form-control-label") }}
+                                {{ form_cliente.nrCnpj(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_cliente.nrIe.label(class="form-control-label") }}
+                                {{ form_cliente.nrIe(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_cliente.nrInscMun.label(class="form-control-label") }}
+                                {{ form_cliente.nrInscMun(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_cliente.dsLogradouro.label(class="form-control-label") }}
+                                {{ form_cliente.dsLogradouro(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_cliente.nrNumero.label(class="form-control-label") }}
+                                {{ form_cliente.nrNumero(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_cliente.dsComplemento.label(class="form-control-label") }}
+                                {{ form_cliente.dsComplemento(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_cliente.dsBairro.label(class="form-control-label") }}
+                                {{ form_cliente.dsBairro(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_cliente.dsCep.label(class="form-control-label") }}
+                                {{ form_cliente.dsCep(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_cliente.dsCidade.label(class="form-control-label") }}
+                                {{ form_cliente.dsCidade(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_cliente.dsUF.label(class="form-control-label") }}
+                                {{ form_cliente.dsUF(class="form-control") }}
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                {{ form_cliente.dsObs.label(class="form-control-label") }}
+                                {{ form_cliente.dsObs(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_cliente.cdStatus.label(class="form-control-label") }}
+                                {{ form_cliente.cdStatus(class="form-control") }}
+                            </div>
+                        </div>
+                        <hr>
+                        <div>
+                            {{ form_cliente.botao_submit_cadastrar(class="btn btn-primary mt-2") }}
+                            {{ form_cliente.botao_submit_alterar(class="btn btn-primary mt-2") }}
+                            {{ form_cliente.botao_submit_excluir(class="btn btn-danger mt-2") }}
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+        <div class="mt-5">
+            <p><strong>Pesquise qualquer campo completo:</strong> <input id="myInput" type="text" placeholder="Digite" class="form-control"></p>
+            <hr>
+            <table class="table table-bordered table-striped table-hover">
+                <thead class="thead-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>CNPJ</th>
+                        <th>IE</th>
+                        <th>Insc. Mun.</th>
+                        <th>Logradouro</th>
+                        <th>Num.</th>
+                        <th>Complemento</th>
+                        <th>Bairro</th>
+                        <th>Cep</th>
+                        <th>Cidade</th>
+                        <th>UF</th>
+                        <th>Obs</th>
+                    </tr>
+                </thead>
+                <tbody id="myTable">
+                    {% for cliente in clientes %}
+                    <tr>
+                        <td>{{cliente['cdCliente']}}</td>
+                        <td>{{cliente['dsNome']}}</td>
+                        <td>{{cliente['nrCnpj']}}</td>
+                        <td>{{cliente['nrIe']}}</td>
+                        <td>{{cliente['nrInscMun']}}</td>
+                        <td>{{cliente['dsLogradouro']}}</td>
+                        <td>{{cliente['nrNumero']}}</td>
+                        <td>{{cliente['dsComplemento']}}</td>
+                        <td>{{cliente['dsBairro']}}</td>
+                        <td>{{cliente['dsCep']}}</td>
+                        <td>{{cliente['dsCidade']}}</td>
+                        <td>{{cliente['dsUF']}}</td>
+                        <td>{{cliente['dsObs']}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+<script>
+        // JavaScript para filtrar os resultados da tabela
+        document.getElementById('myInput').addEventListener('keyup', function() {
+            var input, filter, table, tr, td, i, j, txtValue, shouldShow;
+            input = document.getElementById('myInput');
+            filter = input.value.toUpperCase();
+            table = document.getElementById('myTable');
+            tr = table.getElementsByTagName('tr');
+
+            for (i = 0; i < tr.length; i++) {
+                shouldShow = false;
+                td = tr[i].getElementsByTagName('td');
+                for (j = 0; j < td.length; j++) {
+                    if (td[j]) {
+                        txtValue = td[j].textContent || td[j].innerText;
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            shouldShow = true;
+                        }
+                    }
+                }
+                if (shouldShow) {
+                    tr[i].style.display = '';
+                } else {
+                    tr[i].style.display = 'none';
+                }
+            }
+        });
+    </script>
+{% endblock %}

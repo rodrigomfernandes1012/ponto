@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% block body %}
+    <div class="container">
+        <h>Cadastro de Posto de Trabalho</h>
+
+        <div class="row justify-content-left">
+            <div class="col-md-8">
+                <form method="POST" action="" class="border p-4 mt-1">
+                    {{ form_destinatario.csrf_token }}
+
+                    <fieldset>
+                        <div class="row">
+
+                            <div class="col-md-12 mb-3">
+                                {{ form_destinatario.dsNome.label(class="form-control-label") }}
+                                {{ form_destinatario.dsNome(class="form-control") }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                {{ form_destinatario.nrCnpj.label(class="form-control-label") }}
+                                {{ form_destinatario.nrCnpj(class="form-control") }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                {{ form_destinatario.nrIe.label(class="form-control-label") }}
+                                {{ form_destinatario.nrIe(class="form-control") }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                {{ form_destinatario.nrInscMun.label(class="form-control-label") }}
+                                {{ form_destinatario.nrInscMun(class="form-control") }}
+                            </div>
+                             <div class="col-md-2 mb-3">
+                                {{ form_destinatario.cdStatus.label(class="form-control-label") }}
+                                {{ form_destinatario.cdStatus(class="form-control") }}
+                            </div>
+                            <div class="col-md-10 mb-3">
+                                {{ form_destinatario.dsLogradouro.label(class="form-control-label") }}
+                                {{ form_destinatario.dsLogradouro(class="form-control") }}
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                {{ form_destinatario.nrNumero.label(class="form-control-label") }}
+                                {{ form_destinatario.nrNumero(class="form-control") }}
+                            </div>
+                            <div class="col-md-5 mb-3">
+                                {{ form_destinatario.dsComplemento.label(class="form-control-label") }}
+                                {{ form_destinatario.dsComplemento(class="form-control") }}
+                            </div>
+                            <div class="col-md-5 mb-3">
+                                {{ form_destinatario.dsBairro.label(class="form-control-label") }}
+                                {{ form_destinatario.dsBairro(class="form-control") }}
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                {{ form_destinatario.dsCep.label(class="form-control-label") }}
+                                {{ form_destinatario.dsCep(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form_destinatario.dsCidade.label(class="form-control-label") }}
+                                {{ form_destinatario.dsCidade(class="form-control") }}
+                            </div>
+                            <div class="col-md-1 mb-3">
+                                {{ form_destinatario.dsUF.label(class="form-control-label") }}
+                                {{ form_destinatario.dsUF(class="form-control") }}
+                            </div>
+
+                            <div class="col-md-5 mb-3">
+                                {{ form_destinatario.dsObs.label(class="form-control-label") }}
+                                {{ form_destinatario.dsObs(class="form-control") }}
+                            </div>
+
+                        </div>
+
+                        <div>
+                            {{ form_destinatario.botao_submit_cadastrar(class="btn btn-primary mt-2") }}
+                            {{ form_destinatario.botao_submit_alterar(class="btn btn-primary mt-2") }}
+                            {{ form_destinatario.botao_submit_excluir(class="btn btn-danger mt-2") }}
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <p><th>Pesquisa:</th> <input id="myInput" type="text" placeholder="Digite" class="form-control"></p>
+
+
+        </div>
+        <div class="mt-5">
+            <table class="table table-bordered table-striped table-hover">
+                <thead class="thead-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>CNPJ</th>
+                        <th>IE</th>
+                        <th>Insc. Mun.</th>
+                        <th>Logradouro</th>
+                        <th>Num.</th>
+                        <th>Complemento</th>
+                        <th>Bairro</th>
+                        <th>Cep</th>
+                        <th>Cidade</th>
+                        <th>UF</th>
+                        <th>Obs</th>
+                    </tr>
+                </thead>
+                <tbody id="myTable">
+                    {% for destinatario in destinatarios %}
+                    <tr>
+                        <td>{{destinatario['cdDestinatario']}}</td>
+                        <td>{{destinatario['dsNome']}}</td>
+                        <td>{{destinatario['nrCnpj']}}</td>
+                        <td>{{destinatario['nrIe']}}</td>
+                        <td>{{destinatario['nrInscMun']}}</td>
+                        <td>{{destinatario['dsLogradouro']}}</td>
+                        <td>{{destinatario['nrNumero']}}</td>
+                        <td>{{destinatario['dsComplemento']}}</td>
+                        <td>{{destinatario['dsBairro']}}</td>
+                        <td>{{destinatario['dsCep']}}</td>
+                        <td>{{destinatario['dsCidade']}}</td>
+                        <td>{{destinatario['dsUF']}}</td>
+                        <td>{{destinatario['dsObs']}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        // JavaScript para filtrar os resultados da tabela
+        document.getElementById('myInput').addEventListener('keyup', function() {
+            var input, filter, table, tr, td, i, j, txtValue, shouldShow;
+            input = document.getElementById('myInput');
+            filter = input.value.toUpperCase();
+            table = document.getElementById('myTable');
+            tr = table.getElementsByTagName('tr');
+
+            for (i = 0; i < tr.length; i++) {
+                shouldShow = false;
+                td = tr[i].getElementsByTagName('td');
+                for (j = 0; j < td.length; j++) {
+                    if (td[j]) {
+                        txtValue = td[j].textContent || td[j].innerText;
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            shouldShow = true;
+                        }
+                    }
+                }
+                if (shouldShow) {
+                    tr[i].style.display = '';
+                } else {
+                    tr[i].style.display = 'none';
+                }
+            }
+        });
+    </script>
+{% endblock %}

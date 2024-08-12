@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <div class="container">
+        Cadastro de Usuários
+        <hr>
+        <div class="row">
+            <div class="col">
+                <form method="POST" action="" class="border p-4 mt-2">
+                    {{ form_usuario.csrf_token }}
+                    <legend>Cadastro de Usuários</legend>
+                    <fieldset>
+                        <div class="form-group">
+                            {{ form_usuario.cdUsuario.label(class="form-control-label") }}
+                            {{ form_usuario.cdUsuario(class="form-control") }}
+
+                            {{ form_usuario.dsNome.label(class="form-control-label") }}
+                            {{ form_usuario.dsNome(class="form-control") }}
+
+                            {{ form_usuario.dsLogin.label(class="form-control-label") }}
+                            {{ form_usuario.dsLogin(class="form-control") }}
+
+                            {{ form_usuario.dsSenha.label(class="form-control-label") }}
+                            {{ form_usuario.dsSenha(class="form-control") }}
+
+                            {{ form_usuario.cdPerfil.label(class="form-control-label") }}
+                            {{ form_usuario.cdPerfil(class="form-control") }}
+
+
+
+                            <hr>
+
+
+                            {{ form_usuario.botao_submit_cadastrar(class="btn btn-primary mt-2") }}
+                            {{ form_usuario.botao_submit_alterar(class="btn btn-primary mt-2") }}
+                            {{ form_usuario.botao_submit_excluir(class="btn btn-danger mt-2") }}
+
+
+
+                        </div>
+
+                    </fieldset>
+                </form>
+        </div>
+    </div>
+        <div class="container">
+  <br>
+        <p><th>Pesquise qualquer campo completo:</th> <input id="myInput" type="text" placeholder="Digite"></p>
+        <hr>
+        <table class="table  table-bordered table-responsive table-bordered">
+        <tr>
+            <th align= left width=100 bgcolor= #DAA520> ID </th>
+            <th align= left width=300 bgcolor= #DAA520> Nome </th>
+            <th align= left width=300 bgcolor= #DAA520> Login </th>
+            <th align= left width=100 bgcolor= #DAA520> Senha  </th>
+            <th align= left width=100 bgcolor= #DAA520> Perfil </th>
+        </tr>
+             <tbody id="myTable">
+        <tr>
+
+{% for usuario in Usuarios %}
+<tr>
+        <td align= left width=100 >{{usuario['cdUsuario']}}</td>
+        <td align= left width=100 >{{usuario['dsNome']}}</td>
+        <td align= left width=100 >{{usuario['dsLogin']}}</td>
+        <td align= left width=100 >{{usuario['dsSenha']}}</td>
+        <td align= middle width=100 >{{usuario['cdPerfil']}}</td>
+
+</tr>
+{% endfor %}
+
+        </tr>
+
+    </table>
+
+
+    </div>
+        <script>
+        // JavaScript para filtrar os resultados da tabela
+        document.getElementById('myInput').addEventListener('keyup', function() {
+            var input, filter, table, tr, td, i, j, txtValue, shouldShow;
+            input = document.getElementById('myInput');
+            filter = input.value.toUpperCase();
+            table = document.getElementById('myTable');
+            tr = table.getElementsByTagName('tr');
+
+            for (i = 0; i < tr.length; i++) {
+                shouldShow = false;
+                td = tr[i].getElementsByTagName('td');
+                for (j = 0; j < td.length; j++) {
+                    if (td[j]) {
+                        txtValue = td[j].textContent || td[j].innerText;
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            shouldShow = true;
+                        }
+                    }
+                }
+                if (shouldShow) {
+                    tr[i].style.display = '';
+                } else {
+                    tr[i].style.display = 'none';
+                }
+            }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <div class="container">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.8">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+    </div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+<script>
+$(document).ready(function(){
+  $("#myInput").on("keyup", function() {
+    var value = $(this).val().toLowerCase();
+    $("#myTable tr").filter(function() {
+      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+    });
+  });
+});
+</script>
+
+
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+</style>
+{% endblock %}
+
+
+{% block body %}
+    <div class="container">
+    <br>Folha de Ponto Por Período
+        <hr>
+
+        <hr>
+
+        <p><th>Pesquise qualquer campo completo:</th> <input id="myInput" type="text" placeholder="Digite"></p>
+
+        <hr>
+
+
+        <table class="table  table-bordered table-responsive table-bordered">
+
+        <tr>
+            <th align= left width=100 bgcolor= #DAA520> Data </th>
+            <th align= left width=100 bgcolor= #DAA520> Hora </th>
+            <th align= left width=500 bgcolor= #DAA520> Funcinário </th>
+            <th align= left width=100 bgcolor= #DAA520> Entrada </th>
+            <th align= left width=100 bgcolor= #DAA520> Saída Refeição </th>
+            <th align= left width=100 bgcolor= #DAA520> Retorno Refeição </th>
+            <th align= left width=100 bgcolor= #DAA520> Saída </th>
+
+        </tr>
+             <tbody id="myTable">
+        <tr>
+
+
+
+
+
+
+{% for i in dados_ponto %}
+<tr>
+        <td align= left width=100 >{{i['dtData']}}</td>
+        <td align= left width=100 >{{i['dtHora']}}</td>
+        <td align= left width=500 >{{i['dsCardName']}}</td>
+
+        <td align= left width=100 >{{i['dsUtc']}}</td>
+        <td align= left width=100 >{{i['dsUtc']}}</td>
+        <td align= middle width=100 >{{i['dsUtc']}}</td>
+        <td align= middle width=100 >{{i['dsUtc']}}</td>
+
+</tr>
+{% endfor %}
+
+        </tr>
+
+    </table>
+
+
+    </div>
+{% endblock %}
+

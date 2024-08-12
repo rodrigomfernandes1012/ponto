@@ -1,0 +1,29 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid container">
+    <a class="navbar-brand" href="{{ url_for('home')}}">Intelli Metrics</a>
+       <div class="collapse navbar-collapse" id="navbarSupportedContent">
+         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+             <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="{{ url_for('contato')}}" id="contato" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Cadastros
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+              <li><a class="dropdown-item" href="{{ url_for('cadastro_usuarios')}}">Usuários</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('cadastro_clientes')}}">Clientes</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('cadastro_destinatarios')}}">Posto de Trabalho</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('cadastro_funcionarios')}}">Funcionários</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('rel_produto_sintetico')}}">Dispositivos</a></li>
+          </ul>
+        </li>
+          <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="{{ url_for('contato')}}" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Relatórios
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+              <li><a class="dropdown-item" href="{{ url_for('rel_folha_ponto')}}">Ponto</a></li>
+          </ul>
+        </li>
+       </ul>
+    </div>
+  </div>
+</nav>

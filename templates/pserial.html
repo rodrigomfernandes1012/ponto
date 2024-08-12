@@ -1,0 +1,52 @@
+html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Aplicativo Web em Flask</title>
+    <style>
+        body {
+            background-color: white;
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid blue;
+            padding: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Aplicativo Web em Flask</h1>
+    <form method="POST" action="/">
+        <table>
+            <tr>
+                <th>Código</th>
+                <th>Observações</th>
+                <th>Altura</th>
+                <th>Largura</th>
+                <th>Comprimento</th>
+                <th>Peso Real</th>
+                <th>Peso Cubado</th>
+                <th>Usuário</th>
+                <th>Data e Hora</th>
+            </tr>
+            <tr>
+                <td><input type="text" name="codigo"></td>
+                <td><input type="text" name="obs"></td>
+                <td><input type="text" name="altura"></td>
+                <td><input type="text" name="largura"></td>
+                <td><input type="text" name="comprimento"></td>
+                <td><input type="text" name="peso_real"></td>
+                <td><input type="text" name="peso_cubado"></td>
+                <td><input type="text" name="usuario"></td>
+                <td>{{ leitura_serial }}</td>
+            </tr>
+        </table>
+        <br>
+        <input type="submit" value="Salvar">
+    </form>
+</body>
+</html>

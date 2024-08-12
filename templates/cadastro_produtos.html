@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <div class="container">
+        Cadastro de Produtos
+        <hr>
+        <div class="row">
+            <div class="col">
+                <form method="POST" action="" class="border p-4 mt-2">
+                    {{ form_produto.csrf_token }}
+                    <legend>Cadastro de Produtos</legend>
+                    <fieldset>
+                        <div class="form-group">
+                            {{ form_produto.cdCodigo.label(class="form-control-label") }}
+                            {{ form_produto.cdCodigo(class="form-control") }}
+
+                            {{ form_produto.dsNome.label(class="form-control-label") }}
+                            {{ form_produto.dsNome(class="form-control") }}
+
+                            {{ form_produto.dsDescricao.label(class="form-control-label") }}
+                            {{ form_produto.dsDescricao(class="form-control") }}
+
+                            {{ form_produto.nrCodigo.label(class="form-control-label") }}
+                            {{ form_produto.nrCodigo(class="form-control") }}
+
+                            {{ form_produto.nrLarg.label(class="form-control-label") }}
+                            {{ form_produto.nrLarg(class="form-control") }}
+
+                            {{ form_produto.nrComp.label(class="form-control-label") }}
+                            {{ form_produto.nrComp(class="form-control") }}
+
+                            {{ form_produto.nrAlt.label(class="form-control-label") }}
+                            {{ form_produto.nrAlt(class="form-control") }}
+
+                            {{ form_produto.cdStatus.label(class="form-control-label") }}
+                            {{ form_produto.cdStatus(class="form-control") }}
+
+                            <hr>
+
+
+                          {{ form_produto.botao_submit_cadastrar(class="btn btn-primary mt-2") }}
+                            {{ form_produto.botao_submit_alterar(class="btn btn-primary mt-2") }}
+                            {{ form_produto.botao_submit_excluir(class="btn btn-danger mt-2") }}
+
+
+
+                        </div>
+
+                    </fieldset>
+                </form>
+        </div>
+    </div>
+        <div class="container">
+  <br>
+        <p><th>Pesquise qualquer campo completo:</th> <input id="myInput" type="text" placeholder="Digite"></p>
+        <hr>
+        <table class="table  table-bordered table-responsive table-bordered">
+        <tr>
+            <th align= left width=100 bgcolor= #DAA520> ID </th>
+            <th align= left width=300 bgcolor= #DAA520> Produto </th>
+            <th align= left width=300 bgcolor= #DAA520> Descrição </th>
+            <th align= left width=100 bgcolor= #DAA520> Código  </th>
+            <th align= left width=100 bgcolor= #DAA520> Larg. </th>
+            <th align= left width=100 bgcolor= #DAA520> Comp. </th>
+            <th align= left width=100 bgcolor= #DAA520> Alt. </th>
+            <th align= left width=100 bgcolor= #DAA520> Status </th>
+        </tr>
+             <tbody id="myTable">
+        <tr>
+
+{% for produto in produtos %}
+<tr>
+        <td align= left width=100 >{{produto['cdProduto']}}</td>
+        <td align= left width=100 >{{produto['dsNome']}}</td>
+        <td align= left width=100 >{{produto['dsDescricao']}}</td>
+        <td align= left width=100 >{{produto['nrCodigo']}}</td>
+        <td align= middle width=100 >{{produto['nrLarg']}}</td>
+        <td align= middle width=100 >{{produto['nrComp']}}</td>
+        <td align= middle width=100 >{{produto['nrAlt']}}</td>
+        <td align= middle width=100 >{{produto['cdStatus']}}</td>
+
+</tr>
+{% endfor %}
+
+        </tr>
+
+    </table>
+
+
+    </div>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+
+{% block head %}
+ <div class="container">
+    <title>Minha pagina</title>
+    <meta charset="utf-8" />
+
+     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+$(document).ready(function(){
+  $("#myInput").on("keyup", function() {
+    var value = $(this).val().toLowerCase();
+    $("#myTable tr").filter(function() {
+      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+    });
+  });
+});
+</script>
+
+     <style>
+
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+</style>
+</head>
+
+ </div>
+
+{% endblock %}
+
+{% block body %}
+
+
+
+
+<h2>Filtros</h2>
+<p>Pesquise qualquer campo completo:</p>
+<input id="myInput" type="text" placeholder="Digite">
+<br><br>
+
+    <br>
+
+    <table border = "1">
+        <tr>
+            <td align= left width=100 bgcolor= #DAA520> Data </td>
+            <td align= left width=100 bgcolor= #DAA520> Hora </td>
+            <td align= left width=500 bgcolor= #DAA520> Endereço </td>
+            <td align= left width=100 bgcolor= #DAA520> Latitude </td>
+            <td align= left width=100 bgcolor= #DAA520> Longitude </td>
+            <td align= left width=100 bgcolor= #DAA520> Bateria Vots </td>
+            <td align= left width=100 bgcolor= #DAA520> Temperatura </td>
+
+        </tr>
+         <tbody id="myTable">
+        <tr>
+
+
+
+
+
+{% for i in posicoes %}
+<tr>
+        <td align= left width=100 >{{i['dtData']}}</td>
+        <td align= left width=100 >{{i['dtHora']}}</td>
+        <td align= left width=500 >{{i['dsEndereco']}}</td>
+
+        <td align= left width=100 >{{i['dsLat']}}</td>
+        <td align= left width=100 >{{i['dsLong']}}</td>
+        <td align= middle width=100 >{{i['nrBat']}}</td>
+        <td align= middle width=100 >{{i['nrTemp']}}</td>
+
+</tr>
+{% endfor %}
+
+        </tr>
+         </tbody>
+
+    </table>
+
+
+{% endblock %}}
+

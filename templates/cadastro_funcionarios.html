@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <div class="container">
+        <h>Cadastro de Funcionários</h>
+         <div class="row justify-content-left">
+                <div class="col-md-8">
+                <form method="POST" action="" class="border p-4 mt-1">
+                    {{ form_funcionario.csrf_token }}
+
+                    <fieldset>
+                        <div class="row">
+
+                            <div class="col-md-1 mb-3">
+                            {{ form_funcionario.cdFuncionario.label(class="form-control-label") }}
+                            {{ form_funcionario.cdFuncionario(class="form-control") }}
+                            </div>
+                            <div class="col-md-10 mb-3">
+                            {{ form_funcionario.dsNomeEmpregado.label(class="form-control-label") }}
+                            {{ form_funcionario.dsNomeEmpregado(class="form-control") }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                            {{ form_funcionario.dsEntrada.label(class="form-control-label") }}
+                            {{ form_funcionario.dsEntrada(class="form-control") }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                            {{ form_funcionario.dsSaida.label(class="form-control-label") }}
+                            {{ form_funcionario.dsSaida(class="form-control") }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                            {{ form_funcionario.cdPerfil.label(class="form-control-label") }}
+                            {{ form_funcionario.cdPerfil(class="form-control") }}
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                            {{ form_funcionario.dsFuncao.label(class="form-control-label") }}
+                            {{ form_funcionario.dsFuncao(class="form-control") }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                            {{ form_funcionario.dsEmpresa.label(class="form-control-label") }}
+                            {{ form_funcionario.dsEmpresa(class="form-control") }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                            {{ form_funcionario.dsEscala.label(class="form-control-label") }}
+                            {{ form_funcionario.dsEscala(class="form-control") }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                            {{ form_funcionario.nrCargaHoraria.label(class="form-control-label") }}
+                            {{ form_funcionario.nrCargaHoraria(class="form-control") }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                            {{ form_funcionario.nrCargaHorariaMes.label(class="form-control-label") }}
+                            {{ form_funcionario.nrCargaHorariaMes(class="form-control") }}
+                            </div>
+
+
+                            <hr>
+
+                            <div>
+                            {{ form_funcionario.botao_submit_cadastrar(class="btn btn-primary mt-2") }}
+                            {{ form_funcionario.botao_submit_importar(class="btn btn-primary mt-2") }}
+                            {{ form_funcionario.botao_submit_alterar(class="btn btn-primary mt-2") }}
+                            {{ form_funcionario.botao_submit_excluir(class="btn btn-danger mt-2") }}
+                            </div>
+
+
+                        </div>
+
+                    </fieldset>
+                </form>
+        </div>
+    </div>
+        <div class="container">
+  <br>
+        <p><th>Pesquise..:</th> <input id="myInput" type="text" placeholder="Digite"></p>
+        <hr>
+        <table class="table  table-bordered table-responsive table-bordered">
+        <tr>
+            <th align= left width=100 bgcolor= #DAA520> ID </th>
+            <th align= left width=300 bgcolor= #DAA520> Nome </th>
+            <th align= left width=100 bgcolor= #DAA520> Entrada </th>
+            <th align= left width=100 bgcolor= #DAA520> Saida  </th>
+            <th align= left width=100 bgcolor= #DAA520> Funcao  </th>
+            <th align= left width=100 bgcolor= #DAA520> Empresa  </th>
+            <th align= left width=100 bgcolor= #DAA520> Escala  </th>
+            <th align= left width=100 bgcolor= #DAA520> C. Hor. Sem.  </th>
+            <th align= left width=100 bgcolor= #DAA520> C. Hor. Mês.  </th>
+            <th align= left width=100 bgcolor= #DAA520> Perfil </th>
+        </tr>
+             <tbody id="myTable">
+        <tr>
+
+{% for funcionario in funcionarios %}
+<tr>
+        <td align= left width=100 >{{funcionario['cdFuncionario']}}</td>
+        <td align= left width=100 >{{funcionario['dsNomeEmpregado']}}</td>
+        <td align= left width=100 >{{funcionario['dsEntrada']}}</td>
+        <td align= left width=100 >{{funcionario['dsSaida']}}</td>
+        <td align= left width=100 >{{funcionario['dsFuncao']}}</td>
+        <td align= left width=100 >{{funcionario['dsEmpresa']}}</td>
+        <td align= left width=100 >{{funcionario['dsEscala']}}</td>
+        <td align= left width=100 >{{funcionario['nrCargaHoraria']}}</td>
+        <td align= left width=100 >{{funcionario['nrCargaHorariaMes']}}</td>
+        <td align= middle width=100 >{{funcionario['cdPerfil']}}</td>
+
+</tr>
+{% endfor %}
+
+        </tr>
+
+    </table>
+
+
+    </div>
+        <script>
+        // JavaScript para filtrar os resultados da tabela
+        document.getElementById('myInput').addEventListener('keyup', function() {
+            var input, filter, table, tr, td, i, j, txtValue, shouldShow;
+            input = document.getElementById('myInput');
+            filter = input.value.toUpperCase();
+            table = document.getElementById('myTable');
+            tr = table.getElementsByTagName('tr');
+
+            for (i = 0; i < tr.length; i++) {
+                shouldShow = false;
+                td = tr[i].getElementsByTagName('td');
+                for (j = 0; j < td.length; j++) {
+                    if (td[j]) {
+                        txtValue = td[j].textContent || td[j].innerText;
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            shouldShow = true;
+                        }
+                    }
+                }
+                if (shouldShow) {
+                    tr[i].style.display = '';
+                } else {
+                    tr[i].style.display = 'none';
+                }
+            }
+        });
+    </script>
+{% endblock %}
