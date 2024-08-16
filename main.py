@@ -1,6 +1,6 @@
 from flask import Flask, jsonify,  render_template, url_for, request, redirect, flash
 import mysql.connector
-from forms import FormLogin, FormCriarConta, FormProduto, FormCliente, FormDestinatario, FormUsuario, FormFuncionario
+from forms import FormLogin, FormCriarConta, FormProduto, FormCliente, FormDestinatario, FormUsuario, FuncionarioForm
 import folium
 from flask_sqlalchemy import SQLAlchemy
 import os
@@ -174,7 +174,7 @@ def pesquisa_funcionarios():
   selecao = cursor.fetchall() # ler o banco de dados
   cursor.close()
   conexao.close()
-  print(selecao)
+  #print(selecao)
   return selecao
 #print(pesquisa_funcionarios)
 
@@ -332,6 +332,33 @@ def pesquisa_tags():
 
 
 #print(format(data, "%d/%m/%Y"))
+def Inserir_TbFuncionario(nrCodEmpregado, dsNomeEmpregado, dsEntrada, dsSaida, cdPerfil, dsFuncao, dsEmpresa, dsEscala, nrCargaHoraria, nrCargaHorariaMes):
+    conexao = conecta_bd()
+    cursor = conexao.cursor(dictionary=True)
+    comando = f'insert into DbIntelliMetrics.TbFuncionario (nrCodEmpregado, dsNomeEmpregado, dsEntrada, dsSaida, cdPerfil, dsFuncao, dsEmpresa, dsEscala, nrCargaHoraria, nrCargaHorariaMes) values ("{nrCodEmpregado}", "{dsNomeEmpregado}", "{dsEntrada}", "{dsSaida}", "{cdPerfil}", "{dsFuncao}", "{dsEmpresa}", "{dsEscala}", "{nrCargaHoraria}", "{nrCargaHorariaMes}")'
+    cursor.execute(comando)
+    conexao.commit()
+    cursor.close()
+    conexao.close()
+
+def Alterar_TbFuncionario(nrCodEmpregado, dsNomeEmpregado, dsEntrada, dsSaida, cdPerfil, dsFuncao, dsEmpresa, dsEscala, nrCargaHoraria, nrCargaHorariaMes):
+    conexao = conecta_bd()
+    cursor = conexao.cursor()
+    comando = f"update  DbIntelliMetrics.TbFuncionario set dsNomeEmpregado = '{dsNomeEmpregado}', dsEntrada = '{dsEntrada}', dsSaida = '{dsSaida}', cdPerfil = '{cdPerfil}', dsFuncao = '{dsFuncao}', dsEmpresa = '{dsEmpresa}', dsEscala = '{dsEscala}', nrCargaHoraria = '{nrCargaHoraria}', nrCargaHorariaMes = '{nrCargaHorariaMes}' where nrCodEmpregado = '{nrCodEmpregado}'"
+    cursor.execute(comando)
+    print(comando)
+    conexao.commit()
+    cursor.close()
+    conexao.close()
+
+
+def format_timedelta(td):
+    """Format a timedelta object into a string of hours and minutes (HH:mm)."""
+    total_seconds = int(td.total_seconds())
+    hours, remainder = divmod(total_seconds, 3600)  # 3600 seconds in an hour
+    minutes = remainder // 60  # Get the minutes from the remainder
+    return f"{hours:02}:{minutes:02}"  # Format as HH:mm
+
 
 
 
@@ -357,19 +384,19 @@ def home():
 
 @app.route('/contato')
 def contato():
-    return render_template("contato.html", posicoes=posicoes)
+    return render_template("contato.html")
 
 @app.route('/rel_produto_regiao')
 def rel_produto_regiao():
-    return render_template("rel_produto_regiao.html", posicoes=posicoes)
+    return render_template("rel_produto_regiao.html")
 
 @app.route('/rel_produto_fora_destino')
 def rel_produto_fora_destino():
-    return render_template("rel_produto_fora_destino.html", posicoes=posicoes)
+    return render_template("rel_produto_fora_destino.html")
 
 @app.route('/rel_produto_sintetico')
 def rel_produto_sintetico():
-    return render_template("rel_produto_sintetico.html", posicoes=posicoes)
+    return render_template("rel_produto_sintetico.html")
 
 
 
@@ -381,12 +408,12 @@ def map():
 def mapa():
     start_coords = (-23.532848,-046.540013)
     folium_map = folium.Map(location=start_coords, zoom_start=10)
-    pesquisa_posicoes()
+    posicoes = pesquisa_posicoes()
 
     for posicao in posicoes:
         folium.Marker([posicao['dsLat'], posicao['dsLong']]).add_to(folium_map)
         folium_map.save('templates/mapa.html')
-    return render_template('map.html', lista_usuarios=lista_usuarios, posicoes=posicoes)
+    return render_template('map.html')
 
 
 @app.route('/usuarios')
@@ -409,19 +436,11 @@ def login():
 
 
 
-@app.route('/cadastro_produtos', methods=['GET', 'POST'])
-def cadastro_produtos():
-    form_produto = FormProduto()
-
-    if form_produto.validate_on_submit() and 'botao_submit_cadastrar' in request.form:
-        flash(f'Produto adicionado {form_produto.dsNome.data}', 'alert-success')
-        return redirect(url_for('cadastro_produtos'))
-    return render_template("cadastro_produtos.html", form_produto=form_produto, produtos=Produtos)
-
 @app.route('/cadastro_clientes', methods=['GET', 'POST'])
 def cadastro_clientes():
     form_cliente = FormCliente()
     Clientes = (pesquisa_clientes())
+    print("oi")
 
     if form_cliente.validate_on_submit() and 'botao_submit_cadastrar' in request.form:
         flash(f'Cliente adicionado {form_cliente.dsNome.data}', 'alert-success')
@@ -438,16 +457,53 @@ def cadastro_destinatarios():
         return redirect(url_for('cadastro_destinatarios'))
     return render_template("cadastro_destinatarios.html", form_destinatario=form_destinatario, destinatarios=Destinatarios)
 
+
 @app.route('/cadastro_funcionarios', methods=['GET', 'POST'])
 def cadastro_funcionarios():
-    form_funcionario = FormFuncionario()
-    Funcionario = pesquisa_funcionarios()
-    print(Funcionario)
+    form_funcionario = FuncionarioForm()
+    funcionarios = pesquisa_funcionarios()
+    print(funcionarios)
 
-    if form_funcionario.validate_on_submit() and 'botao_submit_cadastrar' in request.form:
-        flash(f'Funcionario adicionado {form_funcionario.dsNomeEmpregado.data}', 'alert-success')
-        return redirect(url_for('cadastro_funcionarios'))
-    return render_template("cadastro_funcionarios.html", form_funcionario=form_funcionario, funcionarios=Funcionario)
+    if request.method == 'POST':
+        i = 1
+        if i == 1:
+
+        #if form_funcionario.botao_submit_cadastrar():  # Validando se o formulário foi preenchido corretamente
+            # Aqui você pegaria os dados do formulário
+            print("func-ok")
+            nrCodEmpregado = form_funcionario.cdFuncionario.data
+            dsNomeEmpregado = form_funcionario.dsNomeEmpregado.data
+            dsEntrada = form_funcionario.dsEntrada.data
+            dsSaida = form_funcionario.dsSaida.data
+            cdPerfil = form_funcionario.cdPerfil.data
+            dsFuncao = form_funcionario.dsFuncao.data
+            dsEmpresa = form_funcionario.dsEmpresa.data
+            dsEscala = form_funcionario.dsEscala.data
+            nrCargaHoraria = form_funcionario.nrCargaHoraria.data
+            nrCargaHorariaMes = form_funcionario.nrCargaHorariaMes.data
+            if 'botao_submit_cadastrar' in request.form:
+                Inserir_TbFuncionario(nrCodEmpregado, dsNomeEmpregado, dsEntrada, dsSaida, cdPerfil, dsFuncao, dsEmpresa, dsEscala, nrCargaHoraria, nrCargaHorariaMes)
+                print(nrCodEmpregado, dsNomeEmpregado, dsEntrada, dsSaida)
+                #return redirect(url_for('cadastro_funcionarios'))  # Redireciona para a própria página ou outra após o cadastro
+                flash(f'Funcionario adicionado {form_funcionario.dsNomeEmpregado.data}', 'alert-success')
+            if 'botao_submit_alterar' in request.form:
+                print(nrCodEmpregado, dsNomeEmpregado)
+                Alterar_TbFuncionario(nrCodEmpregado, dsNomeEmpregado, dsEntrada, dsSaida, cdPerfil, dsFuncao, dsEmpresa,  dsEscala, nrCargaHoraria, nrCargaHorariaMes)
+
+                # return redirect(url_for('cadastro_funcionarios'))  # Redireciona para a própria página ou outra após o cadastro
+                flash(f'Funcionario Alterado {form_funcionario.dsNomeEmpregado.data}', 'alert-success')
+
+            return redirect(url_for('cadastro_funcionarios'))
+
+    return render_template('cadastro_funcionarios.html', form_funcionario=form_funcionario, funcionarios=funcionarios)
+    # Passe o objeto do formulário para o template
+
+
+#    if form_funcionario.validate_on_submit() and 'botao_submit_cadastrar' in request.form:
+#        print("cadastrado")
+#        flash(f'Funcionario adicionado {form_funcionario.dsNomeEmpregado.data}', 'alert-success')
+#        return redirect(url_for('cadastro_funcionarios'))
+#    return render_template("cadastro_funcionarios.html", form_funcionario=form_funcionario, funcionarios=Funcionario)
 
 
 

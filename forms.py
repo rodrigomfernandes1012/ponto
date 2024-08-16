@@ -79,7 +79,7 @@ class FormUsuario(FlaskForm):
     botao_submit_alterar = SubmitField('Alterar')
     botao_submit_excluir = SubmitField('Excluir')
 
-class FormFuncionario(FlaskForm):
+class FuncionarioForm(FlaskForm):
     cdFuncionario = StringField('ID', validators=[DataRequired()])
     dsNomeEmpregado = StringField('Nome', validators=[DataRequired()])
     dsFuncao  = StringField('Funcao', validators=[DataRequired()])
@@ -90,8 +90,6 @@ class FormFuncionario(FlaskForm):
     dsEscala  = StringField('Escala', validators=[DataRequired()])
     nrCargaHoraria  = StringField('Carga Horária Semana', validators=[DataRequired()])
     nrCargaHorariaMes  = StringField('Carga Horária Mês', validators=[DataRequired()])
-
-
     botao_submit_cadastrar = SubmitField('Salvar')
     botao_submit_importar = SubmitField('Importar')
     botao_submit_alterar = SubmitField('Alterar')
