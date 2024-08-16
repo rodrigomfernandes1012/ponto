@@ -378,7 +378,7 @@ app.config['SECRET_KEY'] = '5160e59712d22d50e708220336549982'
 #database = SQLAlchemy(app)
 
 users = {
-    "usuario": "senha123", "rodrigo@taxidigital.net": "101275", "Yham.predilar@gmail.com": "1608@2024"
+    "usuario": "senha123", "rodrigo@taxidigital.net": "101275", "Yham.predilar@gmail.com": "1608@2024", "Isabel.predilar@gmail.com": "1608@2024"
 }
 
 @app.route('/')
