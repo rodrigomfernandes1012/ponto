@@ -377,8 +377,26 @@ app.config['SECRET_KEY'] = '5160e59712d22d50e708220336549982'
 
 #database = SQLAlchemy(app)
 
+users = {
+    "usuario": "senha123", "rodrigo@taxidigital.net": "101275", "Yham.predilar@gmail.com": "1608@2024"
+}
+
 @app.route('/')
 def home():
+    return render_template('login.html', message='')
+
+@app.route('/login', methods=['POST'])
+def login():
+    username = request.form['username']
+    password = request.form['password']
+    if username in users and users[username] == password:
+        return render_template('home.html')
+    else:
+        return render_template('login.html', message='Usuário ou senha inválidos!')
+
+
+@app.route('/home1')
+def inicio():
     #dicionario = ponto()
     return render_template("home.html")
 
@@ -420,21 +438,6 @@ def mapa():
 def usuarios():
     Usuarios = (pesquisa_usuarios())
     return render_template("usuarios.html", usuarios=Usuarios)
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    form_login = FormLogin()
-    form_criarconta= FormCriarConta()
-    if form_login.validate_on_submit()  and 'botao_submit_login' in request.form:
-        flash(f'Login feito com sucesso no email {form_login.email.data}, gerando log de acesso.', 'alert alert-success')
-        return redirect(url_for('home'))
-
-    if form_criarconta.validate_on_submit()  and 'botao_submit_criarconta' in request.form:
-        flash (f'Criou conta com sucesso {form_criarconta.email.data}', 'alert-success')
-        return redirect(url_for('home'))
-    return render_template("login.html", form_login=form_login, form_criarconta=form_criarconta)
-
-
 
 @app.route('/cadastro_clientes', methods=['GET', 'POST'])
 def cadastro_clientes():
