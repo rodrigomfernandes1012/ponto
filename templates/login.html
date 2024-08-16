@@ -1,57 +1,26 @@
-{% extends 'base.html' %}
-
-{% block body %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tela de Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
     <div class="container">
-        Faça Login
-        <hr>
-        <div class="row">
-            <div class="col">
-                <form method="POST" action="" class="border p-4 mt-2">
-                    {{ form_login.csrf_token }}
-                    <legend>Login</legend>
-                    <fieldset>
-                        <div class="form-group">
-                            {{ form_login.email.label(class="form-control-label") }}
-                            {% if form_login.email.errors %}
-                                {{ form_login.email(class="form-control is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for erro in form_login.email.errors %}
-                                    {{ erro }}
-                                {% endfor %}
-                            </div>
-                            {% else %}
-                                {{ form_login.email(class="form-control") }}
-                            {% endif %}
-                        </div>
-                        <div class="form-group">
-                            {{ form_login.senha.label(class="form-control-label") }}
-                            {% if form_login.senha.errors %}
-                                {{ form_login.senha(class="form-control is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for erro in form_login.senha.errors %}
-                                    {{ erro }}
-                                {% endfor %}
-                            </div>
-                            {% else %}
-                                {{ form_login.senha(class="form-control") }}
-                            {% endif %}
-                        </div>
-
-
-
-
-
-
-                        <div class="form-group">
-                            {{ form_login.lembrar_dados.label(class="form-check-label") }}
-                            {{ form_login.lembrar_dados(class="form-check-input") }}
-                        </div>
-                    </fieldset>
-                    {{ form_login.botao_submit_login(class="btn btn-primary mt-2") }}
-
-                </form>
+        <h2>Login</h2>
+        <form action="/login" method="post">
+            <div>
+                <label for="username">Usuário:</label>
+                <input type="text" id="username" name="username" required>
             </div>
-
-        </div>
+            <div>
+                <label for="password">Senha:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Entrar</button>
+        </form>
+        <div id="message">{{ message }}</div>
     </div>
-{% endblock %}
+</body>
+</html>
