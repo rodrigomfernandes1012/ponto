@@ -1,124 +1,193 @@
 {% extends 'base.html' %}
 
 {% block body %}
-    <div class="container">
-        <h>Cadastro de Funcionários</h>
-         <div class="row justify-content-left">
-                <div class="col-md-8">
-                <form method="POST" action="" class="border p-4 mt-1">
-                    {{ form_funcionario.csrf_token }}
+<div class="container">
+    <h>Cadastro de Funcionários</h>
+    <div class="row justify-content-left">
+        <div class="col-md-8">
 
-                    <fieldset>
-                        <div class="row">
-
-                            <div class="col-md-1 mb-3">
+            <form method="POST" action="{{ url_for('cadastro_funcionarios') }}" class="border p-4 mt-1" enctype="multipart/form-data">
+                <fieldset>
+                    <div class="row">
+                        <div class="col-md-1 mb-3">
                             {{ form_funcionario.cdFuncionario.label(class="form-control-label") }}
                             {{ form_funcionario.cdFuncionario(class="form-control") }}
-                            </div>
-                            <div class="col-md-10 mb-3">
+                        </div>
+                        <div class="col-md-10 mb-3">
                             {{ form_funcionario.dsNomeEmpregado.label(class="form-control-label") }}
                             {{ form_funcionario.dsNomeEmpregado(class="form-control") }}
-                            </div>
-                            <div class="col-md-3 mb-3">
+                        </div>
+                        <div class="col-md-3 mb-3">
                             {{ form_funcionario.dsEntrada.label(class="form-control-label") }}
-                            {{ form_funcionario.dsEntrada(class="form-control") }}
-                            </div>
-                            <div class="col-md-3 mb-3">
+                            <input type="time" name="dsEntrada" class="form-control" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
                             {{ form_funcionario.dsSaida.label(class="form-control-label") }}
-                            {{ form_funcionario.dsSaida(class="form-control") }}
-                            </div>
-                            <div class="col-md-3 mb-3">
+                            <input type="time" name="dsSaida" class="form-control" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
                             {{ form_funcionario.cdPerfil.label(class="form-control-label") }}
                             {{ form_funcionario.cdPerfil(class="form-control") }}
-                            </div>
-
-                            <div class="col-md-3 mb-3">
+                        </div>
+                        <div class="col-md-3 mb-3">
                             {{ form_funcionario.dsFuncao.label(class="form-control-label") }}
-                            {{ form_funcionario.dsFuncao(class="form-control") }}
-                            </div>
-                            <div class="col-md-3 mb-3">
-                            {{ form_funcionario.dsEmpresa.label(class="form-control-label") }}
-                            {{ form_funcionario.dsEmpresa(class="form-control") }}
-                            </div>
-                            <div class="col-md-3 mb-3">
-                            {{ form_funcionario.dsEscala.label(class="form-control-label") }}
-                            {{ form_funcionario.dsEscala(class="form-control") }}
-                            </div>
-                            <div class="col-md-3 mb-3">
+                            <select name="dsFuncao" class="form-control" required>
+                                <option value="">Selecione uma função</option>
+                                <option value="ADMINISTRATIVO">Administrativo</option>
+                                <option value="ANALISTA">Analista</option>
+                                <option value="AUDIOESCRITOR">Audiodescritor</option>
+                                <option value="AUXILIAR ADMINISTRATIVO">Auxiliar Administrativo</option>
+                                <option value="AUXILIAR DE COZINHA">Auxiliar de Cozinha</option>
+                                <option value="AUXILIAR DE LIMPEZA">Auxiliar de Limpeza</option>
+                                <option value="AUXILIAR DE SERVIÇOS GERAIS">Auxiliar de Serviços Gerais</option>
+                                <option value="AGENTE DE HIGIENIZAÇÃO">Agente de Higienização</option>
+                                <option value="CONTROLADOR DE ACESSO">Controlador de Acesso</option>
+                                <option value="CONTROLADOR DE ACESSO1">Controlador de Acesso1</option>
+                                <option value="COZINHEIRO">Cozinheiro</option>
+                                <option value="DIRETOR">Diretor</option>
+                                <option value="ENCARREGADO GERAL">Encarregado Geral</option>
+                                <option value="INTERPRETE DE LÍNGUAS">Intérprete de Línguas</option>
+                                <option value="LÍDER DE LIMPEZA">Líder de Limpeza</option>
+                                <option value="PSICOPEDAGOGO">Psicopedagogo</option>
+                                <option value="RECEPCIONISTA">Recepcionista</option>
+                                <option value="SUPERVISOR JUNIOR">Supervisor Junior</option>
+                                <option value="ZELADOR">Zelador</option>
+                                <option value="TEC APOIO A ESTUDANTE DEFICIENTE">Técnico de Apoio a Estudante Deficiente</option>
+                                <option value="MONITOR DE INCLUSÃO">Monitor de Inclusão</option>
+                                <option value="OFICIAL DE MANUTENÇÃO PREDIAL">Oficial de Manutenção Predial</option>
+                                <option value="AUXILIAR EM AGROPECUÁRIA">Auxiliar em Agropecuária</option>
+                                <option value="LIMPADOR DE VIDROS">Limpador de Vidros</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
                             {{ form_funcionario.nrCargaHoraria.label(class="form-control-label") }}
-                            {{ form_funcionario.nrCargaHoraria(class="form-control") }}
-                            </div>
-                            <div class="col-md-3 mb-3">
+                            <select name="nrCargaHoraria" class="form-control" required>
+                                <option value="">Selecione a carga horária</option>
+                                <option value="20">20</option>
+                                <option value="30">30</option>
+                                <option value="33">33</option>
+                                <option value="40">40</option>
+                                <option value="42">42</option>
+                                <option value="44">44</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
                             {{ form_funcionario.nrCargaHorariaMes.label(class="form-control-label") }}
-                            {{ form_funcionario.nrCargaHorariaMes(class="form-control") }}
-                            </div>
+                            <select name="nrCargaHorariaMes" class="form-control" required>
+                                <option value="">Selecione a carga horária mensal</option>
+                                <option value="100">100</option>
+                                <option value="150">150</option>
+                                <option value="165">165</option>
+                                <option value="210">210</option>
+                                <option value="220">220</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            {{ form_funcionario.dsEmpresa.label(class="form-control-label") }}
+                            <select name="dsEmpresa" class="form-control" required>
+                                <option value="">Selecione a Empresa</option>
+                                <option value="PREDILAR SOLUÇÕES">PREDILAR SOLUÇÕES</option>
+                                <option value="PREDILAR SERVICE">PREDILAR SERVICE</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            {{ form_funcionario.dsEscala.label(class="form-control-label") }}
+                            <select name="dsEscala" class="form-control" required>
+                                <option value="">Selecione a Escala</option>
+                                <option value="T.1">T.1</option>
+                                <option value="T.2">T.2</option>
+                                <option value="T.3">T.3</option>
+                                <option value="T.4">T.4</option>
+                                <option value="T.5">T.5</option>
+                                <option value="T.6">T.6</option>
+                                <option value="T.7">T.7</option>
+                                <option value="T.8">T.8</option>
+                                <option value="T.9">T.9</option>
+                                <option value="T.10">T.10</option>
+                                <option value="T.11">T.11</option>
+                                <option value="T.12">T.12</option>
+                                <option value="T.13">T.13</option>
+                                <option value="T.14">T.14</option>
+                                <option value="T.15">T.15</option>
+                                <option value="T.16">T.16</option>
+                                <option value="T.17">T.17</option>
+
+                            </select>
+                        </div>
+                         <div class="col-md-4">
 
 
-                            <hr>
+                    <img id="selectedImage" src="" alt="imagem selecionada" style="max-width: 20%; display: none;">
 
-                            <div>
+            </div>
+                        <hr>
+
+                        <div>
+                            <button type="button" class="btn btn-primary mt-2" onclick="document.getElementById('fileUploadTxt').click();">Importar</button>
+                            <input type="file" id="fileUploadTxt" accept=".txt" style="display: none;" onchange="handleFileUpload(this);">
+                            <button type="button" class="btn btn-primary mt-2" onclick="document.getElementById('fileUploadImage').click();">Adicionar Foto</button>
+                            <input type="file" id="fileUploadImage" accept="image/*" style="display: none;" onchange="displayImage(this);">
                             {{ form_funcionario.botao_submit_cadastrar(class="btn btn-primary mt-2") }}
-                            {{ form_funcionario.botao_submit_importar(class="btn btn-primary mt-2") }}
                             {{ form_funcionario.botao_submit_alterar(class="btn btn-primary mt-2") }}
                             {{ form_funcionario.botao_submit_excluir(class="btn btn-danger mt-2") }}
-                            </div>
-
-
                         </div>
+                    </div>
 
-                    </fieldset>
-                </form>
+                </fieldset>
+            </form>
         </div>
     </div>
-        <div class="container">
-  <br>
-        <p><th>Pesquise..:</th> <input id="myInput" type="text" placeholder="Digite"></p>
+
+    <div class="container">
+        <br>
+        <p><strong>Pesquise..:</strong> <input id="myInput" type="text" placeholder="Digite"></p>
         <hr>
-        <table class="table  table-bordered table-responsive table-bordered">
-        <tr>
-            <th align= left width=100 bgcolor= #DAA520> ID </th>
-            <th align= left width=300 bgcolor= #DAA520> Nome </th>
-            <th align= left width=100 bgcolor= #DAA520> Entrada </th>
-            <th align= left width=100 bgcolor= #DAA520> Saida  </th>
-            <th align= left width=100 bgcolor= #DAA520> Funcao  </th>
-            <th align= left width=100 bgcolor= #DAA520> Empresa  </th>
-            <th align= left width=100 bgcolor= #DAA520> Escala  </th>
-            <th align= left width=100 bgcolor= #DAA520> C. Hor. Sem.  </th>
-            <th align= left width=100 bgcolor= #DAA520> C. Hor. Mês.  </th>
-            <th align= left width=100 bgcolor= #DAA520> Perfil </th>
-        </tr>
-             <tbody id="myTable">
-        <tr>
+        <div class="row">
+            <div class="col-md-20">
+                <table class="table table-bordered table-responsive table-bordered" id="myTable">
+                    <thead>
+                        <tr>
+                            <th align="left" width="100" bgcolor="#DAA520">ID</th>
+                            <th align="left" width="800" bgcolor="#DAA520">Nome</th>
+                            <th align="left" width="100" bgcolor="#DAA520">Entrada</th>
+                            <th align="left" width="100" bgcolor="#DAA520">Saída</th>
+                            <th align="left" width="300" bgcolor="#DAA520">Função</th>
+                            <th align="left" width="100" bgcolor="#DAA520">Empresa</th>
+                            <th align="left" width="100" bgcolor="#DAA520">Escala</th>
+                            <th align="left" width="200" bgcolor="#DAA520">C. Hor. Sem.</th>
+                            <th align="left" width="200" bgcolor="#DAA520">C. Hor. Mês.</th>
+                            <th align="left" width="100" bgcolor="#DAA520">Perfil</th>
+                        </tr>
+                    </thead>
+                    <tbody id="myTableBody">
+                        {% for funcionario in funcionarios %}
+                        <tr onclick="carregarDados(this, '{{ funcionario['cdFuncionario'] }}', '{{ funcionario['dsNomeEmpregado'] }}', '{{ funcionario['dsEntrada'] }}', '{{ funcionario['dsSaida'] }}', '{{ funcionario['dsFuncao'] }}', '{{ funcionario['dsEmpresa'] }}', '{{ funcionario['dsEscala'] }}', '{{ funcionario['nrCargaHoraria'] }}', '{{ funcionario['nrCargaHorariaMes'] }}', '{{ funcionario['cdPerfil'] }}')" id="row-{{ funcionario['cdFuncionario'] }}">
+                            <td align="left" width="100">{{ funcionario['cdFuncionario'] }}</td>
+                            <td align="left" width="300">{{ funcionario['dsNomeEmpregado'] }}</td>
+                            <td align="left" width="100">{{ funcionario['dsEntrada'] }}</td>
+                            <td align="left" width="100">{{ funcionario['dsSaida'] }}</td>
+                            <td align="left" width="100">{{ funcionario['dsFuncao'] }}</td>
+                            <td align="left" width="100">{{ funcionario['dsEmpresa'] }}</td>
+                            <td align="left" width="100">{{ funcionario['dsEscala'] }}</td>
+                            <td align="left" width="100">{{ funcionario['nrCargaHoraria'] }}</td>
+                            <td align="left" width="100">{{ funcionario['nrCargaHorariaMes'] }}</td>
+                            <td align="left" width="100">{{ funcionario['cdPerfil'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
 
-{% for funcionario in funcionarios %}
-<tr>
-        <td align= left width=100 >{{funcionario['cdFuncionario']}}</td>
-        <td align= left width=100 >{{funcionario['dsNomeEmpregado']}}</td>
-        <td align= left width=100 >{{funcionario['dsEntrada']}}</td>
-        <td align= left width=100 >{{funcionario['dsSaida']}}</td>
-        <td align= left width=100 >{{funcionario['dsFuncao']}}</td>
-        <td align= left width=100 >{{funcionario['dsEmpresa']}}</td>
-        <td align= left width=100 >{{funcionario['dsEscala']}}</td>
-        <td align= left width=100 >{{funcionario['nrCargaHoraria']}}</td>
-        <td align= left width=100 >{{funcionario['nrCargaHorariaMes']}}</td>
-        <td align= middle width=100 >{{funcionario['cdPerfil']}}</td>
-
-</tr>
-{% endfor %}
-
-        </tr>
-
-    </table>
-
-
+        </div>
     </div>
-        <script>
+
+    <script>
         // JavaScript para filtrar os resultados da tabela
         document.getElementById('myInput').addEventListener('keyup', function() {
             var input, filter, table, tr, td, i, j, txtValue, shouldShow;
             input = document.getElementById('myInput');
             filter = input.value.toUpperCase();
-            table = document.getElementById('myTable');
+            table = document.getElementById('myTableBody');
             tr = table.getElementsByTagName('tr');
 
             for (i = 0; i < tr.length; i++) {
@@ -139,5 +208,51 @@
                 }
             }
         });
+
+        // Função para carregar os dados nas caixas de texto e destacar a linha
+        function carregarDados(row, cdFuncionario, dsNomeEmpregado, dsEntrada, dsSaida, dsFuncao, dsEmpresa, dsEscala, nrCargaHoraria, nrCargaHorariaMes, cdPerfil) {
+            // Destacar a linha selecionada
+            var rows = document.querySelectorAll('#myTableBody tr');
+            rows.forEach(function(r) {
+                r.style.backgroundColor = ''; // Remover destaque de todas as linhas
+            });
+            row.style.backgroundColor = 'lightblue'; // Destacar a linha clicada
+
+            // Carregar os dados nas caixas de texto
+            document.querySelector('[name="cdFuncionario"]').value = cdFuncionario;
+            document.querySelector('[name="dsNomeEmpregado"]').value = dsNomeEmpregado;
+            document.querySelector('[name="dsEntrada"]').value = dsEntrada;
+            document.querySelector('[name="dsSaida"]').value = dsSaida;
+            document.querySelector('[name="dsFuncao"]').value = dsFuncao;
+            document.querySelector('[name="dsEmpresa"]').value = dsEmpresa;
+            document.querySelector('[name="dsEscala"]').value = dsEscala;
+            document.querySelector('[name="nrCargaHoraria"]').value = nrCargaHoraria;
+            document.querySelector('[name="nrCargaHorariaMes"]').value = nrCargaHorariaMes;
+            document.querySelector('[name="cdPerfil"]').value = cdPerfil;
+        }
+
+        // Função para tratar o upload do arquivo .txt
+        function handleFileUpload(input) {
+            if (input.files.length > 0) {
+                // Aqui você pode adicionar o código para processar o arquivo
+                alert('Arquivo .txt selecionado: ' + input.files[0].name);
+            }
+        }
+
+        // Função para exibir a imagem selecionada
+        function displayImage(input) {
+            var imagePreview = document.getElementById('imagePreview');
+            var selectedImage = document.getElementById('selectedImage');
+
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    selectedImage.src = e.target.result;
+                    selectedImage.style.display = 'block'; // Mostrar a imagem
+                }
+
+                reader.readAsDataURL(input.files[0]); // Lê o arquivo como URL de dados
+            }
+        }
     </script>
 {% endblock %}
