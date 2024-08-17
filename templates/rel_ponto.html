@@ -25,7 +25,7 @@
 
         table {
             width: 80%;
-            max-width: 800px;
+            max-width: 1200px;
             border-collapse: collapse;
             margin-bottom: 20px;
             border-radius: 8px;
@@ -86,26 +86,22 @@
 </head>
 <body>
 
-    <h1>Registro de Horário de Funcionários</h1>
+    <h1>Registro de Horário de Funcionários.</h1>
     <table>
         <thead>
             <tr>
                 <th>ID</th>
                 <th>Funcionário</th>
                 <th>Data</th>
-                <th>Entrada</th>
-                <th>Saída Almoço</th>
-                <th>Entrada Almoço</th>
-                <th>Saída</th>
+                <th>Registro</th>
+
             </tr>
             <tr>
                 <th><input type="text" class="filter-input" id="filterId" ></th>
                 <th><input type="text" class="filter-input" id="filterFuncionario" ></th>
                 <th><input type="text" class="filter-input" id="filterData"></th>
                 <th><input type="text" class="filter-input" id="filterEntrada"></th>
-                <th><input type="text" class="filter-input" id="filterSaidaAlmoco"></th>
-                <th><input type="text" class="filter-input" id="filterEntradaAlmoco" ></th>
-                <th><input type="text" class="filter-input" id="filterSaida"></th>
+
             </tr>
         </thead>
         <tbody id="employee-table-body">
@@ -144,9 +140,7 @@
                     <td>${data[key].dsCardName}</td>
                     <td>${data[key].dsData}</td>
                     <td><input type="time" value="${data[key].dsRegistro01}"></td>
-                    <td><input type="time" value="${data[key].dsRegistro02}"></td>
-                    <td><input type="time" value="${data[key].dsRegistro03}"></td>
-                    <td><input type="time" value="${data[key].dsRegistro04}"></td>
+
                 `;
                 tableBody.appendChild(row);
             }
@@ -159,9 +153,7 @@
                 const employeeName = row.cells[1].textContent;
                 const dsData = row.cells[2].textContent;
                 const entrada = row.querySelector('input[type="time"]').value;
-                const saida = row.querySelectorAll('input[type="time"]')[1].value;
-                const entradaa = row.querySelectorAll('input[type="time"]')[2].value;
-                const saidaf = row.querySelectorAll('input[type="time"]')[3].value;
+
 
                 employeeData.push({
                     cdPonto: idponto,
@@ -197,9 +189,7 @@
             const funcionarioFilter = document.getElementById('filterFuncionario').value.toUpperCase();
             const dataFilter = document.getElementById('filterData').value.toUpperCase();
             const entradaFilter = document.getElementById('filterEntrada').value.toUpperCase();
-            const saidaAlmocoFilter = document.getElementById('filterSaidaAlmoco').value.toUpperCase();
-            const entradaAlmocoFilter = document.getElementById('filterEntradaAlmoco').value.toUpperCase();
-            const saidaFilter = document.getElementById('filterSaida').value.toUpperCase();
+
 
             const table = document.getElementById('employee-table-body');
             const tr = table.getElementsByTagName('tr');
@@ -211,7 +201,7 @@
                 let shouldDisplay = true;
 
                 // Check each cell against their respective filter
-                const filters = [idFilter, funcionarioFilter, dataFilter, entradaFilter, saidaAlmocoFilter, entradaAlmocoFilter, saidaFilter];
+                const filters = [idFilter, funcionarioFilter, dataFilter, entradaFilter];
                 for (let j = 0; j < filters.length; j++) {
                     if (filters[j]) {
                         td = cells[j];
