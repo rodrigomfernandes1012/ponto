@@ -1,4 +1,4 @@
-from flask import Flask, jsonify,  render_template, url_for, request, redirect, flash
+from flask import Flask, jsonify,  render_template, url_for, request, redirect, flash,  url_for, session
 import mysql.connector
 from forms import FormLogin, FormCriarConta, FormProduto, FormCliente, FormDestinatario, FormUsuario, FuncionarioForm
 import folium
@@ -359,19 +359,34 @@ def format_timedelta(td):
     minutes = remainder // 60  # Get the minutes from the remainder
     return f"{hours:02}:{minutes:02}"  # Format as HH:mm
 
-def Inserir_TbLog(dsTbAcesso, dsAcao, dsLogin):
+def Inserir_TbLog(dsTbAcesso, dsAcao, dsIp,  dsLogin):
     conexao = conecta_bd()
     cursor = conexao.cursor(dictionary=True)
-    comando = f'insert into DbIntelliMetrics.TbLog (dsTbAcesso, dsAcao, dsLogin) values ("{dsTbAcesso}", "{dsAcao}", "{dsLogin}")'
+    comando = f'insert into DbIntelliMetrics.TbLog (dsTbAcesso, dsAcao, dsIp, dsLogin) values ("{dsTbAcesso}", "{dsAcao}", "{dsIp}", "{dsLogin}")'
     cursor.execute(comando)
     conexao.commit()
     cursor.close()
     conexao.close()
+    username = dsLogin
+    return username
+
+def obter_ip_publico():
+    # Verifica o cabeçalho X-Forwarded-For
+    ip = request.headers.get('X-Forwarded-For')
+    if ip:
+        # O X-Forwarded-For pode retornar uma lista de IPs; pegamos o primeiro
+        ip = ip.split(',')[0]
+    else:
+        # Se não houver X-Forwarded-For, pega o remote_addr
+        ip = request.remote_addr
+
+    return ip
 
 
 
 
 app = Flask(__name__)
+app.secret_key = '5160e59712d22d50e708220336549982'  # Necessário para usar sessões
 
 
 #data = [{'id':'rodrigo','sobrenome':'moises'},{'id':'david','sobrenome':'paulo'}]
@@ -388,20 +403,31 @@ users = {
     "usuario": "senha123", "rodrigo@taxidigital.net": "101275", "Yham.predilar@gmail.com": "1608@2024", "Isabel.predilar@gmail.com": "1608@2024"
 }
 
+login_usuario = None
+dsIp = None
 @app.route('/')
 def home():
     return render_template('login.html', message='')
 
 @app.route('/login', methods=['POST'])
 def login():
+    global login_usuario
+    global dsIp
+    dsIp = obter_ip_publico()
     username = request.form['username']
     password = request.form['password']
+    login_usuario =  username  # Armazena o valor na sessão
+
     if username in users and users[username] == password:
+        Inserir_TbLog("TbLogin", "ACESSO PERMITIDO", dsIp, login_usuario)
         return render_template('home.html')
-        Inserir_TbLog("TbLogin", "ACESSO PERMITIDO", username)
+
     else:
+        Inserir_TbLog("TbLogin", "ACESSO INVÁLIDO", dsIp, login_usuario)
         return render_template('login.html', message='Usuário ou senha inválidos!')
-        Inserir_TbLog("TbLogin", "ACESSO INVÁLIDO", username)
+
+
+
 
 
 @app.route('/home1')
@@ -446,13 +472,15 @@ def mapa():
 @app.route('/usuarios')
 def usuarios():
     Usuarios = (pesquisa_usuarios())
+    Inserir_TbLog("TbUsuarios", "Usuarios", dsIp, login_usuario)
     return render_template("usuarios.html", usuarios=Usuarios)
 
 @app.route('/cadastro_clientes', methods=['GET', 'POST'])
 def cadastro_clientes():
     form_cliente = FormCliente()
     Clientes = (pesquisa_clientes())
-    print("oi")
+    Inserir_TbLog("TbClientes", "Cadastro de Clientes", dsIp, login_usuario)
+
 
     if form_cliente.validate_on_submit() and 'botao_submit_cadastrar' in request.form:
         flash(f'Cliente adicionado {form_cliente.dsNome.data}', 'alert-success')
@@ -463,6 +491,8 @@ def cadastro_clientes():
 def cadastro_destinatarios():
     form_destinatario = FormDestinatario()
     Destinatarios= pesquisa_destinatarios()
+    Inserir_TbLog("TbDestinatarios", "Cadastro Posto de Trabalho", dsIp, login_usuario)
+
 
     if form_destinatario.validate_on_submit() and 'botao_submit_cadastrar' in request.form:
         flash(f'Destinatario adicionado {form_destinatario.dsNome.data}', 'alert-success')
@@ -474,6 +504,7 @@ def cadastro_destinatarios():
 def cadastro_funcionarios():
     form_funcionario = FuncionarioForm()
     funcionarios = pesquisa_funcionarios()
+    Inserir_TbLog("TbCadastroFuncionrios", "Cadastro de Funcionários ", dsIp, login_usuario)
     print(funcionarios)
 
     if request.method == 'POST':
@@ -524,6 +555,7 @@ def cadastro_funcionarios():
 def cadastro_usuarios():
     form_usuario = FormUsuario()
     Usuarios = (pesquisa_usuarios())
+    Inserir_TbLog("TbCadastroUsuarios", " Cadastro de Usuarios", dsIp, login_usuario)
 
     if form_usuario.validate_on_submit() and 'botao_submit_cadastrar' in request.form:
         flash(f'Usuario adicionado {form_usuario.dsNome.data}', 'alert-success')
@@ -532,6 +564,7 @@ def cadastro_usuarios():
 
 @app.route('/rel_folha_ponto')
 def rel_folha_ponto():
+    Inserir_TbLog("TbPonto", "Relatório de Ponto", dsIp, login_usuario)
     return render_template("rel_ponto.html")
 loads = []
 
