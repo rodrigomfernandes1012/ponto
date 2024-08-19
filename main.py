@@ -359,7 +359,14 @@ def format_timedelta(td):
     minutes = remainder // 60  # Get the minutes from the remainder
     return f"{hours:02}:{minutes:02}"  # Format as HH:mm
 
-
+def Inserir_TbLog(dsTbAcesso, dsAcao, dsLogin):
+    conexao = conecta_bd()
+    cursor = conexao.cursor(dictionary=True)
+    comando = f'insert into DbIntelliMetrics.TbLog (dsTbAcesso, dsAcao, dsLogin) values ("{dsTbAcesso}", "{dsAcao}", "{dsLogin}")'
+    cursor.execute(comando)
+    conexao.commit()
+    cursor.close()
+    conexao.close()
 
 
 
@@ -391,8 +398,10 @@ def login():
     password = request.form['password']
     if username in users and users[username] == password:
         return render_template('home.html')
+        Inserir_TbLog("TbLogin", "ACESSO PERMITIDO", username)
     else:
         return render_template('login.html', message='Usuário ou senha inválidos!')
+        Inserir_TbLog("TbLogin", "ACESSO INVÁLIDO", username)
 
 
 @app.route('/home1')
