@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dados do Banco</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Dados do Banco de Dados</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nota Fiscal</th>
+                    <th>Ordem de Recebimento</th>
+                    <th>Código</th>
+                    <th>Descrição</th>
+                    <th>Quantidade NF</th>
+                    <th>SO</th>
+                    <th>Linha</th>
+                    <th>Quantidade de Caixas</th>
+                    <th>Quantidade Recebida (Peças)</th>
+                    <th>Número de Série</th>
+                    <th>Peso</th>
+                    <th>Dimensões</th>
+                    <th>Localização</th>
+                    <th>Observação</th>
+                    <th>SO + Linha</th>
+                    <th>Tipo de Armazenagem</th>
+                    <th>Nome da Planilha</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dado in dados %}
+                <tr>
+                    <td>{{ dado.dsNF }}</td>
+
+                    <td>{{ dado.dsCodigo }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

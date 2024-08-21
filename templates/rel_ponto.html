@@ -1,10 +1,7 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Horário de Funcionários</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+{% extends 'base.html' %}
+{% block head %}
+<div class="container">
+
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -25,7 +22,7 @@
 
         table {
             width: 80%;
-            max-width: 1200px;
+            max-width: 1600px;
             border-collapse: collapse;
             margin-bottom: 20px;
             border-radius: 8px;
@@ -57,9 +54,21 @@
             font-size: 16px;
         }
 
-        input[type="text"].filter-input {
-            font-weight: bold;
-            margin-bottom: 10px;
+        select {
+            width: calc(100% - 25px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        textarea {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            resize: none;
         }
 
         button {
@@ -72,6 +81,7 @@
             cursor: pointer;
             transition: background-color 0.3s;
             margin-top: 10px;
+            margin-bottom: 10px; /* Espaçamento adicional entre os botões */
         }
 
         button:hover {
@@ -83,25 +93,28 @@
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
         }
     </style>
-</head>
-<body>
+    <!-- Adiciona a biblioteca necessária para exportação para Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+{% endblock %}
 
-    <h1>Registro de Horário de Funcionários.</h1>
+
+{% block body %}
+    Registro de Horário de Funcionários
+
+
     <table>
         <thead>
             <tr>
                 <th>ID</th>
                 <th>Funcionário</th>
                 <th>Data</th>
-                <th>Registro</th>
-
+                <th>Hora</th>
             </tr>
             <tr>
-                <th><input type="text" class="filter-input" id="filterId" ></th>
-                <th><input type="text" class="filter-input" id="filterFuncionario" ></th>
+                <th><input type="text" class="filter-input" id="filterId"></th>
+                <th><input type="text" class="filter-input" id="filterFuncionario"></th>
                 <th><input type="text" class="filter-input" id="filterData"></th>
                 <th><input type="text" class="filter-input" id="filterEntrada"></th>
-
             </tr>
         </thead>
         <tbody id="employee-table-body">
@@ -109,22 +122,14 @@
         </tbody>
     </table>
     <button id="save-button">Salvar</button>
+    <button id="export-excel">Exportar Excel</button>
 
     <script>
-       function juntarDataHora(data, hora) {
-           const [dia, mes, ano] = data.split('/');
-           const dataHoraStr = `${ano}-${mes}-${dia} ${hora}:00`;
-           const dataHora = new Date(dataHoraStr);
-           return dataHora;
-       }
-
-        function formatarDataAmericana(dataHora) {
-            const ano = dataHora.getFullYear();
-            const mes = String(dataHora.getMonth() + 1).padStart(2, '0');
-            const dia = String(dataHora.getDate()).padStart(2, '0');
-            const horas = String(dataHora.getHours()).padStart(2, '0');
-            const minutos = String(dataHora.getMinutes()).padStart(2, '0');
-            return `${ano}-${mes}-${dia} ${horas}:${minutos}:00`;
+        function juntarDataHora(data, hora) {
+            const [dia, mes, ano] = data.split('/');
+            const dataHoraStr = `${ano}-${mes}-${dia} ${hora}:00`;
+            const dataHora = new Date(dataHoraStr);
+            return dataHora;
         }
 
         async function fetchData() {
@@ -140,11 +145,44 @@
                     <td>${data[key].dsCardName}</td>
                     <td>${data[key].dsData}</td>
                     <td><input type="time" value="${data[key].dsRegistro01}"></td>
-
                 `;
                 tableBody.appendChild(row);
             }
         }
+
+        // Função para filtrar os dados da tabela
+        function filterTable() {
+            const filterId = document.getElementById('filterId').value.toLowerCase();
+            const filterFuncionario = document.getElementById('filterFuncionario').value.toLowerCase();
+            const filterData = document.getElementById('filterData').value.toLowerCase();
+            const filterEntrada = document.getElementById('filterEntrada').value.toLowerCase();
+
+            const rows = document.querySelectorAll('#employee-table-body tr');
+
+            rows.forEach(row => {
+                const id = row.cells[0].textContent.toLowerCase();
+                const funcionario = row.cells[1].textContent.toLowerCase();
+                const data = row.cells[2].textContent.toLowerCase();
+                const entrada = row.querySelector('input[type="time"]').value.toLowerCase();
+
+                const matchesId = id.includes(filterId);
+                const matchesFuncionario = funcionario.includes(filterFuncionario);
+                const matchesData = data.includes(filterData);
+                const matchesEntrada = entrada.includes(filterEntrada);
+
+                // Mostra ou esconde a linha com base nos filtros
+                if (matchesId && matchesFuncionario && matchesData && matchesEntrada) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // Adiciona ouvintes de eventos para os campos de filtro
+        document.querySelectorAll('.filter-input').forEach(input => {
+            input.addEventListener('input', filterTable);
+        });
 
         document.getElementById('save-button').addEventListener('click', async function() {
             const employeeData = [];
@@ -154,16 +192,14 @@
                 const dsData = row.cells[2].textContent;
                 const entrada = row.querySelector('input[type="time"]').value;
 
-
                 employeeData.push({
                     cdPonto: idponto,
                     cdAcessoIntelbras: null,
                     dsCardname: employeeName,
                     dsData: dsData,
                     dsRegistro01: juntarDataHora(dsData, entrada),
-                    dsRegistro02: saida,
-                    dsRegistro03: entradaa,
-                    dsRegistro04: saidaf,
+                    tipoRegistro: null,  // Removido, pois só exportaremos esses dados
+                    observacao: null
                 });
             });
 
@@ -184,48 +220,55 @@
             }
         });
 
-        function filterTable() {
-            const idFilter = document.getElementById('filterId').value.toUpperCase();
-            const funcionarioFilter = document.getElementById('filterFuncionario').value.toUpperCase();
-            const dataFilter = document.getElementById('filterData').value.toUpperCase();
-            const entradaFilter = document.getElementById('filterEntrada').value.toUpperCase();
+        // Função para exportar para Excel
+        document.getElementById('export-excel').addEventListener('click', () => {
+            const tableBody = document.getElementById('employee-table-body');
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet([]);
 
+            // Define os cabeçalhos
+            const headers = [
+                { ID: "ID", Funcionário: "Funcionário",Data: "Data", Hora: "Hora"  }
 
-            const table = document.getElementById('employee-table-body');
-            const tr = table.getElementsByTagName('tr');
+            ];
 
-            for (let i = 0; i < tr.length; i++) {
-                let td, txtValue;
-                const currentRow = tr[i];
-                const cells = currentRow.getElementsByTagName('td');
-                let shouldDisplay = true;
+            // Adiciona cabeçalhos à planilha na linha 1
+            XLSX.utils.sheet_add_json(ws, headers, { skipHeader: true, origin: "A1" });
 
-                // Check each cell against their respective filter
-                const filters = [idFilter, funcionarioFilter, dataFilter, entradaFilter];
-                for (let j = 0; j < filters.length; j++) {
-                    if (filters[j]) {
-                        td = cells[j];
-                        if (td) {
-                            txtValue = td.textContent || td.innerText;
-                            if (txtValue.toUpperCase().indexOf(filters[j]) === -1) {
-                                shouldDisplay = false;
-                                break;
-                            }
-                        }
-                    }
-                }
+            // Adiciona as linhas de dados
+            tableBody.querySelectorAll('tr').forEach(row => {
+                const id = row.cells[0].textContent;
+                const funcionario = row.cells[1].textContent;
+                const data = row.cells[2].textContent;
+                const hora = row.querySelector('input[type="time"]').value;
 
-                currentRow.style.display = shouldDisplay ? '' : 'none';
-            }
-        }
+                // Cria um objeto de dados
+                const rowData = {
+                    ID: id,
+                    Funcionário: funcionario,
+                    Data: data,
+                    Hora: hora
+                };
 
-        // Adiciona eventos de escuta a cada campo de filtragem
-        document.querySelectorAll('.filter-input').forEach(input => {
-            input.addEventListener('keyup', filterTable);
+                // Adiciona os dados ao Excel
+                XLSX.utils.sheet_add_json(ws, [rowData], { skipHeader: true, origin: -1 });
+            });
+
+            // Ajusta o tamanho das colunas
+            const colWidth = [
+                { wpx: 30 },  // ID
+                { wpx: 250 }, // Funcionário
+                { wpx: 70 },  // Data
+                { wpx: 50 }   // Hora
+            ];
+            ws['!cols'] = colWidth;
+
+            XLSX.utils.book_append_sheet(wb, ws, "Registro de Horário");
+            XLSX.writeFile(wb, "registro_horario.xlsx");
         });
 
         // Carregar dados ao iniciar
         fetchData();
     </script>
-</body>
-</html>
+</div>
+{% endblock %}
