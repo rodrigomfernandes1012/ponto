@@ -54,6 +54,7 @@ class Usuario(database.Model):
 class Funcionario(database.Model):
     cdFuncionario = database.Column(database.Integer, primary_key=False)
     dsNomeEmpregado = database.Column(database.String, nullable=False)
+    dsCpf = database.Column(database.String, nullable=False)
     dsEntrada = database.Column(database.DateTime, nullable=False)
     dsSaida = database.Column(database.DateTime, nullable=False)
     cdPerfil = database.Column(database.Integer,  nullable=False)
