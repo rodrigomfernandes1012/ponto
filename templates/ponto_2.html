@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% block head %}
+<div class="container">
+
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #4a4a4a;
+        }
+
+        table {
+            width: 80%;
+            max-width: 1200px;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            color: #555;
+            font-weight: 500;
+        }
+
+        td {
+            background-color: #fff;
+        }
+
+        .funcionario-header {
+            background-color: #e9ecef;
+            font-weight: bold;
+            text-align: left;
+            padding: 10px;
+        }
+
+        /* Adicione suas regras CSS aqui */
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #28a745;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        button:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <h1>Registro de Horário de Funcionários</h1>
+    <div id="employee-table-container">
+        <!-- Os dados serão preenchidos aqui -->
+    </div>
+    <button id="save-button">Salvar</button>
+
+    <script>
+        async function fetchData() {
+            const response = await fetch('/data');
+            const data = await response.json();
+            const container = document.getElementById('employee-table-container');
+            container.innerHTML = '';
+
+            const groupedData = data.reduce((acc, record) => {
+                if (!acc[record.dsCardName]) {
+                    acc[record.dsCardName] = []; // Inicializa se o funcionário ainda não existe no agrupamento
+                }
+                acc[record.dsCardName].push(record);
+                return acc;
+            }, {});
+
+            // Itera sobre os funcionários agrupados
+            for (const [employeeName, records] of Object.entries(groupedData)) {
+                const employeeHeader = document.createElement('div');
+                employeeHeader.className = 'funcionario-header';
+                employeeHeader.textContent = employeeName;
+
+                const table = document.createElement('table');
+                const thead = document.createElement('thead');
+                thead.innerHTML = `
+                    <tr>
+                        <th>ID</th>
+                        <th>Data</th>
+                        <th>Registro</th>
+                    </tr>
+                    <tr>
+                        <th><input type="text" class="filter-input" placeholder="Filtrar..." /></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                `;
+                table.appendChild(thead);
+
+                const tbody = document.createElement('tbody');
+                records.forEach(record => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${record.cdPonto}</td>
+                        <td>${record.dsData}</td>
+                        <td><input type="time" value="${record.dsRegistro01}"></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                table.appendChild(tbody);
+                container.appendChild(employeeHeader);
+                container.appendChild(table);
+            }
+
+            // Atualizar a filtragem
+            updateFilter();
+        }
+
+        function updateFilter() {
+            const filterInputs = document.querySelectorAll('.filter-input');
+            filterInputs.forEach(input => {
+                input.addEventListener('keyup', filterTable);
+            });
+        }
+
+        function filterTable() {
+            const input = this.value.toLowerCase();
+            const table = this.closest('table');
+            const rows = table.querySelectorAll('tbody tr');
+
+            rows.forEach(row => {
+                const cells = row.getElementsByTagName('td');
+                const shouldDisplay = [...cells].some(cell => cell.innerText.toLowerCase().includes(input));
+                row.style.display = shouldDisplay ? '' : 'none';
+            });
+        }
+
+        document.getElementById('save-button').addEventListener('click', async function() {
+            // Implementar a lógica de coleta e salvamento de dados
+            alert('Salvar funcionalidade ainda não implementada!');
+        });
+
+        // Carregar dados ao iniciar
+        fetchData();
+    </script>
+</div>
+{% endblock %}

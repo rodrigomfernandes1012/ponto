@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload de Planilha Excel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Upload de Planilha Excel</h1>
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" accept=".xlsx" required>
+            <button type="submit">Enviar</button>
+        </form>
+
+        <h2>Dados do Endpoint</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>dsNF</th>
+                    <th>dsSoLinha</th>
+                </tr>
+            </thead>
+            <tbody>
+    {% for item in dados %}
+    <tr>
+        <td>{{ item.dsNF }}</td>
+        <td>{{ item.dsSoLinha }}</td>
+    </tr>
+    {% endfor %}
+</tbody>
+        </table>
+    </div>
+</body>
+</html>
