@@ -5,7 +5,6 @@ import os
 import requests
 from datetime import datetime
 import json
-import qrcode
 
 
 token = "8c4EF9vXi8TZe6581e0af85c25"
@@ -213,17 +212,6 @@ users = {
     "usuario": "senha123", "rodrigo@taxidigital.net": "101275", "yham.miranda@predilarsolucoes.com.br": "1608@2024", "isabel@predilarsolucoes.com.br": "1608@2024", "maria.silva@predilarsolucoes.com.br": "2308@2024"
 }
 
-def cria_qr(dsCpf):
-    print("qr")
-    valor =str(dsCpf)
-    vtipo = '.png'
-    imagem = qrcode.make(valor)
-    imagem.save(valor + vtipo)
-
-
-
-
-
 login_usuario = None
 dsIp = None
 @app.route('/')
@@ -312,7 +300,6 @@ def cadastro_funcionarios():
                 flash(f'Funcionario adicionado {form_funcionario.dsNomeEmpregado.data}', 'alert-success')
             if 'botao_submit_alterar' in request.form:
                 print(nrCodEmpregado, dsNomeEmpregado)
-                cria_qr(dsCpf)
                 Alterar_TbFuncionario(nrCodEmpregado, dsNomeEmpregado, dsCpf, dsEntrada, dsSaida, cdPerfil, dsFuncao, dsEmpresa,  dsEscala, nrCargaHoraria, nrCargaHorariaMes)
             if 'botao_submit_excluir' in request.form:
                 print(nrCodEmpregado, dsNomeEmpregado)
@@ -386,7 +373,7 @@ def data():
             #ponto_json = {"cdPonto": cdPonto,}
             Horas_Array.append({"cdPonto": dado['cdPonto']},)
             Horas_Array.append({"dsRegistro01": dado['dsRegistro01']})
-            #print(Horas_Array)
+            print(Horas_Array)
 
             Horas_Array = []
 
