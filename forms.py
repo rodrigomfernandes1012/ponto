@@ -92,6 +92,8 @@ class FuncionarioForm(FlaskForm):
     nrCargaHoraria  = StringField('Carga Horária Semana', validators=[DataRequired()])
     nrCargaHorariaMes  = StringField('Carga Horária Mês', validators=[DataRequired()])
     #botao_submit_cadastrar = SubmitField('Salvar')
+    dsCelular = StringField('Celular')
+    dsEmail = StringField('Email')
     botao_submit_importar = SubmitField('Importar')
     botao_submit_alterar = SubmitField('Salvar')
     botao_submit_excluir = SubmitField('Excluir')

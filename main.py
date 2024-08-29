@@ -6,6 +6,7 @@ import requests
 from datetime import datetime
 import json
 import qrcode
+import pybase64
 
 
 token = "8c4EF9vXi8TZe6581e0af85c25"
@@ -115,7 +116,7 @@ def pesquisa_usuarios():
 def pesquisa_funcionarios():
   conexao = conecta_bd()
   cursor = conexao.cursor(dictionary=True)
-  comando = f'SELECT nrCodEmpregado as cdFuncionario, dsNomeEmpregado, dsCpf, dsEntrada, dsSaida, dsFuncao, dsEmpresa,   dsEscala, nrCargaHoraria, nrCargaHorariaMes, cdPerfil FROM DbIntelliMetrics.TbFuncionario;'
+  comando = f'SELECT nrCodEmpregado as cdFuncionario, dsNomeEmpregado, dsCpf,  dsCelular, dsEmail,  dsEntrada, dsSaida, dsFuncao, dsEmpresa,   dsEscala, nrCargaHoraria, nrCargaHorariaMes, cdPerfil FROM DbIntelliMetrics.TbFuncionario;'
   cursor.execute(comando)
   selecao = cursor.fetchall() # ler o banco de dados
   cursor.close()
@@ -165,19 +166,19 @@ def pesquisa_status():
   conexao.close()
   return selecao
 
-def Inserir_TbFuncionario(nrCodEmpregado, dsNomeEmpregado, dsEntrada, dsSaida, cdPerfil, dsFuncao, dsEmpresa, dsEscala, nrCargaHoraria, nrCargaHorariaMes):
+def Inserir_TbFuncionario(nrCodEmpregado, dsNomeEmpregado, dsEntrada, dsSaida, cdPerfil, dsFuncao, dsEmpresa, dsEscala, nrCargaHoraria, nrCargaHorariaMes, dsCelular, dsEmail):
     conexao = conecta_bd()
     cursor = conexao.cursor(dictionary=True)
-    comando = f'insert into DbIntelliMetrics.TbFuncionario (nrCodEmpregado, dsNomeEmpregado, dsEntrada, dsSaida, cdPerfil, dsFuncao, dsEmpresa, dsEscala, nrCargaHoraria, nrCargaHorariaMes) values ("{nrCodEmpregado}", "{dsNomeEmpregado}", "{dsEntrada}", "{dsSaida}", "{cdPerfil}", "{dsFuncao}", "{dsEmpresa}", "{dsEscala}", "{nrCargaHoraria}", "{nrCargaHorariaMes}")'
+    comando = f'insert into DbIntelliMetrics.TbFuncionario (nrCodEmpregado, dsNomeEmpregado, dsEntrada, dsSaida, cdPerfil, dsFuncao, dsEmpresa, dsEscala, nrCargaHoraria, nrCargaHorariaMes, dsCelular, dsEmail) values ("{nrCodEmpregado}", "{dsNomeEmpregado}", "{dsEntrada}", "{dsSaida}", "{cdPerfil}", "{dsFuncao}", "{dsEmpresa}", "{dsEscala}", "{nrCargaHoraria}", "{nrCargaHorariaMes}", "{dsCelular}", "{dsEmail}")'
     cursor.execute(comando)
     conexao.commit()
     cursor.close()
     conexao.close()
 
-def Alterar_TbFuncionario(nrCodEmpregado, dsNomeEmpregado, dsCpf, dsEntrada, dsSaida, cdPerfil, dsFuncao, dsEmpresa, dsEscala, nrCargaHoraria, nrCargaHorariaMes):
+def Alterar_TbFuncionario(nrCodEmpregado, dsNomeEmpregado, dsCpf, dsEmail, dsCelular, dsEntrada, dsSaida, cdPerfil, dsFuncao, dsEmpresa, dsEscala, nrCargaHoraria, nrCargaHorariaMes):
     conexao = conecta_bd()
     cursor = conexao.cursor()
-    comando = f"update  DbIntelliMetrics.TbFuncionario set dsNomeEmpregado = '{dsNomeEmpregado}', dsCpf = '{dsCpf}', dsEntrada = '{dsEntrada}', dsSaida = '{dsSaida}', cdPerfil = '{cdPerfil}', dsFuncao = '{dsFuncao}', dsEmpresa = '{dsEmpresa}', dsEscala = '{dsEscala}', nrCargaHoraria = '{nrCargaHoraria}', nrCargaHorariaMes = '{nrCargaHorariaMes}' where nrCodEmpregado = '{nrCodEmpregado}'"
+    comando = f"update  DbIntelliMetrics.TbFuncionario set dsNomeEmpregado = '{dsNomeEmpregado}', dsCpf = '{dsCpf}', dsEmail = '{dsEmail}', dsCelular = '{dsCelular}' , dsEntrada = '{dsEntrada}', dsSaida = '{dsSaida}', cdPerfil = '{cdPerfil}', dsFuncao = '{dsFuncao}', dsEmpresa = '{dsEmpresa}', dsEscala = '{dsEscala}', nrCargaHoraria = '{nrCargaHoraria}', nrCargaHorariaMes = '{nrCargaHorariaMes}' where nrCodEmpregado = '{nrCodEmpregado}'"
     cursor.execute(comando)
     conexao.commit()
     cursor.close()
@@ -225,11 +226,38 @@ users = {
 }
 
 def cria_qr(dsCpf):
-    print("qr")
+
     valor =str(dsCpf)
     vtipo = '.png'
     imagem = qrcode.make(valor)
-    imagem.save(valor + vtipo)
+    imagem.save("QrCode" + vtipo)
+
+def cria_base64(arquivo):
+    with open( arquivo, "rb") as img_file:
+        my_string = pybase64.b64encode(img_file.read())
+        img_cliente = (my_string.decode('utf-8'))
+        return img_cliente
+
+
+def EnviaImgWhats(ArquivoBase64, dsCelular):
+    url = "https://app.whatsgw.com.br/api/WhatsGw/Send"
+    dicionario = {
+        "apikey": "fea4fe42-3cd6-4002-bd33-31badb5074dc",
+        "phone_number": "5511945480370",
+        "check_status": "1",
+        "message_custom_id": "Start",
+        "message_type": "image",
+        "message_body_mimetype": "image/jpeg",
+        "message_body_filename": "QrCode.png",
+        "message_caption": "Use este QR para registrar o seu ponto\nObrigado\n*Predilar*", }
+    dicionario["message_body"] = ArquivoBase64
+    dicionario["contact_phone_number"] = dsCelular
+    payload = json.dumps(dicionario)
+    headers = {'Content-Type': 'application/json'}
+    response = requests.request("POST", url, headers=headers, data=payload)
+    return response.text
+
+
 
 
 
@@ -239,7 +267,30 @@ login_usuario = None
 dsIp = None
 @app.route('/')
 def home():
-    return render_template('login.html', message='')
+    return render_template('home.html', message='')
+
+@app.route('/enviawhats', methods=['POST'])
+def enviawhats():
+    data = request.get_json()
+    dsCpf = data.get('cpf')
+    dsCelular = data.get('celular')
+    print(dsCelular)
+    # Lógica para enviar QR via WhatsApp
+    # Suponhamos que a função abaixo faz isso:
+    try:
+        print(dsCpf)
+        cria_qr(dsCpf)
+        ArquivoBase64 = cria_base64("QrCode.png")
+        EnviaImgWhats(ArquivoBase64, dsCelular)
+        print(ArquivoBase64)
+        return jsonify(success=True)
+    except Exception as e:
+        print(f"Erro ao enviar QR: {e}")
+        return jsonify(success=False), 500
+
+
+
+
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -308,6 +359,8 @@ def cadastro_funcionarios():
             nrCodEmpregado = form_funcionario.cdFuncionario.data
             dsNomeEmpregado = form_funcionario.dsNomeEmpregado.data
             dsCpf = form_funcionario.dsCpf.data
+            dsEmail = form_funcionario.dsEmail.data
+            dsCelular = form_funcionario.dsCelular.data
             dsEntrada = form_funcionario.dsEntrada.data
             dsSaida = form_funcionario.dsSaida.data
             cdPerfil = form_funcionario.cdPerfil.data
@@ -317,14 +370,14 @@ def cadastro_funcionarios():
             nrCargaHoraria = form_funcionario.nrCargaHoraria.data
             nrCargaHorariaMes = form_funcionario.nrCargaHorariaMes.data
             if 'botao_submit_cadastrar' in request.form:
-                Inserir_TbFuncionario(nrCodEmpregado, dsNomeEmpregado, dsCpf, dsEntrada, dsSaida, cdPerfil, dsFuncao, dsEmpresa, dsEscala, nrCargaHoraria, nrCargaHorariaMes)
+                Inserir_TbFuncionario(nrCodEmpregado, dsNomeEmpregado, dsCpf, dsEmail, dsCelular, dsEntrada, dsSaida, cdPerfil, dsFuncao, dsEmpresa, dsEscala, nrCargaHoraria, nrCargaHorariaMes)
                 print(nrCodEmpregado, dsNomeEmpregado, dsEntrada, dsSaida)
                 #return redirect(url_for('cadastro_funcionarios'))  # Redireciona para a própria página ou outra após o cadastro
                 flash(f'Funcionario adicionado {form_funcionario.dsNomeEmpregado.data}', 'alert-success')
             if 'botao_submit_alterar' in request.form:
                 print(nrCodEmpregado, dsNomeEmpregado)
                 cria_qr(dsCpf)
-                Alterar_TbFuncionario(nrCodEmpregado, dsNomeEmpregado, dsCpf, dsEntrada, dsSaida, cdPerfil, dsFuncao, dsEmpresa,  dsEscala, nrCargaHoraria, nrCargaHorariaMes)
+                Alterar_TbFuncionario(nrCodEmpregado, dsNomeEmpregado, dsCpf, dsEmail, dsCelular, dsEntrada, dsSaida, cdPerfil, dsFuncao, dsEmpresa,  dsEscala, nrCargaHoraria, nrCargaHorariaMes)
             if 'botao_submit_excluir' in request.form:
                 print(nrCodEmpregado, dsNomeEmpregado)
                 Excluir_TbFuncionario(dsCpf)
