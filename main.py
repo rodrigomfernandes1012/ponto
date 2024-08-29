@@ -5,6 +5,7 @@ import os
 import requests
 from datetime import datetime
 import json
+import qrcode
 
 
 token = "8c4EF9vXi8TZe6581e0af85c25"
@@ -17,70 +18,88 @@ def conecta_bd():
   database='DbIntelliMetrics')
   return conexao
 
-
-
-
-def ponto():
-    url = "https://replit.taxidigital.net/Ponto"
-    payload = {}
-    headers = {}
-    response = requests.request("GET", url, headers=headers, data=payload)
-    selecao = json.loads(response.text)
-
-    dados_dicionario = {}
-
-    for registro in selecao:
-        nome = registro['dsCardName']
-        dados_dicionario[nome] = []
-        dados_dicionario[nome] = [data]
-        dados_dicionario[nome].append(data)
-        return selecao
-
-def get_ponto():
-  conexao = conecta_bd()
-  cursor = conexao.cursor(dictionary=True)
-  comando = f'SELECT * FROM DbIntelliMetrics.TbAcessoIntelBras where dsStatus = 1 and dsUtc >= 1722502193 ;'
-  cursor.execute(comando)
-  selecao = cursor.fetchall() # ler o banco de dados
-  dados_dicionario = {}
-
-  for registro in selecao:
-      nome = registro['dsCardName']
-
-      datacompleta = int(registro['dsUtc'])
-      data = (datetime.utcfromtimestamp(datacompleta).strftime('%d-%m-%Y'))
-      dados_dicionario[nome] = []
-      dados_dicionario[nome] = [data]
-      dados_dicionario[nome].append(data)
-  cursor.close()
-  conexao.close()
-  return selecao
-
-def getponto():
+def Selecionar_TbPonto():
     conexao = conecta_bd()
     cursor = conexao.cursor(dictionary=True)
-    comando = f'SELECT dsCardNo FROM DbIntelliMetrics.TbAcessoIntelBras where dsStatus = 1 and dsutc >=1722506000 group by dsCardNo, dsCardName order by dsCardname;'
+    comando = f"select cdPonto,  TRIM(dsCardName) as dsCardName,  DATE_FORMAT(STR_TO_DATE(dsRegistro01, '%Y-%m-%d %H:%i:%s'), '%d/%m/%Y') AS dsData, DATE_FORMAT(STR_TO_DATE(dsRegistro01, '%Y-%m-%d %H:%i:%s'), '%Y-%m-%d %H:%i') AS dsRegistro00,  DATE_FORMAT(STR_TO_DATE(dsRegistro01, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro01, dsTipoRegistro, dsObservacao  from DbIntelliMetrics.TbPonto where dsTipoRegistro <> 'Remover' order by dsCardName asc, dsRegistro00 asc ;"
+    print(comando)
     cursor.execute(comando)
-    funcionarios = cursor.fetchall()
+    resultado = cursor.fetchall()
     cursor.close()
     conexao.close()
-    # Array para armazenar os resultados
-    funcionarios_json = []
+    return resultado
 
-    for funcionario in funcionarios:
-        (
-            dsCardNo,
-        ) = funcionario
-        dsCardNo = (funcionario['dsCardNo'])
-        funcionarios_json.append(funcionario)
-        conexao = conecta_bd()
-        cursor = conexao.cursor(dictionary=True)
-        comando = f'SELECT dsUtc FROM DbIntelliMetrics.TbAcessoIntelBras where dsStatus = 1 and dsutc >=1722506000  and dsCardNo = {dsCardNo};'
-        cursor.execute(comando)
-        datas = cursor.fetchall()
-        cursor.close()
-        conexao.close()
 
+#def ponto():
+#    url = "https://replit.taxidigital.net/Ponto"
+#    payload = {}
+#    headers = {}
+#    response = requests.request("GET", url, headers=headers, data=payload)
+#    selecao = json.loads(response.text)
+#    print(selecao)
+
+#    dados_dicionario = {}
+
+#    for registro in selecao:
+#        nome = registro['dsCardName']
+#        dados_dicionario[nome] = []
+#        dados_dicionario[nome] = [data]
+#        dados_dicionario[nome].append(data)
+#        return selecao
+
+#def get_ponto():
+#  conexao = conecta_bd()
+#  cursor = conexao.cursor(dictionary=True)
+#  comando = f'SELECT * FROM DbIntelliMetrics.TbAcessoIntelBras where dsStatus = 1 and dsUtc >= 1722502193 ;'
+#  cursor.execute(comando)
+#  selecao = cursor.fetchall() # ler o banco de dados
+#  dados_dicionario = {}
+
+#  for registro in selecao:
+#      nome = registro['dsCardName']
+
+#      datacompleta = int(registro['dsUtc'])
+#      data = (datetime.utcfromtimestamp(datacompleta).strftime('%d-%m-%Y'))
+#      dados_dicionario[nome] = []
+#      dados_dicionario[nome] = [data]
+#      dados_dicionario[nome].append(data)
+#  cursor.close()
+#  conexao.close()
+#  return selecao
+
+#def getponto():
+#    conexao = conecta_bd()
+#    cursor = conexao.cursor(dictionary=True)
+#    comando = f'SELECT dsCardNo FROM DbIntelliMetrics.TbAcessoIntelBras where dsStatus = 1 and dsutc >=1722506000 group by dsCardNo, dsCardName order by dsCardname;'
+#    cursor.execute(comando)
+#    funcionarios = cursor.fetchall()
+#    cursor.close()
+#    conexao.close()
+#    # Array para armazenar os resultados
+#    funcionarios_json = []
+
+#    for funcionario in funcionarios:
+#        (
+#            dsCardNo,
+#        ) = funcionario
+#        dsCardNo = (funcionario['dsCardNo'])
+#        funcionarios_json.append(funcionario)
+#        conexao = conecta_bd()
+#        cursor = conexao.cursor(dictionary=True)
+#        comando = f'SELECT dsUtc FROM DbIntelliMetrics.TbAcessoIntelBras where dsStatus = 1 and dsutc >=1722506000  and dsCardNo = {dsCardNo};'
+#        cursor.execute(comando)
+#        datas = cursor.fetchall()
+#        cursor.close()
+#        conexao.close()
+def Alterar_TbPonto(cdPonto, dsRegistro01,dsData, dsTipoRegistro, dsObservacao ):
+    conexao = conecta_bd()
+    cursor = conexao.cursor(dictionary=True)
+    comando = f"update DbIntelliMetrics.TbPonto set dsRegistro01 = STR_TO_DATE('{dsData} {dsRegistro01}', '%d/%m/%Y %H:%i'), dsTipoRegistro = '{dsTipoRegistro}', dsObservacao = '{dsObservacao}' where cdPonto = '{cdPonto}'"
+    print(comando)
+    cursor.execute(comando)
+    conexao.commit()
+    cursor.close()
+    conexao.close()
 
 
 def pesquisa_usuarios():
@@ -174,13 +193,6 @@ def Excluir_TbFuncionario(dsCpf):
     conexao.close()
 
 
-def format_timedelta(td):
-    """Format a timedelta object into a string of hours and minutes (HH:mm)."""
-    total_seconds = int(td.total_seconds())
-    hours, remainder = divmod(total_seconds, 3600)  # 3600 seconds in an hour
-    minutes = remainder // 60  # Get the minutes from the remainder
-    return f"{hours:02}:{minutes:02}"  # Format as HH:mm
-
 def Inserir_TbLog(dsTbAcesso, dsAcao, dsIp,  dsLogin):
     conexao = conecta_bd()
     cursor = conexao.cursor(dictionary=True)
@@ -212,11 +224,22 @@ users = {
     "usuario": "senha123", "rodrigo@taxidigital.net": "101275", "yham.miranda@predilarsolucoes.com.br": "1608@2024", "isabel@predilarsolucoes.com.br": "1608@2024", "maria.silva@predilarsolucoes.com.br": "2308@2024"
 }
 
+def cria_qr(dsCpf):
+    print("qr")
+    valor =str(dsCpf)
+    vtipo = '.png'
+    imagem = qrcode.make(valor)
+    imagem.save(valor + vtipo)
+
+
+
+
+
 login_usuario = None
 dsIp = None
 @app.route('/')
 def home():
-    return render_template('login.html', message='')
+    return render_template('home.html', message='')
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -300,6 +323,7 @@ def cadastro_funcionarios():
                 flash(f'Funcionario adicionado {form_funcionario.dsNomeEmpregado.data}', 'alert-success')
             if 'botao_submit_alterar' in request.form:
                 print(nrCodEmpregado, dsNomeEmpregado)
+                cria_qr(dsCpf)
                 Alterar_TbFuncionario(nrCodEmpregado, dsNomeEmpregado, dsCpf, dsEntrada, dsSaida, cdPerfil, dsFuncao, dsEmpresa,  dsEscala, nrCargaHoraria, nrCargaHorariaMes)
             if 'botao_submit_excluir' in request.form:
                 print(nrCodEmpregado, dsNomeEmpregado)
@@ -341,54 +365,100 @@ def converter_hora(hora):
         return "00:00"  # Retorna 00:00 se a hora for null
     return hora  # Se não for null, retorna a hora original
 
+def comparar_listas(dicionario_a, dicionario_b):
+    dicionario_diferencas = []
+
+    # Convertendo a lista de dicionários em um dicionário para acesso mais rápido
+    dict_a = {item['cdPonto']: item for item in dicionario_a}
+    dict_b = {item['cdPonto']: item for item in dicionario_b}
+
+    # Comparar os dicionários das duas listas
+    for cdPonto in dict_a:
+        if cdPonto in dict_b:
+            if dict_a[cdPonto]['dsRegistro01'] != dict_b[cdPonto]['dsRegistro01'] or dict_a[cdPonto]['dsTipoRegistro'] != dict_b[cdPonto]['dsTipoRegistro'] or dict_a[cdPonto]['dsObservacao'] != dict_b[cdPonto]['dsObservacao']:
+                dicionario_diferencas.append({
+                    'cdPonto': cdPonto,
+                    'dsRegistro01_A': dict_a[cdPonto]['dsRegistro01'],
+                    'dsRegistro01_B': dict_b[cdPonto]['dsRegistro01'],
+                    'dsData': dict_b[cdPonto]['dsData'],
+                    'dsTipoRegistro': dict_b[cdPonto]['dsTipoRegistro'],
+                    'dsObservacao': dict_b[cdPonto]['dsObservacao']
+                })
+
+    # Verificar se há registros em dict_b que não estão em dict_a
+    for cdPonto in dict_b:
+        if cdPonto not in dict_a:
+            dicionario_diferencas.append({
+                'cdPonto': cdPonto,
+                'dsRegistro01_A': None,  # Não existe em dicionario_a
+                'dsRegistro01_B': dict_b[cdPonto]['dsRegistro01'],
+                'dsData': dict_b[cdPonto]['dsData'],
+                'dsTipoRegistro': dict_b[cdPonto]['dsTipoRegistro'],
+                'dsObservacao': dict_b[cdPonto]['dsObservacao']
+            })
+
+    return dicionario_diferencas
+
+
+
+
+
+
 
 @app.route('/data', methods=['GET', 'POST', 'PUT'])
 def data():
-    dicionario = ponto()
-    people = dicionario
+    #dicionario = ponto()
+    dicionario = Selecionar_TbPonto()
+    #print(dicionario)
 
-    url = "https://replit.taxidigital.net/AlteraPonto"
+    dic01 = []
+    for dic1 in dicionario:
+        dic01.append ({'cdPonto': dic1['cdPonto'], 'dsRegistro01': dic1['dsRegistro01'], 'dsTipoRegistro': dic1['dsTipoRegistro'], 'dsObservacao': dic1['dsObservacao']})
+
+    #print(dic01)
+
+
 
     if request.method == 'POST':
 
         dados = request.get_json()
         payload = json.dumps(dados)
-        #print(dados)
 
+        #comparar_dicionarios(dicionario, dados)
+        #print("-----------------------------------------------------------------")
+        print(dados)
 
+        dic02 = []
         Horas_Array = []
         for dado in dados:
-            dsRegistro01 = dado
-            #data = str(dado['dsData'] +' ' + dado['dsRegistro01'])
-            dsData01 = dado['dsRegistro01']
-            #dsData02 = dado['dsData'] + ' ' + converter_hora(dado['dsRegistro02'])
-            #dsRegistro01 = dict(datetime.strptime(dsData01, "%d/%m/%Y %H:%M"))
-            #dsRegistro02 = datetime.strptime(dsData02, "%d/%m/%Y %H:%M")
-            #dsRegistro02 = datetime.strptime((dado['dsData'] + ' ' + dado['dsRegistro02']), "%d/%m/%Y %H:%M")
-            #dsRegistro03 = datetime.strptime((dado['dsData'] + ' ' + dado['dsRegistro03']), "%d/%m/%Y %H:%M")
-            #dsRegistro04 = datetime.strptime((dado['dsData'] + ' ' + dado['dsRegistro04']), "%d/%m/%Y %H:%M")
-            #print({"dsRegistro01": dsRegistro01})
-            #print(data2)
+            dic02.append({'cdPonto': dado['cdPonto'], 'dsRegistro01': dado['dsRegistro01'], 'dsData': dado['dsData'], 'dsTipoRegistro': dado['dsTipoRegistro'], 'dsObservacao': dado['dsObservacao']})
+            cdPonto = dado['cdPonto']
+            dsRegistro01 = dado['dsRegistro01']
+            dsData = dado['dsData']
+            dsTipoRegistro = dado['dsTipoRegistro']
+            dsObservacao = dado['dsObservacao']
+            #Alterar_TbPonto(cdPonto, dsRegistro01)
+        print(dic02)
 
-            #ponto_json = {"cdPonto": cdPonto,}
-            Horas_Array.append({"cdPonto": dado['cdPonto']},)
-            Horas_Array.append({"dsRegistro01": dado['dsRegistro01']})
-            print(Horas_Array)
+        # Comparar os dicionários
+        diferencas = comparar_listas(dic01, dic02)
 
-            Horas_Array = []
+        # Exibir as diferenças
+        print("Diferenças encontradas:")
+        for item in diferencas:
+            print(item)
+            print(item['cdPonto'])
+            print(item['dsRegistro01_B'])
+            Alterar_TbPonto(item['cdPonto'], item['dsRegistro01_B'],item['dsData'],item['dsTipoRegistro'],item['dsObservacao'])
 
+    return jsonify(dicionario)
 
-
-
-        headers = 'Content-Type : application/json'
-
-
-    return jsonify(people)
+    #print(dicionario_diferencas)
 
 
 
 def main():
-    port = int(os.environ.get("PORT", 80))
+    port = int(os.environ.get("PORT", 8081))
     app.run(host="192.168.15.200", port=port)
 
 
