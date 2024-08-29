@@ -267,7 +267,7 @@ login_usuario = None
 dsIp = None
 @app.route('/')
 def home():
-    return render_template('home.html', message='')
+    return render_template('login.html', message='')
 
 @app.route('/enviawhats', methods=['POST'])
 def enviawhats():
