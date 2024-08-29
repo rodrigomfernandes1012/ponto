@@ -21,6 +21,14 @@
                             {{ form_funcionario.dsCpf.label(class="form-control-label") }}
                             {{ form_funcionario.dsCpf(class="form-control") }}
                         </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form_funcionario.dsEmail.label(class="form-control-label") }}
+                            {{ form_funcionario.dsEmail(class="form-control") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form_funcionario.dsCelular.label(class="form-control-label") }}
+                            {{ form_funcionario.dsCelular(class="form-control") }}
+                        </div>
                         <div class="col-md-3 mb-3">
                             {{ form_funcionario.dsEntrada.label(class="form-control-label") }}
                             <input type="time" name="dsEntrada" class="form-control" required>
@@ -131,6 +139,7 @@
                             <input type="file" id="fileUploadTxt" accept=".txt" style="display: none;" onchange="handleFileUpload(this);">
                             <button type="button" class="btn btn-primary mt-2" onclick="document.getElementById('fileUploadImage').click();">Adicionar Foto</button>
                             <input type="file" id="fileUploadImage" accept="image/*" style="display: none;" onchange="displayImage(this);">
+                            <button type="button" class="btn btn-success mt-2" onclick="enviarQR()">Enviar QR</button>
 
                             {{ form_funcionario.botao_submit_alterar(class="btn btn-primary mt-2") }}
                             {{ form_funcionario.botao_submit_excluir(class="btn btn-danger mt-2", onclick="return confirmDelete();") }}
@@ -153,9 +162,11 @@
                 <table class="table table-bordered table-responsive table-bordered" id="myTable">
                     <thead>
                         <tr>
-                            <th align="left" width="50" bgcolor="#DAA520">ID</th>
-                            <th align="left" width="700" bgcolor="#DAA520">Nome</th>
+                            <th align="left" width="30" bgcolor="#DAA520">ID</th>
+                            <th align="left" width="500" bgcolor="#DAA520">Nome</th>
                             <th align="left" width="100" bgcolor="#DAA520">Cpf</th>
+                            <th align="left" width="100" bgcolor="#DAA520">Email</th>
+                            <th align="left" width="100" bgcolor="#DAA520">Celular</th>
                             <th align="left" width="100" bgcolor="#DAA520">Entrada</th>
                             <th align="left" width="100" bgcolor="#DAA520">Saída</th>
                             <th align="left" width="300" bgcolor="#DAA520">Função</th>
@@ -168,10 +179,12 @@
                     </thead>
                     <tbody id="myTableBody">
                         {% for funcionario in funcionarios %}
-                        <tr onclick="carregarDados(this, '{{ funcionario['cdFuncionario'] }}', '{{ funcionario['dsNomeEmpregado'] }}', '{{ funcionario['dsCpf'] }}', '{{ funcionario['dsEntrada'] }}', '{{ funcionario['dsSaida'] }}', '{{ funcionario['dsFuncao'] }}', '{{ funcionario['dsEmpresa'] }}', '{{ funcionario['dsEscala'] }}', '{{ funcionario['nrCargaHoraria'] }}', '{{ funcionario['nrCargaHorariaMes'] }}', '{{ funcionario['cdPerfil'] }}')" id="row-{{ funcionario['cdFuncionario'] }}">
+                        <tr onclick="carregarDados(this, '{{ funcionario['cdFuncionario'] }}', '{{ funcionario['dsNomeEmpregado'] }}', '{{ funcionario['dsCpf'] }}', '{{ funcionario['dsEmail'] }}', '{{ funcionario['dsCelular'] }}', '{{ funcionario['dsEntrada'] }}', '{{ funcionario['dsSaida'] }}', '{{ funcionario['dsFuncao'] }}', '{{ funcionario['dsEmpresa'] }}', '{{ funcionario['dsEscala'] }}', '{{ funcionario['nrCargaHoraria'] }}', '{{ funcionario['nrCargaHorariaMes'] }}', '{{ funcionario['cdPerfil'] }}')" id="row-{{ funcionario['cdFuncionario'] }}">
                             <td align="left" width="50">{{ funcionario['cdFuncionario'] }}</td>
                             <td align="left" width="300">{{ funcionario['dsNomeEmpregado'] }}</td>
                             <td align="left" width="100">{{ funcionario['dsCpf'] }}</td>
+                            <td align="left" width="100">{{ funcionario['dsEmail'] }}</td>
+                            <td align="left" width="100">{{ funcionario['dsCelular'] }}</td>
                             <td align="left" width="100">{{ funcionario['dsEntrada'] }}</td>
                             <td align="left" width="100">{{ funcionario['dsSaida'] }}</td>
                             <td align="left" width="100">{{ funcionario['dsFuncao'] }}</td>
@@ -190,6 +203,34 @@
     </div>
 
     <script>
+
+         function enviarQR() {
+        const cpf = document.querySelector('[name="dsCpf"]').value;
+        const celular = document.querySelector('[name="dsCelular"]').value;
+
+        fetch("{{ url_for('enviawhats') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+
+            },
+            body: JSON.stringify({ cpf: cpf, celular: celular })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('QR enviado com sucesso!');
+            } else {
+                alert('Falha ao enviar QR.');
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Um erro ocorreu ao tentar enviar o QR.');
+        });
+    }
+
+
         function confirmDelete() {
            return confirm("Deseja realmente excluir o Funcionário?");
         }
@@ -223,7 +264,7 @@
         });
 
         // Função para carregar os dados nas caixas de texto e destacar a linha
-        function carregarDados(row, cdFuncionario, dsNomeEmpregado, dsCpf, dsEntrada, dsSaida, dsFuncao, dsEmpresa, dsEscala, nrCargaHoraria, nrCargaHorariaMes, cdPerfil) {
+        function carregarDados(row, cdFuncionario, dsNomeEmpregado, dsCpf, dsEmail, dsCelular, dsEntrada, dsSaida, dsFuncao, dsEmpresa, dsEscala, nrCargaHoraria, nrCargaHorariaMes, cdPerfil) {
             // Destacar a linha selecionada
             var rows = document.querySelectorAll('#myTableBody tr');
             rows.forEach(function(r) {
@@ -235,6 +276,8 @@
             document.querySelector('[name="cdFuncionario"]').value = cdFuncionario;
             document.querySelector('[name="dsNomeEmpregado"]').value = dsNomeEmpregado;
             document.querySelector('[name="dsCpf"]').value = dsCpf;
+            document.querySelector('[name="dsEmail"]').value = dsEmail;
+            document.querySelector('[name="dsCelular"]').value = dsCelular;
             document.querySelector('[name="dsEntrada"]').value = dsEntrada;
             document.querySelector('[name="dsSaida"]').value = dsSaida;
             document.querySelector('[name="dsFuncao"]').value = dsFuncao;
