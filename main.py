@@ -31,6 +31,9 @@ def Selecionar_TbPonto():
     return resultado
 
 
+
+
+
 #def ponto():
 #    url = "https://replit.taxidigital.net/Ponto"
 #    payload = {}
@@ -205,6 +208,37 @@ def Inserir_TbLog(dsTbAcesso, dsAcao, dsIp,  dsLogin):
     username = dsLogin
     return username
 
+def Update_TbDadosPlanilha(dados):
+    dsEtiqueta =(dados.get('xEtiqueta'))
+    nrPeso  = (dados.get('nPeso'))
+    nrAlt = (dados.get('nAlt'))
+    nrLarg = (dados.get('nLarg'))
+    nrComp = (dados.get('nComp'))
+   # for dado in dados:
+   #     nrPeso = str(dado['nPeso'])
+   #     nrAlt = dado['nAlt']
+   #     nrLarg = dado['nLarg']
+   ##     nrComp = dado['nComp']
+    #    dsEtiqueta = dado['xEtiqueta']
+
+   # print(nrPeso)
+    #print(dsEtiqueta)
+
+    conexao = conecta_bd()
+    cursor = conexao.cursor(dictionary=True)
+    comando = f'update DbIntelliMetrics.TbDadosPlanilha set nrPeso = "{nrPeso}", dsDimensoes = concat("{nrAlt}"  " x "  "{nrComp}"  " x "  "{nrLarg}") where dsSO = "{dsEtiqueta}"'
+    print(comando)
+    cursor.execute(comando)
+    conexao.commit()
+    cursor.close()
+    conexao.close()
+    return "cadastrado com sucesso"
+
+
+
+
+
+
 def obter_ip_publico():
     # Verifica o cabeçalho X-Forwarded-For
     ip = request.headers.get('X-Forwarded-For')
@@ -267,7 +301,37 @@ login_usuario = None
 dsIp = None
 @app.route('/')
 def home():
-    return render_template('login.html', message='')
+    return render_template('home.html', message='')
+
+@app.route('/cubagem', methods=['GET'])
+def cubagem():
+    # Capturar os parâmetros da query string
+    xEtiqueta = request.args.get('xEtiqueta')
+    nPeso = request.args.get('nPeso')
+    nAlt = request.args.get('nAlt')
+    nLarg = request.args.get('nLarg')
+    nComp = request.args.get('nComp')
+    token = request.args.get('token')
+
+    # Validar se todos os parâmetros necessários estão presentes
+    if not all([xEtiqueta, nPeso, nAlt, nLarg, nComp, token]):
+        print('Erro ao obter')
+        return jsonify({"error": "Todos os parâmetros devem ser fornecidos."}), 400
+
+    # Montar o dicionário com os dados
+    dados_cubagem = {
+        "xEtiqueta": xEtiqueta,
+        "nPeso": float(nPeso),  # Convertendo para float
+        "nAlt": float(nAlt),    # Convertendo para float
+        "nLarg": float(nLarg),  # Convertendo para float
+        "nComp": float(nComp)   # Convertendo para float
+    }
+    print(dados_cubagem)
+    Update_TbDadosPlanilha(dados_cubagem)
+    # Retornar o dicionário como resposta JSON
+    return jsonify(dados_cubagem), 200
+
+
 
 @app.route('/enviawhats', methods=['POST'])
 def enviawhats():
@@ -511,7 +575,7 @@ def data():
 
 
 def main():
-    port = int(os.environ.get("PORT", 8081))
+    port = int(os.environ.get("PORT", 80))
     app.run(host="192.168.15.200", port=port)
 
 
