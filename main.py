@@ -279,7 +279,7 @@ def Update_TbDadosPlanilha(dados):
 
     conexao = conecta_bd()
     cursor = conexao.cursor(dictionary=True)
-    comando = f'update DbIntelliMetrics.TbDadosPlanilha set nrPeso = "{nrPeso}", dsDimensoes = concat("{nrAlt}"  " x "  "{nrComp}"  " x "  "{nrLarg}"), dtRegistro = "{dtRegistro}" where dsSO = "{dsEtiqueta}"'
+    comando = f'update DbIntelliMetrics.TbDadosPlanilha set nrPeso = "{nrPeso}", dsDimensoes = concat("{nrAlt}"  " x "  "{nrComp}"  " x "  "{nrLarg}"), dtRegistro = "{dtRegistro}" where dsSOlinha = "{dsEtiqueta}"'
     print(comando)
     cursor.execute(comando)
     conexao.commit()
