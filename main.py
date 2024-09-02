@@ -1,9 +1,8 @@
 from datetime import datetime
 from io import BytesIO
-
 from flask import Flask, jsonify,  render_template,  request, redirect, flash,  url_for, send_file
 import mysql.connector
-from forms import    FormCliente, FormDestinatario, FormUsuario, FuncionarioForm
+from forms import FormCliente, FormDestinatario, FormUsuario, FuncionarioForm
 import requests
 import qrcode
 import pybase64
@@ -12,6 +11,7 @@ from sqlalchemy import create_engine, text
 import mysql.connector
 import os
 import json
+from openpyxl import Workbook, load_workbook
 
 # Configurações do banco de dados
 DB_USER = 'admin'  # Substituir pelo seu usuário
