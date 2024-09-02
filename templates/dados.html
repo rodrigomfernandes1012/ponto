@@ -1,15 +1,93 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dados do Banco</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        function filterTable() {
+            let table = document.getElementById("dataTable");
+            let tr = table.getElementsByTagName("tr");
+            let filters = [];
+
+            for (let i = 0; i < table.rows[1].cells.length; i++) {
+                let input = document.getElementById("filter" + i);
+                filters.push(input.value.toLowerCase());
+            }
+
+            for (let i = 2; i < tr.length; i++) {
+                let tds = tr[i].getElementsByTagName("td");
+                let rowMatchesFilter = true;
+
+                for (let j = 0; j < tds.length; j++) {
+                    if (tds[j]) {
+                        let txtValue = tds[j].textContent || tds[j].innerText;
+                        if (filters[j] && !txtValue.toLowerCase().includes(filters[j])) {
+                            rowMatchesFilter = false;
+                        }
+                    }
+                }
+                tr[i].style.display = rowMatchesFilter ? "" : "none";
+            }
+        }
+
+        async function exportToExcel() {
+            let table = document.getElementById("dataTable");
+            let rows = Array.from(table.getElementsByTagName("tr")).slice(2); // Pulo o cabeçalho e a linha de filtros
+            let data = rows.map(tr => {
+                let cells = Array.from(tr.getElementsByTagName("td"));
+                return {
+                    dsNF: cells[0].innerText,
+                    dsOrdemRec: cells[1].innerText,
+                    dsCodigo: cells[2].innerText,
+                    dsDescricao: cells[3].innerText,
+                    nrQtde: cells[4].innerText,
+                    dsSO: cells[5].innerText,
+                    nrLinha: cells[6].innerText,
+                    nrQtdeCaixas: cells[7].innerText,
+                    nrQtdeRecPecas: cells[8].innerText,
+                    dsNumeroSerie: cells[9].innerText,
+                    nrPeso: cells[10].innerText,
+                    dsDimensoes: cells[11].innerText,
+                    dsLocalizacao: cells[12].innerText,
+                    dsObs: cells[13].innerText,
+                    dsSoLinha: cells[14].innerText,
+                    dsTipoArmazenagem: cells[15].innerText,
+                    dsNomePlanilha: cells[16].innerText,
+                    dtRegistro: cells[17].innerText,
+                    dsStatus: cells[18].innerText
+                };
+            });
+
+            const response = await fetch('/export', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ dados: data })
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'dados.xlsx'; // Nome do arquivo a ser baixado
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            } else {
+                alert('Erro ao exportar os dados');
+            }
+        }
+    </script>
 </head>
 <body>
     <div class="container">
-        <h1>Dados do Banco de Dados</h1>
-        <table>
+        <button onclick="exportToExcel();">Exportar para Excel</button>
+        <table class="data-table" id="dataTable">
             <thead>
                 <tr>
                     <th>Nota Fiscal</th>
@@ -29,13 +107,21 @@
                     <th>SO + Linha</th>
                     <th>Tipo de Armazenagem</th>
                     <th>Nome da Planilha</th>
+                    <th>Data Leitura</th>
+                    <th>Status</th>
+                </tr>
+                <tr>
+                    {% for i in range(19) %}
+                    <th>
+                        <input type="text" id="filter{{ i }}" onkeyup="filterTable()" placeholder="Filtrar...">
+                    </th>
+                    {% endfor %}
                 </tr>
             </thead>
             <tbody>
                 {% for dado in dados %}
                 <tr>
                     <td>{{ dado.dsNF }}</td>
-                    <td>{{ dado.dsCodigo }}</td>
                     <td>{{ dado.dsOrdemRec }}</td>
                     <td>{{ dado.dsCodigo }}</td>
                     <td>{{ dado.dsDescricao }}</td>
@@ -44,19 +130,16 @@
                     <td>{{ dado.nrLinha }}</td>
                     <td>{{ dado.nrQtdeCaixas }}</td>
                     <td>{{ dado.nrQtdeRecPecas }}</td>
-                    <td>{{  dado.nrPeso}}</td>
+                    <td>{{ dado.dsNumeroSerie }}</td>
+                    <td>{{ dado.nrPeso }}</td>
                     <td>{{ dado.dsDimensoes }}</td>
-                    <td>{{ dado.nrAltura }}</td>
-                    <td>{{ dado.nrLargura }}</td>
-                    <td>{{  dado.nrComprimento}}</td>
                     <td>{{ dado.dsLocalizacao }}</td>
                     <td>{{ dado.dsObs }}</td>
-                    <td>{{  dado.dsSoLinha}}</td>
+                    <td>{{ dado.dsSoLinha }}</td>
                     <td>{{ dado.dsTipoArmazenagem }}</td>
-                    <td>{{  dado.dsNomePlanilha}}</td>
-
-
-
+                    <td>{{ dado.dsNomePlanilha }}</td>
+                    <td>{{ dado.dtRegistro }}</td>
+                    <td>{{ dado.dsStatus }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
