@@ -51,3 +51,31 @@ button:hover {
     margin-top: 15px;
     color: red;
 }
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse; /* Para juntar bordas de células */
+}
+
+.data-table th, .data-table td {
+    border: 1px solid #ddd; /* Adiciona bordas a células */
+    padding: 10px;
+    text-align: left;
+}
+
+.data-table th {
+    background-color: #4CAF50; /* Cor do cabeçalho */
+    color: white;
+}
+
+.data-table tr:nth-child(even) {
+    background-color: #f2f2f2; /* Linhas pares devem ser brancas */
+}
+
+.data-table tr:nth-child(odd) {
+    background-color: #add8e6; /* Linhas ímpares devem ser azul claro */
+}
+
+.data-table tr:hover {
+    background-color: #ddd; /* Efeito de destaque quando o mouse passa sobre a linha */
+}

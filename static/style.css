@@ -1,0 +1,67 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 3200px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse; /* Para juntar bordas de células */
+    margin-top: 20px;
+}
+
+.data-table th, .data-table td {
+    border: 1px solid #ddd; /* Adiciona bordas a células */
+    padding: 10px;
+    text-align: left;
+}
+
+.data-table th {
+    background-color: #4c79af; /* Cor do cabeçalho */
+    color: white;
+    position: sticky; /* Fixa a linha do cabeçalho */
+    top: 0; /* Para o efeito sticky */
+    z-index: 1; /* Para que fique na frente de linhas */
+}
+
+.data-table tr:nth-child(even) {
+    background-color: #f2f2f2; /* Linhas pares em branco claro */
+}
+
+.data-table tr:nth-child(odd) {
+    background-color: #add8e6; /* Linhas ímpares em azul claro */
+}
+
+.data-table tr:hover {
+    background-color: #ddd; /* Efeito de destaque quando a linha é hovered */
+}
+
+.data-table input[type="text"] {
+    width: 100%;
+    padding: 5px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; /* Para incluir padding e bordas no total de largura */
+}
+
+.data-table input[type="text"]:focus {
+    border-color: #4c79af; /* Mudança de cor no foco */
+    outline: none; /* Remove o contorno padrão */
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); /* Sombra no foco */
+}
