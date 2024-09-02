@@ -1,12 +1,51 @@
-from flask import Flask, jsonify,  render_template,  request, redirect, flash,  url_for
+from datetime import datetime
+from io import BytesIO
+
+from flask import Flask, jsonify,  render_template,  request, redirect, flash,  url_for, send_file
 import mysql.connector
 from forms import    FormCliente, FormDestinatario, FormUsuario, FuncionarioForm
-import os
 import requests
-from datetime import datetime
-import json
 import qrcode
 import pybase64
+import pandas as pd
+from sqlalchemy import create_engine, text
+import mysql.connector
+import os
+import json
+
+# Configurações do banco de dados
+DB_USER = 'admin'  # Substituir pelo seu usuário
+DB_PASSWORD = 'IntelliMetr!c$'  # Substituir pela sua senha
+DB_HOST = 'dbintellimetrics.c3kc6gou2fhz.us-west-2.rds.amazonaws.com'  # ou o IP do seu servidor MySQL
+DB_PORT = '3306'  # Porta padrão do MySQL
+DB_NAME = 'DbIntelliMetrics'  # Nome do seu banco de dados
+TABLE_NAME = 'TbDadosPlanilha'  # Nome da tabela
+
+banco_url = f'mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+
+COLUMN_MAPPING = {
+    'NF': 'dsNF',
+    'Ordem Recebimento': 'dsOrdemRec',
+    'CÓDIGO': 'dsCodigo',
+    'DESCRIÇÃO': 'dsDescricao',
+    'QTD NF': 'nrQtde',
+    'SO': 'dsSO',
+    'LINHA': 'nrLinha',
+    'QUANTIDADE DE CAIXAS': 'nrQtdeCaixas',
+    'QTD RECEBIDA (PEÇAS)': 'nrQtdeRecPecas',
+    'NUMERO DE SERIE': 'dsNumeroSerie',
+    'PESO': 'nrPeso',
+    'DIMENSÕES': 'dsDimensoes',
+    'LOCALIZAÇÃO': 'dsLocalizacao',
+    'OBS OPERAÇÃO': 'dsObs',
+    'SO + LINHA': 'dsSoLinha',
+    'TIPO Armazenagem': 'dsTipoArmazenagem',
+    'Nome da Planilha': 'dsNomePlanilha'  # Adicionando o campo nome_da_planilha
+}
+
+
+
+
 
 
 token = "8c4EF9vXi8TZe6581e0af85c25"
@@ -104,6 +143,18 @@ def Alterar_TbPonto(cdPonto, dsRegistro01,dsData, dsTipoRegistro, dsObservacao )
     conexao.commit()
     cursor.close()
     conexao.close()
+
+def gravar_dados_no_banco(df):
+    # Cria a string de conexão com o banco de dados MySQL
+    banco_url = f'mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+
+    # Cria a conexão com o banco de dados
+    engine = create_engine(banco_url)
+
+    # Insere os dados na tabela, substituindo os dados existentes ou adicionando
+    df.to_sql(TABLE_NAME, con=engine, if_exists='append', index=False)
+
+
 
 
 def pesquisa_usuarios():
@@ -209,11 +260,13 @@ def Inserir_TbLog(dsTbAcesso, dsAcao, dsIp,  dsLogin):
     return username
 
 def Update_TbDadosPlanilha(dados):
+    agora = datetime.now()
     dsEtiqueta =(dados.get('xEtiqueta'))
     nrPeso  = (dados.get('nPeso'))
     nrAlt = (dados.get('nAlt'))
     nrLarg = (dados.get('nLarg'))
     nrComp = (dados.get('nComp'))
+    dtRegistro =  agora.strftime("%d/%m/%Y %H:%M")
    # for dado in dados:
    #     nrPeso = str(dado['nPeso'])
    #     nrAlt = dado['nAlt']
@@ -226,7 +279,7 @@ def Update_TbDadosPlanilha(dados):
 
     conexao = conecta_bd()
     cursor = conexao.cursor(dictionary=True)
-    comando = f'update DbIntelliMetrics.TbDadosPlanilha set nrPeso = "{nrPeso}", dsDimensoes = concat("{nrAlt}"  " x "  "{nrComp}"  " x "  "{nrLarg}") where dsSO = "{dsEtiqueta}"'
+    comando = f'update DbIntelliMetrics.TbDadosPlanilha set nrPeso = "{nrPeso}", dsDimensoes = concat("{nrAlt}"  " x "  "{nrComp}"  " x "  "{nrLarg}"), dtRegistro = "{dtRegistro}" where dsSO = "{dsEtiqueta}"'
     print(comando)
     cursor.execute(comando)
     conexao.commit()
@@ -256,7 +309,7 @@ app.secret_key = '5160e59712d22d50e708220336549982'  # Necessário para usar ses
 app.config['SECRET_KEY'] = '5160e59712d22d50e708220336549982'
 
 users = {
-    "usuario": "senha123", "rodrigo@taxidigital.net": "101275", "yham.miranda@predilarsolucoes.com.br": "1608@2024", "isabel@predilarsolucoes.com.br": "1608@2024", "maria.silva@predilarsolucoes.com.br": "2308@2024"
+    "Luiz": "02092024", "usuario": "senha123", "rodrigo@taxidigital.net": "101275", "yham.miranda@predilarsolucoes.com.br": "1608@2024", "isabel@predilarsolucoes.com.br": "1608@2024", "maria.silva@predilarsolucoes.com.br": "2308@2024"
 }
 
 def cria_qr(dsCpf):
@@ -291,6 +344,15 @@ def EnviaImgWhats(ArquivoBase64, dsCelular):
     response = requests.request("POST", url, headers=headers, data=payload)
     return response.text
 
+def gravar_dados_no_banco(df):
+    # Cria a string de conexão com o banco de dados MySQL
+    banco_url = f'mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+
+    # Cria a conexão com o banco de dados
+    engine = create_engine(banco_url)
+
+    # Insere os dados na tabela, substituindo os dados existentes ou adicionando
+    df.to_sql(TABLE_NAME, con=engine, if_exists='append', index=False)
 
 
 
@@ -301,7 +363,53 @@ login_usuario = None
 dsIp = None
 @app.route('/')
 def home():
-    return render_template('home.html', message='')
+    return render_template('login.html', message='')
+
+@app.route('/dashboard')
+def dashboard():
+    username = username  # Função fictícia para obter o usuário atual
+    print(username)
+    return render_template('navbar.html', username=username)  # Substitua 'template.html' pelo seu nome de arquivo
+
+
+
+@app.route('/upload')
+def upload_form():
+    return render_template('upload.html')
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return 'Nenhum arquivo enviado', 400
+
+    file = request.files['file']
+
+    if file.filename == '':
+        return 'Arquivo não selecionado', 400
+
+    try:
+        # Lê a planilha do Excel
+        df = pd.read_excel(file)
+        print(file.filename)
+
+        # Adiciona uma nova coluna com o nome da planilha
+        nome_planilha = file.filename
+        df['Nome da Planilha'] = nome_planilha
+
+        # Rename columns based on COLUMN_MAPPING
+        df.rename(columns=COLUMN_MAPPING, inplace=True)
+
+        # Converte o DataFrame para um dicionário
+        data_dict = df.to_dict(orient='records')
+
+
+        # Conectar ao banco de dados e gravar dados
+        gravar_dados_no_banco(df)
+        return redirect(url_for('mostrar_dados'))
+        #return {'data': data_dict}, 200
+    except Exception as e:
+        return str(e), 400
+
+
 
 @app.route('/cubagem', methods=['GET'])
 def cubagem():
@@ -367,8 +475,10 @@ def login():
 
     if username in users and users[username] == password:
         Inserir_TbLog("TbLogin", "ACESSO PERMITIDO", dsIp, login_usuario)
-        return render_template('home.html')
-
+        if username != "Luiz":
+            return render_template('home.html',username=username)
+        else:
+            return render_template('upload.html',username=username)
     else:
         Inserir_TbLog("TbLogin", "ACESSO INVÁLIDO", dsIp, login_usuario)
         return render_template('login.html', message='Usuário ou senha inválidos!')
@@ -517,6 +627,25 @@ def comparar_listas(dicionario_a, dicionario_b):
     return dicionario_diferencas
 
 
+@app.route('/dados', methods=['GET'])
+def mostrar_dados():
+    try:
+        # Cria a string de conexão com o banco de dados MySQL
+        banco_url = f'mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+
+        # Cria a conexão com o banco de dados
+        engine = create_engine(banco_url)
+
+        # Faz uma consulta para selecionar os dados ordenados pela data mais recente
+        query = text(f"SELECT distinct dsNF, dsOrdemRec, dsCodigo, dsDescricao, nrQtde, dsSO, nrLinha, nrQtdeCaixas, nrQtdeRecPecas, dsNumeroSerie, nrPeso, dsDimensoes, dsLocalizacao, dsObs, dsSoLinha, dsTipoArmazenagem, dsNomePlanilha, dtRegistro, dsStatus FROM DbIntelliMetrics.TbDadosPlanilha order by cdPlanilha desc")  # Supondo que haja uma coluna `id` que indica a ordem
+        with engine.connect() as conn:
+            result = conn.execute(query)
+            dados = result.fetchall()
+
+        return render_template('dados.html', dados=dados)
+    except Exception as e:
+        return str(e), 400
+
 
 
 
@@ -572,6 +701,23 @@ def data():
 
     #print(dicionario_diferencas)
 
+
+@app.route('/export', methods=['POST'])
+def export_data():
+    json_data = request.json
+    dados = json_data['dados']  # Os dados recebidos aqui
+    df = pd.DataFrame(dados)
+
+    # Usando BytesIO para criar um buffer de memória
+    output = BytesIO()
+    # Exportando para Excel
+    df.to_excel(output, index=False, engine='openpyxl', sheet_name='Dados')
+
+    # Rewind the buffer
+    output.seek(0)
+
+    # Enviando o arquivo
+    return send_file(output, download_name="planilha", mimetype='xlsx', as_attachment=True)
 
 
 def main():
