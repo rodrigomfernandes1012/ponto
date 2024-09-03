@@ -142,6 +142,28 @@
                 `;
                 tableBody.appendChild(row);
             }
+
+            // Adicione os ouvintes de eventos para filtros após carregar os dados
+            addFilterListeners();
+        }
+
+        function addFilterListeners() {
+            // Filtragem para cada coluna
+            const filterInputs = document.querySelectorAll('.filter-input');
+            filterInputs.forEach((input, index) => {
+                input.addEventListener('input', () => {
+                    const filterValue = input.value.toLowerCase();
+                    const tableRows = document.querySelectorAll('tbody tr');
+                    tableRows.forEach(row => {
+                        const cellValue = row.cells[index].textContent.toLowerCase();
+                        if (cellValue.includes(filterValue)) {
+                            row.style.display = ''; // Mostrar a linha
+                        } else {
+                            row.style.display = 'none'; // Ocultar a linha
+                        }
+                    });
+                });
+            });
         }
 
         document.getElementById('save-button').addEventListener('click', async function () {
@@ -208,7 +230,7 @@
             // Se a chave ainda não existir, cria um novo objeto com os dados e inicializa um Set para as horas
             groupedData[key] = {
             ID: id,
-            Funcionario: funcionario,
+            Funcionário: funcionario,
             Data: data,
             Horas: new Set([hora]), // Armazena as horas em um Set para evitar duplicatas
             Ocorrencias: ocorrencias,
