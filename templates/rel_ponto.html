@@ -81,7 +81,7 @@
 {% endblock %}
 
 {% block body %}
-
+    <h1>Registro de Horário de Funcionários</h1>
     <table>
         <thead>
             <tr>
@@ -135,35 +135,12 @@
                             <option value="HE - 100%">HE - 100%</option>
                             <option value="Dec. de Hs">Dec. de Hs</option>
                             <option value="Demissão">Demissão</option>
-                            <option value="Remover">Remover</option>
                         </select>
                     </td>
                     <td><textarea rows="1" maxlength="200">${data[key].dsObservacao}</textarea></td>
                 `;
                 tableBody.appendChild(row);
             }
-
-            // Adicione os ouvintes de eventos para filtros após carregar os dados
-            addFilterListeners();
-        }
-
-        function addFilterListeners() {
-            // Filtragem para cada coluna
-            const filterInputs = document.querySelectorAll('.filter-input');
-            filterInputs.forEach((input, index) => {
-                input.addEventListener('input', () => {
-                    const filterValue = input.value.toLowerCase();
-                    const tableRows = document.querySelectorAll('tbody tr');
-                    tableRows.forEach(row => {
-                        const cellValue = row.cells[index].textContent.toLowerCase();
-                        if (cellValue.includes(filterValue)) {
-                            row.style.display = ''; // Mostrar a linha
-                        } else {
-                            row.style.display = 'none'; // Ocultar a linha
-                        }
-                    });
-                });
-            });
         }
 
         document.getElementById('save-button').addEventListener('click', async function () {
@@ -204,18 +181,17 @@
                 alert('Ocorreu um erro ao salvar os dados. Tente novamente.');
             }
         });
+// Função para exportar para Excel
+    document.getElementById('export-excel').addEventListener('click', () => {
+        const tableBody = document.getElementById('employee-table-body');
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet([]);
 
-                  // Função para exportar para Excel
-            document.getElementById('export-excel').addEventListener('click', () => {
-            const tableBody = document.getElementById('employee-table-body');
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.json_to_sheet([]);
+        // Objeto para armazenar dados agrupados
+        const groupedData = {};
 
-            // Objeto para armazenar dados agrupados
-            const groupedData = {};
-
-            // Agrupa os dados por ID e Data
-            tableBody.querySelectorAll('tr').forEach(row => {
+        // Agrupa os dados por ID e Data
+        tableBody.querySelectorAll('tr').forEach(row => {
             const id = row.cells[0].textContent;
             const funcionario = row.cells[1].textContent;
             const data = row.cells[2].textContent;
@@ -227,88 +203,86 @@
             const key = `${funcionario}-${data}`;
 
             if (!groupedData[key]) {
-            // Se a chave ainda não existir, cria um novo objeto com os dados e inicializa um Set para as horas
-            groupedData[key] = {
-            ID: id,
-            Funcionário: funcionario,
-            Data: data,
-            Horas: new Set([hora]), // Armazena as horas em um Set para evitar duplicatas
-            Ocorrencias: ocorrencias,
-            Observacoes: observacoes
-        };
-        } else {
-            // Se a chave já existir, apenas adiciona a nova hora ao Set
-            groupedData[key].Horas.add(hora);
-        }
+                // Se a chave ainda não existir, cria um novo objeto com os dados e inicializa um Set para as horas
+                groupedData[key] = {
+                    ID: id,
+                    Funcionario: funcionario,
+                    Data: data,
+                    Horas: new Set([hora]), // Armazena as horas em um Set para evitar duplicatas
+                    Ocorrencias: ocorrencias,
+                    Observacoes: observacoes
+                };
+            } else {
+                // Se a chave já existir, apenas adiciona a nova hora ao Set
+                groupedData[key].Horas.add(hora);
+            }
         });
 
-            // Cria uma lista para enviar os dados agrupados para a planilha
-            const exportData = Object.values(groupedData).map(item => {
+        // Cria uma lista para enviar os dados agrupados para a planilha
+        const exportData = Object.values(groupedData).map(item => {
             const baseRowData = {
-            ID: item.ID,
-            Funcionário: item.Funcionario,
-            Data: item.Data,
-            Ocorrências: item.Ocorrencias,
-            Observações: item.Observacoes
-        };
+                ID: item.ID,
+                Funcionário: item.Funcionario,
+                Data: item.Data,
+                Ocorrências: item.Ocorrencias,
+                Observações: item.Observacoes
+            };
 
             // Converte o Set de horas para um array e ordena em ordem crescente
             const sortedHoras = Array.from(item.Horas).sort((a, b) => {
-            return a.localeCompare(b); // Compara as horas lexicograficamente
-        });
+                return a.localeCompare(b); // Compara as horas lexicograficamente
+            });
 
             // Adiciona as horas em colunas separadas
             sortedHoras.forEach((hora, index) => {
-            baseRowData[`Hora ${index + 1}`] = hora; // Adiciona cada hora em colunas separadas (Hora 1, Hora 2, ...)
-        });
+                baseRowData[`Hora ${index + 1}`] = hora; // Adiciona cada hora em colunas separadas (Hora 1, Hora 2, ...)
+            });
 
             return baseRowData;
         });
 
-            // Cria cabeçalhos dinâmicos
-            const headers = [
-        {ID: "ID", Funcionário: "Funcionário", Data: "Data", Ocorrências: "Ocorrências", Observações: "Observações"}
-            ];
+        // Cria cabeçalhos dinâmicos
+        const headers = [
+            { ID: "ID", Funcionário: "Funcionário", Data: "Data", Ocorrências: "Ocorrências", Observações: "Observações" }
+        ];
 
-            // Adiciona cabeçalhos à planilha e obtém os nomes das colunas adicionais
-            exportData.forEach(item => {
+        // Adiciona cabeçalhos à planilha e obtém os nomes das colunas adicionais
+        exportData.forEach(item => {
             Object.keys(item).forEach(key => {
-            if (!headers[0][key]) {
-            headers[0][key] = key; // Adiciona novos cabeçalhos para cada hora
+                if (!headers[0][key]) {
+                    headers[0][key] = key; // Adiciona novos cabeçalhos para cada hora
+                }
+            });
+        });
+
+        // Adiciona cabeçalhos à planilha
+        XLSX.utils.sheet_add_json(ws, headers, { skipHeader: true, origin: 0 });
+
+        // Adiciona as linhas de dados agrupados
+        XLSX.utils.sheet_add_json(ws, exportData, { skipHeader: true, origin: -1 });
+
+        // Ajusta o tamanho das colunas
+        const colWidth = [
+            { wpx: 30 },  // ID
+            { wpx: 100 }, // Funcionário
+            { wpx: 70 },  // Data
+            { wpx: 100 }, // Ocorrências
+            { wpx: 150 }  // Observações
+        ];
+
+        // Adiciona largura para as colunas de hora dinâmica
+        const maxHoras = Math.max(...exportData.map(item => Object.keys(item).filter(key => key.startsWith('Hora')).length)); // Obtém o número máximo de horas
+        for (let i = 0; i < maxHoras; i++) {
+            colWidth.push({ wpx: 50 }); // Para cada hora, adiciona uma largura
         }
-        });
-        });
 
-            // Adiciona cabeçalhos à planilha
-            XLSX.utils.sheet_add_json(ws, headers, {skipHeader: true, origin: 0});
+        ws['!cols'] = colWidth;
 
-            // Adiciona as linhas de dados agrupados
-            XLSX.utils.sheet_add_json(ws, exportData, {skipHeader: true, origin: -1});
-
-            // Ajusta o tamanho das colunas
-            const colWidth = [
-        {wpx: 30},  // ID
-        {wpx: 100}, // Funcionário
-        {wpx: 70},  // Data
-        {wpx: 100}, // Ocorrências
-        {wpx: 150}  // Observações
-            ];
-
-            // Adiciona largura para as colunas de hora dinâmica
-            const maxHoras = Math.max(...exportData.map(item => Object.keys(item).filter(key => key.startsWith('Hora')).length)); // Obtém o número máximo de horas
-            for (let i = 0; i < maxHoras; i++) {
-            colWidth.push({wpx: 50}); // Para cada hora, adiciona uma largura
-        }
-
-            ws['!cols'] = colWidth;
-
-            XLSX.utils.book_append_sheet(wb, ws, "Registro de Horário");
-            XLSX.writeFile(wb, "registro_horario.xlsx");
-        });
-
-
-        // Carregar dados ao iniciar
-        fetchData();
+        XLSX.utils.book_append_sheet(wb, ws, "Registro de Horário");
+        XLSX.writeFile(wb, "registro_horario.xlsx");
+    });
+    // Carregar dados ao iniciar
+    fetchData();
     </script>
 </div>
 {% endblock %}
