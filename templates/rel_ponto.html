@@ -46,7 +46,7 @@
             background-color: #fff;
         }
 
-        input[type="text"], input[type="time"], select, textarea {
+        input[type="text"], input[type="date"], input[type="time"], select, textarea {
             width: calc(100% - 20px);
             padding: 10px;
             border: 1px solid #ccc;
@@ -81,7 +81,23 @@
 {% endblock %}
 
 {% block body %}
-    <h1>Registro de Horário de Funcionários</h1>
+
+
+    <!-- Filtros de Data -->
+    <div class="d-flex mb-6">
+        <div class="col-md-2">
+            <label for="startDate">Data Inicial:</label>
+            <input type="date" id="startDate" class="form-control">
+        </div>
+        <div class="col-md-2>
+            <label for="endDate">Data Final:</label>
+            <input type="date" id="endDate" class="form-control">
+        </div>
+        <div class="col-md-2 align-self-end">
+            <button id="filter-button" class="btn btn-primary">Filtrar</button>
+        </div>
+    </div>
+
     <table>
         <thead>
             <tr>
@@ -105,10 +121,25 @@
             <!-- Os dados serão preenchidos aqui -->
         </tbody>
     </table>
+
     <button id="save-button">Salvar</button>
     <button class="btn btn-danger" id="export-excel">Exportar Excel</button>
 
     <script>
+        // Define a data atual para os campos de data
+        function setCurrentDates() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0'); // Mês é 0-indexado
+            const day = String(today.getDate()).padStart(2, '0');
+
+            // Define a data de hoje como data final
+            document.getElementById('endDate').value = `${year}-${month}-${day}`;
+
+            // Para data inicial, define como o primeiro dia do mês atual
+            document.getElementById('startDate').value = `${year}-${month}-01`;
+        }
+
         async function fetchData() {
             const response = await fetch('/data');
             const data = await response.json();
@@ -150,6 +181,8 @@
             const filterData = document.getElementById('filterData').value.toLowerCase();
             const filterEntrada = document.getElementById('filterEntrada').value.toLowerCase();
 
+            const startDate = new Date(document.getElementById('startDate').value);
+            const endDate = new Date(document.getElementById('endDate').value);
             const rows = document.querySelectorAll('#employee-table-body tr');
 
             rows.forEach(row => {
@@ -158,9 +191,11 @@
                 const data = row.cells[2].textContent.toLowerCase();
                 const entrada = row.querySelector('input[type="time"]').value.toLowerCase();
 
+                const rowDate = new Date(data.split('/').reverse().join('-')); // Formatar a data para YYYY-MM-DD
+
                 const matchesId = id.includes(filterId);
                 const matchesFuncionario = funcionario.includes(filterFuncionario);
-                const matchesData = data.includes(filterData);
+                const matchesData = rowDate >= startDate && rowDate <= endDate; // Data entre intervalo
                 const matchesEntrada = entrada.includes(filterEntrada);
 
                 // Mostra ou esconde a linha com base nos filtros
@@ -176,6 +211,9 @@
         document.querySelectorAll('.filter-input').forEach(input => {
             input.addEventListener('input', filterTable);
         });
+
+        // Filtro de intervalo de datas
+        document.getElementById('filter-button').addEventListener('click', filterTable);
 
         document.getElementById('save-button').addEventListener('click', async function () {
             const employeeData = [];
@@ -316,6 +354,23 @@
             XLSX.utils.book_append_sheet(wb, ws, "Registro de Horário");
             XLSX.writeFile(wb, "registro_horario.xlsx");
         });
+
+        // Define a data atual para os campos de data
+        function setCurrentDates() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0'); // Mês é 0-indexado
+            const day = String(today.getDate()).padStart(2, '0');
+
+            // Define a data de hoje como data final
+            document.getElementById('endDate').value = `${year}-${month}-${day}`;
+
+            // Para data inicial, define como o primeiro dia do mês atual
+            document.getElementById('startDate').value = `${year}-${month}-01`;
+        }
+
+        // Chama a função ao carregar a página
+        window.onload = setCurrentDates;
 
         // Carregar dados ao iniciar
         fetchData();
