@@ -2,7 +2,6 @@
 {% block head %}
 <div class="container">
     <style>
-        /* Seu estilo permanece o mesmo */
         body {
             font-family: 'Roboto', sans-serif;
             background-color: #f4f4f9;
@@ -26,7 +25,7 @@
             border-collapse: collapse;
             margin-bottom: 20px;
             border-radius: 8px;
-            overflow: hidden; /* Para bordas arredondadas */
+            overflow: hidden;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
@@ -52,7 +51,7 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 16px;
-            margin-top: 5px; /* Margem para espaçamento */
+            margin-top: 5px;
         }
 
         button {
@@ -65,7 +64,7 @@
             cursor: pointer;
             transition: background-color 0.3s;
             margin-top: 10px;
-            margin-bottom: 10px; /* Espaçamento adicional entre os botões */
+            margin-bottom: 10px;
         }
 
         button:hover {
@@ -82,14 +81,12 @@
 
 {% block body %}
 
-
-    <!-- Filtros de Data -->
     <div class="d-flex mb-6">
         <div class="col-md-2">
             <label for="startDate">Data Inicial:</label>
             <input type="date" id="startDate" class="form-control">
         </div>
-        <div class="col-md-2>
+        <div class="col-md-2">
             <label for="endDate">Data Final:</label>
             <input type="date" id="endDate" class="form-control">
         </div>
@@ -104,7 +101,10 @@
                 <th>ID</th>
                 <th>Funcionário</th>
                 <th>Data</th>
-                <th>Hora</th>
+                <th>Registro 01</th>
+                <th>Registro 02</th>
+                <th>Registro 03</th>
+                <th>Registro 04</th>
                 <th>Ocorrências</th>
                 <th>Observações</th>
             </tr>
@@ -112,7 +112,10 @@
                 <th><input type="text" class="filter-input" id="filterId"></th>
                 <th><input type="text" class="filter-input" id="filterFuncionario"></th>
                 <th><input type="text" class="filter-input" id="filterData"></th>
-                <th><input type="text" class="filter-input" id="filterEntrada"></th>
+                <th><input type="text" class="filter-input" id="filterEntrada01"></th>
+                <th><input type="text" class="filter-input" id="filterEntrada02"></th>
+                <th><input type="text" class="filter-input" id="filterEntrada03"></th>
+                <th><input type="text" class="filter-input" id="filterEntrada04"></th>
                 <th></th>
                 <th></th>
             </tr>
@@ -126,20 +129,6 @@
     <button class="btn btn-danger" id="export-excel">Exportar Excel</button>
 
     <script>
-        // Define a data atual para os campos de data
-        function setCurrentDates() {
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0'); // Mês é 0-indexado
-            const day = String(today.getDate()).padStart(2, '0');
-
-            // Define a data de hoje como data final
-            document.getElementById('endDate').value = `${year}-${month}-${day}`;
-
-            // Para data inicial, define como o primeiro dia do mês atual
-            document.getElementById('startDate').value = `${year}-${month}-01`;
-        }
-
         async function fetchData() {
             const response = await fetch('/data');
             const data = await response.json();
@@ -153,6 +142,9 @@
                     <td>${data[key].dsCardName}</td>
                     <td>${data[key].dsData}</td>
                     <td><input type="time" value="${data[key].dsRegistro01}"></td>
+                    <td><input type="time" value="${data[key].dsRegistro02 || ""}"></td>
+                    <td><input type="time" value="${data[key].dsRegistro03 || ""}"></td>
+                    <td><input type="time" value="${data[key].dsRegistro04 || ""}"></td>
                     <td>
                         <select>
                             <option value="${data[key].dsTipoRegistro}" selected>${data[key].dsTipoRegistro}</option>
@@ -174,54 +166,16 @@
             }
         }
 
-        // Função de filtragem
-        function filterTable() {
-            const filterId = document.getElementById('filterId').value.toLowerCase();
-            const filterFuncionario = document.getElementById('filterFuncionario').value.toLowerCase();
-            const filterData = document.getElementById('filterData').value.toLowerCase();
-            const filterEntrada = document.getElementById('filterEntrada').value.toLowerCase();
-
-            const startDate = new Date(document.getElementById('startDate').value);
-            const endDate = new Date(document.getElementById('endDate').value);
-            const rows = document.querySelectorAll('#employee-table-body tr');
-
-            rows.forEach(row => {
-                const id = row.cells[0].textContent.toLowerCase();
-                const funcionario = row.cells[1].textContent.toLowerCase();
-                const data = row.cells[2].textContent.toLowerCase();
-                const entrada = row.querySelector('input[type="time"]').value.toLowerCase();
-
-                const rowDate = new Date(data.split('/').reverse().join('-')); // Formatar a data para YYYY-MM-DD
-
-                const matchesId = id.includes(filterId);
-                const matchesFuncionario = funcionario.includes(filterFuncionario);
-                const matchesData = rowDate >= startDate && rowDate <= endDate; // Data entre intervalo
-                const matchesEntrada = entrada.includes(filterEntrada);
-
-                // Mostra ou esconde a linha com base nos filtros
-                if (matchesId && matchesFuncionario && matchesData && matchesEntrada) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        }
-
-        // Adiciona ouvintes de eventos para os campos de filtro
-        document.querySelectorAll('.filter-input').forEach(input => {
-            input.addEventListener('input', filterTable);
-        });
-
-        // Filtro de intervalo de datas
-        document.getElementById('filter-button').addEventListener('click', filterTable);
-
         document.getElementById('save-button').addEventListener('click', async function () {
             const employeeData = [];
             document.querySelectorAll('tbody tr').forEach(row => {
                 const idponto = Number(row.cells[0].textContent);
                 const employeeName = row.cells[1].textContent;
                 const dsData = row.cells[2].textContent;
-                const entrada = row.querySelector('input[type="time"]').value;
+                const entrada01 = row.querySelector('input[type="time"]').value;
+                const entrada02 = row.cells[4].querySelector('input[type="time"]').value;
+                const entrada03 = row.cells[5].querySelector('input[type="time"]').value;
+                const entrada04 = row.cells[6].querySelector('input[type="time"]').value;
                 const tipo = row.querySelector('select').value;
                 const observacao = row.querySelector('textarea').value;
 
@@ -230,7 +184,10 @@
                     cdAcessoIntelbras: null,
                     dsCardname: employeeName,
                     dsData: dsData,
-                    dsRegistro01: entrada,
+                    dsRegistro01: entrada01,
+                    dsRegistro02: entrada02,
+                    dsRegistro03: entrada03,
+                    dsRegistro04: entrada04,
                     dsTipoRegistro: tipo,
                     dsObservacao: observacao
                 });
@@ -247,132 +204,24 @@
 
                 const result = await response.json();
                 alert("Concluído com Sucesso!");
-                location.reload(); // Recarregar a página após salvar
+                location.reload();
             } catch (error) {
                 console.error('Erro ao salvar os dados:', error);
                 alert('Ocorreu um erro ao salvar os dados. Tente novamente.');
             }
         });
 
-        // Função para exportar para Excel
-        document.getElementById('export-excel').addEventListener('click', () => {
-            const tableBody = document.getElementById('employee-table-body');
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.json_to_sheet([]);
-
-            // Objeto para armazenar dados agrupados
-            const groupedData = {};
-
-            // Agrupa os dados por ID e Data
-            tableBody.querySelectorAll('tr').forEach(row => {
-                const id = row.cells[0].textContent;
-                const funcionario = row.cells[1].textContent;
-                const data = row.cells[2].textContent;
-                const hora = row.querySelector('input[type="time"]').value;
-                const ocorrencias = row.querySelector('select').value;
-                const observacoes = row.querySelector('textarea').value;
-
-                // Chave para o agrupamento
-                const key = `${funcionario}-${data}`;
-
-                if (!groupedData[key]) {
-                    // Se a chave ainda não existir, cria um novo objeto com os dados e inicializa um Set para as horas
-                    groupedData[key] = {
-                        ID: id,
-                        Funcionario: funcionario,
-                        Data: data,
-                        Horas: new Set([hora]), // Armazena as horas em um Set para evitar duplicatas
-                        Ocorrencias: ocorrencias,
-                        Observacoes: observacoes
-                    };
-                } else {
-                    // Se a chave já existir, apenas adiciona a nova hora ao Set
-                    groupedData[key].Horas.add(hora);
-                }
-            });
-
-            // Cria uma lista para enviar os dados agrupados para a planilha
-            const exportData = Object.values(groupedData).map(item => {
-                const baseRowData = {
-                    ID: item.ID,
-                    Funcionário: item.Funcionario,
-                    Data: item.Data,
-                    Ocorrências: item.Ocorrencias,
-                    Observações: item.Observacoes
-                };
-
-                // Converte o Set de horas para um array e ordena em ordem crescente
-                const sortedHoras = Array.from(item.Horas).sort((a, b) => {
-                    return a.localeCompare(b); // Compara as horas lexicograficamente
-                });
-
-                // Adiciona as horas em colunas separadas
-                sortedHoras.forEach((hora, index) => {
-                    baseRowData[`Hora ${index + 1}`] = hora; // Adiciona cada hora em colunas separadas (Hora 1, Hora 2, ...)
-                });
-
-                return baseRowData;
-            });
-
-            // Cria cabeçalhos dinâmicos
-            const headers = [
-                { ID: "ID", Funcionário: "Funcionário", Data: "Data", Ocorrências: "Ocorrências", Observações: "Observações" }
-            ];
-
-            // Adiciona cabeçalhos à planilha e obtém os nomes das colunas adicionais
-            exportData.forEach(item => {
-                Object.keys(item).forEach(key => {
-                    if (!headers[0][key]) {
-                        headers[0][key] = key; // Adiciona novos cabeçalhos para cada hora
-                    }
-                });
-            });
-
-            // Adiciona cabeçalhos à planilha
-            XLSX.utils.sheet_add_json(ws, headers, { skipHeader: true, origin: 0 });
-
-            // Adiciona as linhas de dados agrupados
-            XLSX.utils.sheet_add_json(ws, exportData, { skipHeader: true, origin: -1 });
-
-            // Ajusta o tamanho das colunas
-            const colWidth = [
-                { wpx: 30 },  // ID
-                { wpx: 100 }, // Funcionário
-                { wpx: 70 },  // Data
-                { wpx: 100 }, // Ocorrências
-                { wpx: 150 }  // Observações
-            ];
-
-            // Adiciona largura para as colunas de hora dinâmica
-            const maxHoras = Math.max(...exportData.map(item => Object.keys(item).filter(key => key.startsWith('Hora')).length)); // Obtém o número máximo de horas
-            for (let i = 0; i < maxHoras; i++) {
-                colWidth.push({ wpx: 50 }); // Para cada hora, adiciona uma largura
-            }
-
-            ws['!cols'] = colWidth;
-
-            XLSX.utils.book_append_sheet(wb, ws, "Registro de Horário");
-            XLSX.writeFile(wb, "registro_horario.xlsx");
-        });
-
-        // Define a data atual para os campos de data
         function setCurrentDates() {
             const today = new Date();
             const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0'); // Mês é 0-indexado
+            const month = String(today.getMonth() + 1).padStart(2, '0');
             const day = String(today.getDate()).padStart(2, '0');
 
-            // Define a data de hoje como data final
             document.getElementById('endDate').value = `${year}-${month}-${day}`;
-
-            // Para data inicial, define como o primeiro dia do mês atual
             document.getElementById('startDate').value = `${year}-${month}-01`;
         }
 
-        // Chama a função ao carregar a página
         window.onload = setCurrentDates;
-
-        // Carregar dados ao iniciar
         fetchData();
     </script>
 </div>
