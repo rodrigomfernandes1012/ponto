@@ -16,30 +16,6 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 import os
-from openpyxl import Workbook, load_workbook
-import serial
-import keyboard  # Importar a biblioteca keyboard para detectar pressionamentos de teclas
-
-import serial
-import keyboard  # Importar a biblioteca keyboard para detectar pressionamentos de teclas
-
-def ler_dados_com3(baudrate=9600):
-
-    try:
-        # Abre a porta COM3
-        with serial.Serial('COM3', baudrate) as ser:
-            while True:
-                # Lê dados da porta
-                data = ser.readline().decode('utf-8').rstrip()
-                print(f"Dados lidos da porta COM3: {data}")
-
-                # Verifica se a tecla 'q' foi pressionada
-                if keyboard.is_pressed('q'):
-                    print("Saindo da leitura contínua.")
-                    break  # Sai do loop
-
-    except serial.SerialException as e:
-        print(f"Erro ao ler dados da porta COM3: {e}")
 
 
 
