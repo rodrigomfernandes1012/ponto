@@ -17,6 +17,33 @@ from email.mime.base import MIMEBase
 from email import encoders
 import os
 from openpyxl import Workbook, load_workbook
+import serial
+import keyboard  # Importar a biblioteca keyboard para detectar pressionamentos de teclas
+
+import serial
+import keyboard  # Importar a biblioteca keyboard para detectar pressionamentos de teclas
+
+def ler_dados_com3(baudrate=9600):
+
+    try:
+        # Abre a porta COM3
+        with serial.Serial('COM3', baudrate) as ser:
+            while True:
+                # Lê dados da porta
+                data = ser.readline().decode('utf-8').rstrip()
+                print(f"Dados lidos da porta COM3: {data}")
+
+                # Verifica se a tecla 'q' foi pressionada
+                if keyboard.is_pressed('q'):
+                    print("Saindo da leitura contínua.")
+                    break  # Sai do loop
+
+    except serial.SerialException as e:
+        print(f"Erro ao ler dados da porta COM3: {e}")
+
+
+
+
 
 # Configurações do banco de dados
 DB_USER = 'admin'  # Substituir pelo seu usuário
@@ -66,7 +93,7 @@ def conecta_bd():
 def Selecionar_TbPonto():
     conexao = conecta_bd()
     cursor = conexao.cursor(dictionary=True)
-    comando = f"select cdPonto,  TRIM(dsCardName) as dsCardName,  DATE_FORMAT(STR_TO_DATE(dsRegistro01, '%Y-%m-%d %H:%i:%s'), '%d/%m/%Y') AS dsData, DATE_FORMAT(STR_TO_DATE(dsRegistro01, '%Y-%m-%d %H:%i:%s'), '%Y-%m-%d %H:%i') AS dsRegistro00,  DATE_FORMAT(STR_TO_DATE(dsRegistro01, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro01, dsTipoRegistro, dsObservacao  from DbIntelliMetrics.TbPonto where dsTipoRegistro <> 'Remover' order by dsCardName asc, dsRegistro00 asc ;"
+    comando = f"select cdPonto,  TRIM(dsCardName) as dsCardName,  DATE_FORMAT(STR_TO_DATE(dsRegistro01, '%Y-%m-%d %H:%i:%s'), '%d/%m/%Y') AS dsData, DATE_FORMAT(STR_TO_DATE(dsRegistro01, '%Y-%m-%d %H:%i:%s'), '%Y-%m-%d %H:%i') AS dsRegistro00,  DATE_FORMAT(STR_TO_DATE(dsRegistro01, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro01, DATE_FORMAT(STR_TO_DATE(dsRegistro02, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro02, DATE_FORMAT(STR_TO_DATE(dsRegistro03, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro03, DATE_FORMAT(STR_TO_DATE(dsRegistro04, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro04, dsTipoRegistro, dsObservacao  from DbIntelliMetrics.TbPonto where dsTipoRegistro <> 'Remover' order by dsCardName asc, dsRegistro00 asc ;"
     print(comando)
     cursor.execute(comando)
     resultado = cursor.fetchall()
@@ -139,10 +166,10 @@ def Selecionar_TbPonto():
 #        datas = cursor.fetchall()
 #        cursor.close()
 #        conexao.close()
-def Alterar_TbPonto(cdPonto, dsRegistro01,dsData, dsTipoRegistro, dsObservacao ):
+def Alterar_TbPonto(cdPonto, dsRegistro01, dsRegistro02, dsRegistro03, dsRegistro04, dsData, dsTipoRegistro, dsObservacao ):
     conexao = conecta_bd()
     cursor = conexao.cursor(dictionary=True)
-    comando = f"update DbIntelliMetrics.TbPonto set dsRegistro01 = STR_TO_DATE('{dsData} {dsRegistro01}', '%d/%m/%Y %H:%i'), dsTipoRegistro = '{dsTipoRegistro}', dsObservacao = '{dsObservacao}' where cdPonto = '{cdPonto}'"
+    comando = f"update DbIntelliMetrics.TbPonto set dsRegistro01 = STR_TO_DATE('{dsData} {dsRegistro01}', '%d/%m/%Y %H:%i'), dsRegistro02 = STR_TO_DATE('{dsData} {dsRegistro02}', '%d/%m/%Y %H:%i'),dsRegistro03 = STR_TO_DATE('{dsData} {dsRegistro03}', '%d/%m/%Y %H:%i'), dsRegistro04 = STR_TO_DATE('{dsData} {dsRegistro04}', '%d/%m/%Y %H:%i'), dsTipoRegistro = '{dsTipoRegistro}', dsObservacao = '{dsObservacao}' where cdPonto = '{cdPonto}'"
     print(comando)
     cursor.execute(comando)
     conexao.commit()
@@ -422,7 +449,7 @@ login_usuario = None
 dsIp = None
 @app.route('/')
 def home():
-    return render_template('rel_ponto2.html', message='')
+    return render_template('rel_ponto.html', message='')
 
 @app.route('/dashboard')
 def dashboard():
@@ -470,7 +497,7 @@ def upload_file():
 
 
 
-@app.route('/cubagem', methods=['GET'])
+@app.route('/cubagemold', methods=['GET'])
 def cubagem():
     # Capturar os parâmetros da query string
     xEtiqueta = request.args.get('xEtiqueta')
@@ -661,11 +688,17 @@ def comparar_listas(dicionario_a, dicionario_b):
     # Comparar os dicionários das duas listas
     for cdPonto in dict_a:
         if cdPonto in dict_b:
-            if dict_a[cdPonto]['dsRegistro01'] != dict_b[cdPonto]['dsRegistro01'] or dict_a[cdPonto]['dsTipoRegistro'] != dict_b[cdPonto]['dsTipoRegistro'] or dict_a[cdPonto]['dsObservacao'] != dict_b[cdPonto]['dsObservacao']:
+            if dict_a[cdPonto]['dsRegistro01'] != dict_b[cdPonto]['dsRegistro01'] or dict_a[cdPonto]['dsRegistro02'] != dict_b[cdPonto]['dsRegistro02'] or dict_a[cdPonto]['dsRegistro03'] != dict_b[cdPonto]['dsRegistro03'] or dict_a[cdPonto]['dsRegistro04'] != dict_b[cdPonto]['dsRegistro04'] or dict_a[cdPonto]['dsTipoRegistro'] != dict_b[cdPonto]['dsTipoRegistro'] or dict_a[cdPonto]['dsObservacao'] != dict_b[cdPonto]['dsObservacao']:
                 dicionario_diferencas.append({
                     'cdPonto': cdPonto,
                     'dsRegistro01_A': dict_a[cdPonto]['dsRegistro01'],
                     'dsRegistro01_B': dict_b[cdPonto]['dsRegistro01'],
+                    'dsRegistro02_A': dict_a[cdPonto]['dsRegistro02'],
+                    'dsRegistro02_B': dict_b[cdPonto]['dsRegistro02'],
+                    'dsRegistro03_A': dict_a[cdPonto]['dsRegistro03'],
+                    'dsRegistro03_B': dict_b[cdPonto]['dsRegistro03'],
+                    'dsRegistro04_A': dict_a[cdPonto]['dsRegistro04'],
+                    'dsRegistro04_B': dict_b[cdPonto]['dsRegistro04'],
                     'dsData': dict_b[cdPonto]['dsData'],
                     'dsTipoRegistro': dict_b[cdPonto]['dsTipoRegistro'],
                     'dsObservacao': dict_b[cdPonto]['dsObservacao']
@@ -678,6 +711,16 @@ def comparar_listas(dicionario_a, dicionario_b):
                 'cdPonto': cdPonto,
                 'dsRegistro01_A': None,  # Não existe em dicionario_a
                 'dsRegistro01_B': dict_b[cdPonto]['dsRegistro01'],
+
+                'dsRegistro02_A': None,  # Não existe em dicionario_a
+                'dsRegistro02_B': dict_b[cdPonto]['dsRegistro02'],
+
+                'dsRegistro03_A': None,  # Não existe em dicionario_a
+                'dsRegistro03_B': dict_b[cdPonto]['dsRegistro03'],
+
+                'dsRegistro04_A': None,  # Não existe em dicionario_a
+                'dsRegistro04_B': dict_b[cdPonto]['dsRegistro04'],
+
                 'dsData': dict_b[cdPonto]['dsData'],
                 'dsTipoRegistro': dict_b[cdPonto]['dsTipoRegistro'],
                 'dsObservacao': dict_b[cdPonto]['dsObservacao']
@@ -719,7 +762,7 @@ def data():
 
     dic01 = []
     for dic1 in dicionario:
-        dic01.append ({'cdPonto': dic1['cdPonto'], 'dsRegistro01': dic1['dsRegistro01'], 'dsTipoRegistro': dic1['dsTipoRegistro'], 'dsObservacao': dic1['dsObservacao']})
+        dic01.append ({'cdPonto': dic1['cdPonto'], 'dsRegistro01': dic1['dsRegistro01'], 'dsRegistro02': dic1['dsRegistro02'], 'dsRegistro03': dic1['dsRegistro03'], 'dsRegistro04': dic1['dsRegistro04'], 'dsTipoRegistro': dic1['dsTipoRegistro'], 'dsObservacao': dic1['dsObservacao']})
 
     #print(dic01)
 
@@ -737,9 +780,23 @@ def data():
         dic02 = []
         Horas_Array = []
         for dado in dados:
-            dic02.append({'cdPonto': dado['cdPonto'], 'dsRegistro01': dado['dsRegistro01'], 'dsData': dado['dsData'], 'dsTipoRegistro': dado['dsTipoRegistro'], 'dsObservacao': dado['dsObservacao']})
+            #dic02.append({'cdPonto': dado['cdPonto'], 'dsRegistro01': dado['dsRegistro01'], 'dsRegistro02': dado['dsRegistro02'], 'dsRegistro03': dado['dsRegistro03'], 'dsRegistro04': dado['dsRegistro04'], 'dsData': dado['dsData'], 'dsTipoRegistro': dado['dsTipoRegistro'], 'dsObservacao': dado['dsObservacao']})
+            dic02.append({
+                'cdPonto': dado['cdPonto'],
+                'dsRegistro01': dado['dsRegistro01'],
+                'dsRegistro02': dado['dsRegistro02'] if dado['dsRegistro02'] else None,
+                'dsRegistro03': dado['dsRegistro03'] if dado['dsRegistro03'] else None,
+                'dsRegistro04': dado['dsRegistro04'] if dado['dsRegistro04'] else None,
+                'dsData': dado['dsData'],
+                'dsTipoRegistro': dado['dsTipoRegistro'],
+                'dsObservacao': dado['dsObservacao']
+            })
+
             cdPonto = dado['cdPonto']
             dsRegistro01 = dado['dsRegistro01']
+            dsRegistro02 = dado['dsRegistro02']
+            dsRegistro03 = dado['dsRegistro03']
+            dsRegistro04 = dado['dsRegistro04']
             dsData = dado['dsData']
             dsTipoRegistro = dado['dsTipoRegistro']
             dsObservacao = dado['dsObservacao']
@@ -755,11 +812,11 @@ def data():
             print(item)
             print(item['cdPonto'])
             print(item['dsRegistro01_B'])
-            Alterar_TbPonto(item['cdPonto'], item['dsRegistro01_B'],item['dsData'],item['dsTipoRegistro'],item['dsObservacao'])
+            Alterar_TbPonto(item['cdPonto'], item['dsRegistro01_B'], item['dsRegistro02_B'], item['dsRegistro03_B'], item['dsRegistro04_B'], item['dsData'],item['dsTipoRegistro'],item['dsObservacao'])
 
     return jsonify(dicionario)
 
-    #print(dicionario_diferencas)
+    print(dicionario_diferencas)
 
 
 @app.route('/export', methods=['POST'])
@@ -778,6 +835,13 @@ def export_data():
 
     # Enviando o arquivo
     return send_file(output, download_name="planilha", mimetype='xlsx', as_attachment=True)
+@app.route('/read_com3')
+def read_com3():
+    data = ler_dados_com3()
+    if data:
+        return jsonify({'data': data})
+    else:
+        return jsonify({'data': 'Erro ao conectar à porta COM3.'})
 
 
 def main():
