@@ -126,7 +126,8 @@
     </table>
 
     <button id="save-button">Salvar</button>
-    <button class="btn btn-danger" id="export-excel">Exportar Excel</button>
+    <button class="btn btn-danger" id="export-excel" onclick="exportToExcel()">Exportar Excel</button>
+
 
     <script>
         async function fetchData() {
@@ -223,6 +224,167 @@
 
         window.onload = setCurrentDates;
         fetchData();
+
+        function exportToExcel() {
+    const table = document.getElementById('employee-table-body');
+    const rows = Array.from(table.getElementsByTagName('tr'));
+    const data = [];
+
+    // Adicionando cabeçalhos
+    data.push([
+        'ID', 'Funcionário', 'Data', 'Registro 01', 'Registro 02', 'Registro 03', 'Registro 04', 'Ocorrências', 'Observações'
+    ]);
+
+    // Adicionando dados das linhas
+    rows.forEach(row => {
+        const cells = row.getElementsByTagName('td');
+        const rowData = [
+            cells[0].textContent.trim(),
+            cells[1].textContent.trim(),
+            cells[2].textContent.trim(),
+            cells[3].querySelector('input[type="time"]').value,
+            cells[4].querySelector('input[type="time"]').value,
+            cells[5].querySelector('input[type="time"]').value,
+            cells[6].querySelector('input[type="time"]').value,
+            cells[7].querySelector('select').value,
+            cells[8].querySelector('textarea').value.trim()
+        ];
+        data.push(rowData);
+    });
+
+    // Criando a planilha com SheetJS
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Funcionários");
+
+    // Gerando e salvando o arquivo Excel
+    XLSX.writeFile(wb, 'dados_funcionarios.xlsx');
+}
+
+async function fetchData() {
+    const response = await fetch('/data');
+    const data = await response.json();
+    renderTable(data);
+}
+
+function renderTable(data) {
+    const tableBody = document.getElementById('employee-table-body');
+    tableBody.innerHTML = '';
+
+    data.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${item.cdPonto}</td>
+            <td>${item.dsCardName}</td>
+            <td>${item.dsData}</td>
+            <td><input type="time" value="${item.dsRegistro01}"></td>
+            <td><input type="time" value="${item.dsRegistro02 || ""}"></td>
+            <td><input type="time" value="${item.dsRegistro03 || ""}"></td>
+            <td><input type="time" value="${item.dsRegistro04 || ""}"></td>
+            <td>
+                <select>
+                    <option value="${item.dsTipoRegistro}" selected>${item.dsTipoRegistro}</option>
+                    <option value="Atestado">Atestado</option>
+                    <option value="Falta">Falta</option>
+                    <option value="FDS">FDS</option>
+                    <option value="Feriado">Feriado</option>
+                    <option value="Folga">Folga</option>
+                    <option value="FT - Diurno">FT - Diurno</option>
+                    <option value="FT - Noturno">FT - Noturno</option>
+                    <option value="HE - 100%">HE - 100%</option>
+                    <option value="Dec. de Hs">Dec. de Hs</option>
+                    <option value="Demissão">Demissão</option>
+                </select>
+            </td>
+            <td><textarea rows="1" maxlength="200">${item.dsObservacao}</textarea></td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+document.getElementById('filter-button').addEventListener('click', function() {
+    const startDate = new Date(document.getElementById('startDate').value);
+    const endDate = new Date(document.getElementById('endDate').value);
+
+    if (isNaN(startDate) || isNaN(endDate)) {
+        alert("Por favor, insira datas válidas para filtrar.");
+        return;
+    }
+
+    fetch('/data')
+        .then(response => response.json())
+        .then(data => {
+            const filteredData = data.filter(item => {
+                const itemDate = new Date(item.dsData);
+                return itemDate >= startDate && itemDate <= endDate;
+            });
+            renderTable(filteredData);
+        })
+        .catch(error => {
+            console.error("Error fetching data:", error);
+        });
+});
+
+document.getElementById('save-button').addEventListener('click', async function () {
+    const employeeData = [];
+    document.querySelectorAll('tbody tr').forEach(row => {
+        const idponto = Number(row.cells[0].textContent.trim());
+        const employeeName = row.cells[1].textContent.trim();
+        const dsData = row.cells[2].textContent.trim();
+        const entrada01 = row.querySelector('input[type="time"]').value;
+        const entrada02 = row.cells[4].querySelector('input[type="time"]').value;
+        const entrada03 = row.cells[5].querySelector('input[type="time"]').value;
+        const entrada04 = row.cells[6].querySelector('input[type="time"]').value;
+        const tipo = row.querySelector('select').value;
+        const observacao = row.querySelector('textarea').value.trim();
+
+        employeeData.push({
+            cdPonto: idponto,
+            cdAcessoIntelbras: null,
+            dsCardname: employeeName,
+            dsData: dsData,
+            dsRegistro01: entrada01,
+            dsRegistro02: entrada02,
+            dsRegistro03: entrada03,
+            dsRegistro04: entrada04,
+            dsTipoRegistro: tipo,
+            dsObservacao: observacao
+        });
+    });
+
+    try {
+        const response = await fetch('/data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(employeeData)
+        });
+
+        const result = await response.json();
+        alert("Concluído com Sucesso!");
+        location.reload();
+    } catch (error) {
+        console.error('Erro ao salvar os dados:', error);
+        alert('Ocorreu um erro ao salvar os dados. Tente novamente.');
+    }
+});
+
+function setCurrentDates() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+
+    document.getElementById('endDate').value = `${year}-${month}-${day}`;
+    document.getElementById('startDate').value = `${year}-${month}-01`;
+}
+
+window.onload = setCurrentDates;
+fetchData();
+
+
+
     </script>
 </div>
 {% endblock %}
