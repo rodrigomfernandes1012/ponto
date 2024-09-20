@@ -69,7 +69,7 @@ def conecta_bd():
 def Selecionar_TbPonto():
     conexao = conecta_bd()
     cursor = conexao.cursor(dictionary=True)
-    comando = f"select cdPonto,  TRIM(dsCardName) as dsCardName,  DATE_FORMAT(STR_TO_DATE(dsRegistro01, '%Y-%m-%d %H:%i:%s'), '%d/%m/%Y') AS dsData, DATE_FORMAT(STR_TO_DATE(dsRegistro01, '%Y-%m-%d %H:%i:%s'), '%Y-%m-%d %H:%i') AS dsRegistro00,  DATE_FORMAT(STR_TO_DATE(dsRegistro01, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro01, DATE_FORMAT(STR_TO_DATE(dsRegistro02, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro02, DATE_FORMAT(STR_TO_DATE(dsRegistro03, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro03, DATE_FORMAT(STR_TO_DATE(dsRegistro04, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro04, dsTipoRegistro, dsObservacao  from DbIntelliMetrics.TbPonto where dsTipoRegistro <> 'Remover' order by dsCardName asc, dsRegistro00 asc ;"
+    comando = f"select cdPonto,  TRIM(dsCardName) as dsCardName,  DATE_FORMAT(STR_TO_DATE(dsRegistro01, '%Y-%m-%d %H:%i:%s'), '%d/%m/%Y') AS dsData, DATE_FORMAT(STR_TO_DATE(dsRegistro01, '%Y-%m-%d %H:%i:%s'), '%Y-%m-%d %H:%i') AS dsRegistro00,  DATE_FORMAT(STR_TO_DATE(dsRegistro01, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro01, DATE_FORMAT(STR_TO_DATE(dsRegistro02, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro02, DATE_FORMAT(STR_TO_DATE(dsRegistro03, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro03, DATE_FORMAT(STR_TO_DATE(dsRegistro04, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro04, dsTipoRegistro, dsObservacao  from DbIntelliMetrics.TbPonto where dsTipoRegistro <> 'Remover' and stStatus = 1 order by dsCardName asc, dsRegistro00 asc ;"
     print(comando)
     cursor.execute(comando)
     resultado = cursor.fetchall()
@@ -552,6 +552,15 @@ def usuarios():
     Usuarios = (pesquisa_usuarios())
     Inserir_TbLog("TbUsuarios", "Usuarios", dsIp, login_usuario)
     return render_template("usuarios.html", usuarios=Usuarios)
+
+@app.route('/cadastro_horas')
+def cadastro_horas():
+   # Usuarios = (pesquisa_usuarios())
+    #Inserir_TbLog("TbUsuarios", "Usuarios", dsIp, login_usuario)
+    return render_template("cadastro_horas.html")
+
+
+
 
 @app.route('/cadastro_clientes', methods=['GET', 'POST'])
 def cadastro_clientes():
