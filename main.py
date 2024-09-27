@@ -69,7 +69,7 @@ def conecta_bd():
 def Selecionar_TbPonto():
     conexao = conecta_bd()
     cursor = conexao.cursor(dictionary=True)
-    comando = f"select cdPonto,  TRIM(dsCardName) as dsCardName,  DATE_FORMAT(STR_TO_DATE(dsRegistro01, '%Y-%m-%d %H:%i:%s'), '%d/%m/%Y') AS dsData, DATE_FORMAT(STR_TO_DATE(dsRegistro01, '%Y-%m-%d %H:%i:%s'), '%Y-%m-%d %H:%i') AS dsRegistro00,  DATE_FORMAT(STR_TO_DATE(dsRegistro01, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro01, DATE_FORMAT(STR_TO_DATE(dsRegistro02, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro02, DATE_FORMAT(STR_TO_DATE(dsRegistro03, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro03, DATE_FORMAT(STR_TO_DATE(dsRegistro04, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro04, dsTipoRegistro, dsObservacao  from DbIntelliMetrics.TbPonto  order by dsCardName asc, dsRegistro00 asc ;"
+    comando = f"select cdPonto,  TRIM(dsCardName) as dsCardName,  DATE_FORMAT(STR_TO_DATE(dsRegistroAut, '%Y-%m-%d %H:%i:%s'), '%d/%m/%Y') AS dsData, DATE_FORMAT(STR_TO_DATE(dsRegistro01, '%Y-%m-%d %H:%i:%s'), '%Y-%m-%d %H:%i') AS dsRegistro00,  DATE_FORMAT(STR_TO_DATE(dsRegistro01, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro01, DATE_FORMAT(STR_TO_DATE(dsRegistro02, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro02, DATE_FORMAT(STR_TO_DATE(dsRegistro03, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro03, DATE_FORMAT(STR_TO_DATE(dsRegistro04, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro04, dsTipoRegistro, dsObservacao  from DbIntelliMetrics.TbPonto  order by dsCardName asc, dsRegistroAut asc ;"
     print(comando)
     cursor.execute(comando)
     resultado = cursor.fetchall()
