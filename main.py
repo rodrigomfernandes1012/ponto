@@ -16,6 +16,7 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 import os
+from datetime import date
 
 
 
@@ -65,6 +66,36 @@ def conecta_bd():
   password='IntelliMetr!c$',
   database='DbIntelliMetrics')
   return conexao
+
+
+
+
+
+
+def get_today_data():
+    connection = conecta_bd()
+    cursor = connection.cursor(dictionary=True)
+    print('Conectado ao banco de')
+
+    try:
+        today = date.today().isoformat()  # Formato padrão YYYY-MM-DD
+        print(today)
+
+        query = "SELECT cdPonto, dsCardName, dsRegistroAut, dsRegistro01, dsRegistro02, dsRegistro03, dsRegistro04, dsTipoRegistro, dsObservacao FROM DbIntelliMetrics.TbPonto   WHERE dsRegistroAut =" + today
+        print(query)
+        cursor.execute(query)
+        result = cursor.fetchall()
+
+        print(result)
+        return jsonify(result)
+
+    except mysql.connector.Error as err:
+
+        return jsonify({"error": str(err)})
+
+    finally:
+        cursor.close()
+        connection.close()
 
 def Selecionar_TbPonto():
     conexao = conecta_bd()
@@ -426,7 +457,30 @@ login_usuario = None
 dsIp = None
 @app.route('/')
 def home():
-    return render_template('login.html', message='')
+    return render_template('login.html')
+
+@app.route('/logip')
+def logip():
+    #return render_template( content=render_template('log_ip.html'))
+    return render_template('log_ip.html')
+
+
+
+
+@app.route('/log_ip')
+def Seleciona_Log_IP():
+    conexao = conecta_bd()  # Conecte ao banco de dados
+    cursor = conexao.cursor(dictionary=True)
+    comando = f"SELECT dsIp, MAX(dtRegistro) AS dtRegistro FROM  DbIntelliMetrics.TbAcessoIntelBras GROUP BY dsIp order by dtRegistro desc;"
+    print(comando)
+    cursor.execute(comando)
+    resultado = cursor.fetchall()
+    cursor.close()
+    conexao.close()
+    return jsonify(resultado)
+
+
+
 
 @app.route('/dashboard')
 def dashboard():
@@ -804,9 +858,11 @@ def data():
             Alterar_TbPonto(item['cdPonto'], item['dsRegistro01_B'], item['dsRegistro02_B'], item['dsRegistro03_B'], item['dsRegistro04_B'], item['dsData'],item['dsTipoRegistro'],item['dsObservacao'])
 
     return jsonify(dicionario)
-
     print(dicionario_diferencas)
 
+@app.route('/data2')
+def data2():
+    return get_today_data()
 
 @app.route('/export', methods=['POST'])
 def export_data():
@@ -835,7 +891,7 @@ def read_com3():
 
 def main():
     port = int(os.environ.get("PORT", 80))
-    app.run(host="172.20.10.7", port=port)
+    app.run(host="192.168.15.200", port=port)
 
 
 if __name__ == "__main__":
