@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block head %}
+<div class="container">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #4a4a4a;
+        }
+
+        table {
+            width: 80%;
+            max-width: 1600px;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            color: #555;
+            font-weight: 500;
+        }
+
+        td {
+            background-color: #fff;
+        }
+
+        input[type="text"], input[type="date"], input[type="time"], select, textarea {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #28a745;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        button:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+{% endblock %}
+
+{% block body %}
+
+    <table id="logTable">
+        <thead>
+            <tr>
+                <th>IP Válido</th>
+                <th>Data do último registro do IP</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    <script>
+        function convertUTCToLocal(utcDateString) {
+            const date = new Date(utcDateString);
+            const offset = date.getTimezoneOffset() / 60; // Obter offset em horas
+            const localDate = new Date(date.getTime() + (offset - 3) * 60 * 60 * 1000); // Adicionar 3 horas
+            return localDate.toLocaleString(); // Formatar data e hora local
+        }
+
+        fetch('/log_ip')
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.querySelector('#logTable tbody');
+                data.forEach(row => {
+                    const newRow = tableBody.insertRow();
+                    const ipCell = newRow.insertCell();
+                    const dateCell = newRow.insertCell();
+                    ipCell.textContent = row.dsIp;
+                    dateCell.textContent = convertUTCToLocal(row.dtRegistro);
+                });
+            });
+    </script>
+{% endblock %}
