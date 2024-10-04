@@ -782,7 +782,7 @@ def mostrar_dados():
 
         # Faz uma consulta para selecionar os dados ordenados pela data mais recente
         query = text(f"SELECT distinct dsNF, dsOrdemRec, dsCodigo, dsDescricao, nrQtde, dsSO, nrLinha, nrQtdeCaixas, nrQtdeRecPecas, dsNumeroSerie, nrPeso, dsDimensoes, dsLocalizacao, dsObs, dsSoLinha, dsTipoArmazenagem, dsNomePlanilha, dtRegistro, dsStatus FROM DbIntelliMetrics.TbDadosPlanilha order by cdPlanilha desc")  # Supondo que haja uma coluna `id` que indica a ordem
-        print(query)
+        #print(query)
         with engine.connect() as conn:
             result = conn.execute(query)
             dados = result.fetchall()
@@ -794,13 +794,46 @@ def mostrar_dados():
 
 
 
-
-
 @app.route('/data', methods=['GET', 'POST', 'PUT'])
 def data():
-    start_date = request.args.get('startDate')
-    end_date = request.args.get('endDate')
-    print(start_date)
+    conexao = conecta_bd()
+    cursor = conexao.cursor(dictionary=True)
+    start_date = request.args.get('start', '')
+    end_date = request.args.get('end', '')
+
+    query = """
+        SELECT 
+            cdPonto, 
+            TRIM(dsCardName) AS dsCardName, 
+            DATE_FORMAT(STR_TO_DATE(dsRegistroAut, '%Y-%m-%d %H:%i:%s'), '%d/%m/%Y') AS dsData,
+            DATE_FORMAT(STR_TO_DATE(dsRegistro01, '%Y-%m-%d %H:%i:%s'), '%Y-%m-%d %H:%i') AS dsRegistro00,
+            DATE_FORMAT(STR_TO_DATE(dsRegistro01, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro01,
+            DATE_FORMAT(STR_TO_DATE(dsRegistro02, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro02,
+            DATE_FORMAT(STR_TO_DATE(dsRegistro03, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro03,
+            DATE_FORMAT(STR_TO_DATE(dsRegistro04, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro04,
+            dsTipoRegistro,
+            dsObservacao
+        FROM
+            DbIntelliMetrics.TbPonto
+    """
+ #   print(query)
+ #   print('incio')
+ #   print(start_date)
+ #   print(end_date)
+    if start_date != '' and end_date != '':
+        query += " WHERE dsRegistroAut >='" + start_date + "' AND dsRegistroAut <='" + end_date + "'"
+        #params = (start_date, end_date)
+        cursor.execute(query)
+      #  print('oi')
+      #  print(query)
+    else:
+        cursor.execute(query)
+      #  print('oi2')
+
+    result = cursor.fetchall()
+    #return jsonify(result)
+
+
     #dicionario = ponto()
     dicionario = Selecionar_TbPonto()
     #print(dicionario)
@@ -808,19 +841,24 @@ def data():
     dic01 = []
     for dic1 in dicionario:
        #dic01.append ({'cdPonto': dic1['cdPonto'], 'dsRegistro01': dic1['dsRegistro01'], 'dsRegistro02': dic1['dsRegistro02'], 'dsRegistro03': dic1['dsRegistro03'], 'dsRegistro04': dic1['dsRegistro04'], 'dsTipoRegistro': dic1['dsTipoRegistro'], 'dsObservacao': dic1['dsObservacao']})
+       def replace_nome_with_empty(value):
+           """Replace 'Nome' with an empty string in a given value."""
+           return '' if value == None else value
+
+       # Assume dic01 and dic1 are defined
        dic01.append({
-           'cdPonto': dic1.get('cdPonto'),
-           'dsRegistro01': dic1.get('dsRegistro01'),
-           'dsRegistro02': dic1.get('dsRegistro02'),
-           'dsRegistro03': dic1.get('dsRegistro03'),
-           'dsRegistro04': dic1.get('dsRegistro04'),
-           'dsTipoRegistro': dic1.get('dsTipoRegistro'),
-           'dsObservacao': dic1.get('dsObservacao')
+           'cdPonto': replace_nome_with_empty(dic1.get('cdPonto')),
+           'dsRegistro01': replace_nome_with_empty(dic1.get('dsRegistro01')),
+           'dsRegistro02': replace_nome_with_empty(dic1.get('dsRegistro02')),
+           'dsRegistro03': replace_nome_with_empty(dic1.get('dsRegistro03')),
+           'dsRegistro04': replace_nome_with_empty(dic1.get('dsRegistro04')),
+           'dsTipoRegistro': replace_nome_with_empty(dic1.get('dsTipoRegistro')),
+           'dsObservacao': replace_nome_with_empty(dic1.get('dsObservacao'))
        })
 
-    #print(dic01)
+   # print(dic01)
 
-
+     #return jsonify(result)
 
     if request.method == 'POST':
 
@@ -828,7 +866,7 @@ def data():
         payload = json.dumps(dados)
 
         #comparar_dicionarios(dicionario, dados)
-        #print("-----------------------------------------------------------------")
+       # print("-----------------------------------------------------------------")
         #print(dados)
 
         dic02 = []
@@ -855,7 +893,7 @@ def data():
             dsTipoRegistro = dado['dsTipoRegistro']
             dsObservacao = dado['dsObservacao']
             #Alterar_TbPonto(cdPonto, dsRegistro01)
-        #print(dic02)
+       # print(dic02)
 
         # Comparar os dicionários
         diferencas = comparar_listas(dic01, dic02)
@@ -863,13 +901,13 @@ def data():
         # Exibir as diferenças
         print("Diferenças encontradas:")
         for item in diferencas:
-            print(item)
-            print(item['cdPonto'])
-            print(item['dsRegistro01_B'])
+            #print(item)
+           # print(item['cdPonto'])
+           # print(item['dsRegistro01_B'])
             Alterar_TbPonto(item['cdPonto'], item['dsRegistro01_B'], item['dsRegistro02_B'], item['dsRegistro03_B'], item['dsRegistro04_B'], item['dsData'],item['dsTipoRegistro_B'],item['dsObservacao_B'])
 
-    return jsonify(dicionario)
-    #print(dicionario_diferencas)
+    return jsonify(result)
+    print(dicionario_diferencas)
 
 @app.route('/data2')
 def data2():
