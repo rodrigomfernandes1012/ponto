@@ -349,7 +349,7 @@ app.secret_key = '5160e59712d22d50e708220336549982'  # Necessário para usar ses
 app.config['SECRET_KEY'] = '5160e59712d22d50e708220336549982'
 
 users = {
-    "Luiz": "02092024", "usuario": "senha123", "rodrigo@taxidigital.net": "101275", "yham.miranda@predilarsolucoes.com.br": "1608@2024", "isabel@predilarsolucoes.com.br": "1608@2024", "maria.silva@predilarsolucoes.com.br": "2308@2024"
+    "Luiz": "02092024", "usuario": "senha123", "rodrigo@taxidigital.net": "101275", "yham.miranda@predilarsolucoes.com.br": "1608@2024", "isabel@predilarsolucoes.com.br": "1608@2024", "maria.silva@predilarsolucoes.com.br": "2308@2024", "alex.acoroni@predilarsolucoes.com.br": "0410@2024"
 }
 
 def cria_qr(dsCpf):
@@ -740,8 +740,10 @@ def comparar_listas(dicionario_a, dicionario_b):
                     'dsRegistro04_A': dict_a[cdPonto]['dsRegistro04'],
                     'dsRegistro04_B': dict_b[cdPonto]['dsRegistro04'],
                     'dsData': dict_b[cdPonto]['dsData'],
-                    'dsTipoRegistro': dict_b[cdPonto]['dsTipoRegistro'],
-                    'dsObservacao': dict_b[cdPonto]['dsObservacao']
+                    'dsTipoRegistro_A': dict_a[cdPonto]['dsTipoRegistro'],
+                    'dsTipoRegistro_B': dict_b[cdPonto]['dsTipoRegistro'],
+                    'dsObservacao_A': dict_a[cdPonto]['dsObservacao'],
+                    'dsObservacao_B': dict_b[cdPonto]['dsObservacao']
                 })
 
     # Verificar se há registros em dict_b que não estão em dict_a
@@ -805,7 +807,16 @@ def data():
 
     dic01 = []
     for dic1 in dicionario:
-        dic01.append ({'cdPonto': dic1['cdPonto'], 'dsRegistro01': dic1['dsRegistro01'], 'dsRegistro02': dic1['dsRegistro02'], 'dsRegistro03': dic1['dsRegistro03'], 'dsRegistro04': dic1['dsRegistro04'], 'dsTipoRegistro': dic1['dsTipoRegistro'], 'dsObservacao': dic1['dsObservacao']})
+       #dic01.append ({'cdPonto': dic1['cdPonto'], 'dsRegistro01': dic1['dsRegistro01'], 'dsRegistro02': dic1['dsRegistro02'], 'dsRegistro03': dic1['dsRegistro03'], 'dsRegistro04': dic1['dsRegistro04'], 'dsTipoRegistro': dic1['dsTipoRegistro'], 'dsObservacao': dic1['dsObservacao']})
+       dic01.append({
+           'cdPonto': dic1.get('cdPonto'),
+           'dsRegistro01': dic1.get('dsRegistro01'),
+           'dsRegistro02': dic1.get('dsRegistro02'),
+           'dsRegistro03': dic1.get('dsRegistro03'),
+           'dsRegistro04': dic1.get('dsRegistro04'),
+           'dsTipoRegistro': dic1.get('dsTipoRegistro'),
+           'dsObservacao': dic1.get('dsObservacao')
+       })
 
     #print(dic01)
 
@@ -818,21 +829,21 @@ def data():
 
         #comparar_dicionarios(dicionario, dados)
         #print("-----------------------------------------------------------------")
-        print(dados)
+        #print(dados)
 
         dic02 = []
         Horas_Array = []
         for dado in dados:
             #dic02.append({'cdPonto': dado['cdPonto'], 'dsRegistro01': dado['dsRegistro01'], 'dsRegistro02': dado['dsRegistro02'], 'dsRegistro03': dado['dsRegistro03'], 'dsRegistro04': dado['dsRegistro04'], 'dsData': dado['dsData'], 'dsTipoRegistro': dado['dsTipoRegistro'], 'dsObservacao': dado['dsObservacao']})
             dic02.append({
-                'cdPonto': dado['cdPonto'],
-                'dsRegistro01': dado['dsRegistro01'],
-                'dsRegistro02': dado['dsRegistro02'] if dado['dsRegistro02'] else None,
-                'dsRegistro03': dado['dsRegistro03'] if dado['dsRegistro03'] else None,
-                'dsRegistro04': dado['dsRegistro04'] if dado['dsRegistro04'] else None,
-                'dsData': dado['dsData'],
-                'dsTipoRegistro': dado['dsTipoRegistro'],
-                'dsObservacao': dado['dsObservacao']
+                'cdPonto': dado.get('cdPonto'),
+                'dsRegistro01': dado.get('dsRegistro01'),
+                'dsRegistro02': dado.get('dsRegistro02'),
+                'dsRegistro03': dado.get('dsRegistro03'),
+                'dsRegistro04': dado.get('dsRegistro04'),
+                'dsData': dado.get('dsData'),
+                'dsTipoRegistro': dado.get('dsTipoRegistro'),
+                'dsObservacao': dado.get('dsObservacao')
             })
 
             cdPonto = dado['cdPonto']
@@ -844,7 +855,7 @@ def data():
             dsTipoRegistro = dado['dsTipoRegistro']
             dsObservacao = dado['dsObservacao']
             #Alterar_TbPonto(cdPonto, dsRegistro01)
-        print(dic02)
+        #print(dic02)
 
         # Comparar os dicionários
         diferencas = comparar_listas(dic01, dic02)
@@ -855,10 +866,10 @@ def data():
             print(item)
             print(item['cdPonto'])
             print(item['dsRegistro01_B'])
-            Alterar_TbPonto(item['cdPonto'], item['dsRegistro01_B'], item['dsRegistro02_B'], item['dsRegistro03_B'], item['dsRegistro04_B'], item['dsData'],item['dsTipoRegistro'],item['dsObservacao'])
+            Alterar_TbPonto(item['cdPonto'], item['dsRegistro01_B'], item['dsRegistro02_B'], item['dsRegistro03_B'], item['dsRegistro04_B'], item['dsData'],item['dsTipoRegistro_B'],item['dsObservacao_B'])
 
     return jsonify(dicionario)
-    print(dicionario_diferencas)
+    #print(dicionario_diferencas)
 
 @app.route('/data2')
 def data2():
