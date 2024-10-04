@@ -45,8 +45,16 @@
             background-color: #fff;
         }
 
-        input[type="text"], input[type="date"], input[type="time"], select, textarea {
-            width: calc(100% - 20px);
+        input input[type="date"], input[type="time"] {
+            width: 100px; /*calc(100% - 20px);*/
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+        input[type="text"], select, textarea {
+            width: 180px; /*calc(100% - 20px);*/
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
@@ -123,7 +131,7 @@
                     <td><input type="time" value="${data[key].dsRegistro04 || ""}"></td>
                     <td>
                         <select>
-                            <option value="${data[key].dsTipoRegistro}" selected>${data[key].dsTipoRegistro}</option>
+                            <option value="${data[key].dsTipoRegistro || ""}" selected>${data[key].dsTipoRegistro || ""}</option>
                             <option value="Atestado">Atestado</option>
                             <option value="Falta">Falta</option>
                             <option value="FDS">FDS</option>
@@ -136,7 +144,7 @@
                             <option value="Demissão">Demissão</option>
                         </select>
                     </td>
-                    <td><textarea rows="1" maxlength="200">${data[key].dsObservacao}</textarea></td>
+                    <td><textarea rows="1" maxlength="200">${data[key].dsObservacao || ""}</textarea></td>
                 `;
                 tableBody.appendChild(row);
             }
@@ -231,40 +239,40 @@ async function fetchData() {
 
 // Função para renderizar a tabela
         function renderTable(data) {
-            const tableBody = document.getElementById('employee-table-body');
-            tableBody.innerHTML = '';
+    const tableBody = document.getElementById('employee-table-body');
+    tableBody.innerHTML = '';
 
-            data.forEach(item => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${item.cdPonto}</td>
-                    <td>${item.dsCardName}</td>
-                    <td>${item.dsData}</td>
-                    <td><input type="time" value="${item.dsRegistro01}"></td>
-                    <td><input type="time" value="${item.dsRegistro02 || ""}"></td>
-                    <td><input type="time" value="${item.dsRegistro03 || ""}"></td>
-                    <td><input type="time" value="${item.dsRegistro04 || ""}"></td>
-                    <td>
-                        <select>
-                            <option value="${item.dsTipoRegistro}" selected>${item.dsTipoRegistro}</option>
-                            <option value="Atestado">Atestado</option>
-                            <option value="Falta">Falta</option>
-                            <option value="FDS">FDS</option>
-                            <option value="Feriado">Feriado</option>
-                            <option value="Folga">Folga</option>
-                            <option value="FT - Diurno">FT - Diurno</option>
-                            <option value="FT - Noturno">FT - Noturno</option>
-                            <option value="HE - 100%">HE - 100%</option>
-                            <option value="Dec. de Hs">Dec. de Hs</option>
-                            <option value="Demissão">Demissão</option>
-                            <option value="Demissão">Remover</option>
-                        </select>
-                    </td>
-                    <td><textarea rows="1" maxlength="200">${item.dsObservacao}</textarea></td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
+    data.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${item.cdPonto}</td>
+            <td>${item.dsCardName}</td>
+            <td>${item.dsData}</td>
+            <td><input type="time" value="${item.dsRegistro01 || ""}"></td>
+            <td><input type="time" value="${item.dsRegistro02 || ""}"></td>
+            <td><input type="time" value="${item.dsRegistro03 || ""}"></td>
+            <td><input type="time" value="${item.dsRegistro04 || ""}"></td>
+            <td>
+                <select>
+                    <option value="${item.dsTipoRegistro || ""}" selected>${item.dsTipoRegistro || ""}</option>
+                    <option value="Atestado">Atestado</option>
+                    <option value="Falta">Falta</option>
+                    <option value="FDS">FDS</option>
+                    <option value="Feriado">Feriado</option>
+                    <option value="Folga">Folga</option>
+                    <option value="FT - Diurno">FT - Diurno</option>
+                    <option value="FT - Noturno">FT - Noturno</option>
+                    <option value="HE - 100%">HE - 100%</option>
+                    <option value="Dec. de Hs">Dec. de Hs</option>
+                    <option value="Demissão">Demissão</option>
+                    <option value="Demissão">Remover</option>
+                </select>
+            </td>
+            <td><textarea rows="1" maxlength="200">${item.dsObservacao || ""}</textarea></td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
 
         fetchData();
     </script>
