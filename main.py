@@ -306,7 +306,7 @@ def Update_TbDadosPlanilha(dados):
     nrAlt = (dados.get('nAlt'))
     nrLarg = (dados.get('nLarg'))
     nrComp = (dados.get('nComp'))
-    dtRegistro =  agora.strftime("%d/%m/%Y %H:%M")
+   # dtRegistro =  agora.strftime("%d/%m/%Y %H:%M")
    # for dado in dados:
    #     nrPeso = str(dado['nPeso'])
    #     nrAlt = dado['nAlt']
@@ -319,7 +319,7 @@ def Update_TbDadosPlanilha(dados):
 
     conexao = conecta_bd()
     cursor = conexao.cursor(dictionary=True)
-    comando = f'update DbIntelliMetrics.TbDadosPlanilha set nrPeso = "{nrPeso}", dsDimensoes = concat("{nrAlt}"  " x "  "{nrComp}"  " x "  "{nrLarg}"), dtRegistro = "{dtRegistro}" where dsSOlinha = "{dsEtiqueta}"'
+    comando = f'update DbIntelliMetrics.TbDadosPlanilha set nrPeso = "{nrPeso}", dsDimensoes = concat("{nrAlt}"  " x "  "{nrComp}"  " x "  "{nrLarg}") where dsSOlinha = "{dsEtiqueta}"'
     print(comando)
     cursor.execute(comando)
     conexao.commit()
@@ -528,7 +528,7 @@ def upload_file():
 
 
 
-@app.route('/cubagemold', methods=['GET'])
+@app.route('/cubagem', methods=['GET'])
 def cubagem():
     # Capturar os parâmetros da query string
     xEtiqueta = request.args.get('xEtiqueta')
