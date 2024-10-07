@@ -781,7 +781,7 @@ def mostrar_dados():
         engine = create_engine(banco_url)
 
         # Faz uma consulta para selecionar os dados ordenados pela data mais recente
-        query = text(f"SELECT distinct dsNF, dsOrdemRec, dsCodigo, dsDescricao, nrQtde, dsSO, nrLinha, nrQtdeCaixas, nrQtdeRecPecas, dsNumeroSerie, nrPeso, dsDimensoes, dsLocalizacao, dsObs, dsSoLinha, dsTipoArmazenagem, dsNomePlanilha, dtRegistro, dsStatus FROM DbIntelliMetrics.TbDadosPlanilha order by cdPlanilha desc")  # Supondo que haja uma coluna `id` que indica a ordem
+        query = text(f"SELECT distinct dsNF, dsOrdemRec, dsCodigo, dsDescricao, nrQtde, dsSO, nrLinha, nrQtdeCaixas, nrQtdeRecPecas, dsNumeroSerie, nrPeso, dsDimensoes, dsLocalizacao, dsObs, dsSoLinha, dsTipoArmazenagem, dsNomePlanilha FROM DbIntelliMetrics.TbDadosPlanilha ")  # Supondo que haja uma coluna `id` que indica a ordem
         #print(query)
         with engine.connect() as conn:
             result = conn.execute(query)
