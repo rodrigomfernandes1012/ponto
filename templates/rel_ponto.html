@@ -101,6 +101,7 @@
             <tr>
                 <th>ID</th>
                 <th>Funcionário</th>
+                <th>CPF</th>
                 <th>Data</th>
                 <th>Registro 01</th>
                 <th>Registro 02</th>
@@ -191,6 +192,7 @@ function renderTable(data) {
         row.innerHTML = `
             <td>${item.cdPonto}</td>
             <td>${item.dsCardName}</td>
+            <td>${item.dsCardNo}</td>
             <td>${item.dsData}</td>
             <td><input type="time" value="${item.dsRegistro01 || ""}"></td>
             <td><input type="time" value="${item.dsRegistro02 || ""}"></td>
@@ -225,7 +227,8 @@ fetchData();
             document.querySelectorAll('tbody tr').forEach(row => {
                 const idponto = Number(row.cells[0].textContent.trim());
                 const employeeName = row.cells[1].textContent.trim();
-                const dsData = row.cells[2].textContent.trim();
+                const dsCardNo = row.cells[2].textContent.trim();
+                const dsData = row.cells[3].textContent.trim();
                 const entrada01 = row.querySelector('input[type="time"]').value;
                 const entrada02 = row.cells[4].querySelector('input[type="time"]').value;
                 const entrada03 = row.cells[5].querySelector('input[type="time"]').value;
@@ -237,6 +240,7 @@ fetchData();
                     cdPonto: idponto,
                     cdAcessoIntelbras: null,
                     dsCardname: employeeName,
+                    dsCardNo: dsCardNo,
                     dsData: dsData,
                     dsRegistro01: entrada01,
                     dsRegistro02: entrada02,
@@ -272,7 +276,7 @@ fetchData();
 
     // Adicionando cabeçalhos
     data.push([
-        'ID', 'Funcionário', 'Data', 'Registro 01', 'Registro 02', 'Registro 03', 'Registro 04', 'Ocorrências', 'Observações'
+        'ID', 'Funcionário', 'CPF', 'Data',  'Registro 01', 'Registro 02', 'Registro 03', 'Registro 04', 'Ocorrências', 'Observações'
     ]);
 
     // Adicionando dados das linhas
@@ -282,12 +286,13 @@ fetchData();
             cells[0].textContent.trim(),
             cells[1].textContent.trim(),
             cells[2].textContent.trim(),
-            cells[3].querySelector('input[type="time"]').value,
+            cells[3].textContent.trim(),
             cells[4].querySelector('input[type="time"]').value,
             cells[5].querySelector('input[type="time"]').value,
             cells[6].querySelector('input[type="time"]').value,
-            cells[7].querySelector('select').value,
-            cells[8].querySelector('textarea').value.trim()
+            cells[7].querySelector('input[type="time"]').value,
+            cells[8].querySelector('select').value,
+            cells[9].querySelector('textarea').value.trim()
         ];
         data.push(rowData);
     });
