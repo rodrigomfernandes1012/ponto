@@ -306,7 +306,7 @@ def Update_TbDadosPlanilha(dados):
     nrAlt = (dados.get('nAlt'))
     nrLarg = (dados.get('nLarg'))
     nrComp = (dados.get('nComp'))
-   # dtRegistro =  agora.strftime("%d/%m/%Y %H:%M")
+    #dtRegistro =  agora.strftime("%d/%m/%Y %H:%M")
    # for dado in dados:
    #     nrPeso = str(dado['nPeso'])
    #     nrAlt = dado['nAlt']
@@ -319,7 +319,7 @@ def Update_TbDadosPlanilha(dados):
 
     conexao = conecta_bd()
     cursor = conexao.cursor(dictionary=True)
-    comando = f'update DbIntelliMetrics.TbDadosPlanilha set nrPeso = "{nrPeso}", dsDimensoes = concat("{nrAlt}"  " x "  "{nrComp}"  " x "  "{nrLarg}") where dsSOlinha = "{dsEtiqueta}"'
+    comando = f'update DbIntelliMetrics.TbDadosPlanilha set nrPeso = "{nrPeso}", dsDimensoes = concat("{nrAlt}"  " x "  "{nrComp}"  " x "  "{nrLarg}")" where dsSOlinha = "{dsEtiqueta}"'
     print(comando)
     cursor.execute(comando)
     conexao.commit()
@@ -528,7 +528,7 @@ def upload_file():
 
 
 
-@app.route('/cubagem', methods=['GET'])
+@app.route('/cubagemold', methods=['GET'])
 def cubagem():
     # Capturar os parâmetros da query string
     xEtiqueta = request.args.get('xEtiqueta')
@@ -781,7 +781,7 @@ def mostrar_dados():
         engine = create_engine(banco_url)
 
         # Faz uma consulta para selecionar os dados ordenados pela data mais recente
-        query = text(f"SELECT distinct dsNF, dsOrdemRec, dsCodigo, dsDescricao, nrQtde, dsSO, nrLinha, nrQtdeCaixas, nrQtdeRecPecas, dsNumeroSerie, nrPeso, dsDimensoes, dsLocalizacao, dsObs, dsSoLinha, dsTipoArmazenagem, dsNomePlanilha FROM DbIntelliMetrics.TbDadosPlanilha ")  # Supondo que haja uma coluna `id` que indica a ordem
+        query = text(f"SELECT distinct dsNF, dsOrdemRec, dsCodigo, dsDescricao, nrQtde, dsSO, nrLinha, nrQtdeCaixas, nrQtdeRecPecas, dsNumeroSerie, nrPeso, dsDimensoes, dsLocalizacao, dsObs, dsSoLinha, dsTipoArmazenagem, dsNomePlanilha  FROM DbIntelliMetrics.TbDadosPlanilha ")  # Supondo que haja uma coluna `id` que indica a ordem
         #print(query)
         with engine.connect() as conn:
             result = conn.execute(query)
@@ -804,7 +804,8 @@ def data():
     query = """
         SELECT 
             cdPonto, 
-            TRIM(dsCardName) AS dsCardName, 
+            TRIM(dsCardName) AS dsCardName,
+            dsCardNo, 
             DATE_FORMAT(STR_TO_DATE(dsRegistroAut, '%Y-%m-%d %H:%i:%s'), '%d/%m/%Y') AS dsData,
             DATE_FORMAT(STR_TO_DATE(dsRegistro01, '%Y-%m-%d %H:%i:%s'), '%Y-%m-%d %H:%i') AS dsRegistro00,
             DATE_FORMAT(STR_TO_DATE(dsRegistro01, '%Y-%m-%d %H:%i:%s'), '%H:%i') AS dsRegistro01,
