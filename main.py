@@ -17,7 +17,7 @@ from email.mime.base import MIMEBase
 from email import encoders
 import os
 from datetime import date
-import cups
+
 
 
 
@@ -422,31 +422,6 @@ def inserir_tb_funcionario(
 # Exemplo de uso
 # inserir_tb_funcionario("Bairro Exemplo", "Cidade Exemplo", ... , 123)
 
-def imprimir_zpl(texto):
-
-    # Conecta ao servidor CUPS
-    conn = cups.Connection()
-
-    # Obtém a impressora padrão
-    impressora = conn.getDefault()
-
-    if not impressora:
-        print("Nenhuma impressora padrão encontrada.")
-        return
-
-    # Cria um arquivo temporário para o trabalho de impressão
-    with open("/tmp/arquivo_impressao.txt", "w") as arquivo:
-        arquivo.write(texto)
-
-    # Define opções de impressão (pode mudar conforme a necessidade)
-    print_options = {}
-
-    # Envia o documento para a fila de impressão
-    conn.printFile(impressora, "/tmp/arquivo_impressao.txt", "Documento", print_options)
-    print("Documento enviado para a impressora.")
-
-# Exemplo de uso
-#imprimir_texto("Olá, mundo! Este é um teste de impressão.")
 
 
 def get_today_data():
@@ -934,24 +909,6 @@ def teste():
 
 
 
-
-@app.route('/teste_impressao')
-def teste_impressao():
-    # Dimensões da etiqueta em cm
-    largura_cm = 10
-    altura_cm = 7
-    margem_cm = 0.5
-
-    # Converte para pontos
-    largura_pontos = (largura_cm - 2 * margem_cm) * 28.35
-    altura_pontos = (altura_cm - 2 * margem_cm) * 28.35
-    margem_pontos = margem_cm * 28.35
-
-    # Comando ZPL para a etiqueta
-    zpl = "TESTE DE IMPRESSÃO OK"
-    imprimir_zpl(zpl)
-
-    return redirect(url_for('teste'))
 
 
 
