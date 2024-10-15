@@ -136,7 +136,7 @@
 
                         <div>
                             <button type="button" class="btn btn-primary mt-2" onclick="document.getElementById('fileUploadTxt').click();">Importar</button>
-                            <input type="file" id="fileUploadTxt" accept=".txt" style="display: none;" onchange="handleFileUpload(this);">
+                            <input type="file" id="fileUploadTxt" accept=".fun" style="display: none;" onchange="handleFileUpload(this);">
                             <button type="button" class="btn btn-primary mt-2" onclick="document.getElementById('fileUploadImage').click();">Adicionar Foto</button>
                             <input type="file" id="fileUploadImage" accept="image/*" style="display: none;" onchange="displayImage(this);">
                             <button type="button" class="btn btn-success mt-2" onclick="enviarQR()">Enviar QR</button>
@@ -289,12 +289,31 @@
         }
 
         // Função para tratar o upload do arquivo .txt
-        function handleFileUpload(input) {
-            if (input.files.length > 0) {
-                // Aqui você pode adicionar o código para processar o arquivo
-                alert('Arquivo .txt selecionado: ' + input.files[0].name);
+         function handleFileUpload(input) {
+        if (input.files.length > 0) {
+          const file = input.files[0];
+          const formData = new FormData();
+          formData.append('file', file);
+
+          fetch('/upload', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
             }
+            return response.text();
+          })
+          .then(data => {
+            alert(data); // Show the server's response
+          })
+          .catch(error => {
+            console.error('Error uploading file:', error);
+            alert('Error uploading file. Please try again.');
+          });
         }
+      }
 
         // Função para exibir a imagem selecionada
         function displayImage(input) {
