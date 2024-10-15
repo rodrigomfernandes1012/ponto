@@ -1,5 +1,8 @@
-from datetime import datetime
+from datetime import datetime, time
 from io import BytesIO
+
+import win32gui
+import win32ui
 from flask import Flask, jsonify,  render_template,  request, redirect, flash,  url_for, send_file
 import mysql.connector
 from forms import FormCliente, FormDestinatario, FormUsuario, FuncionarioForm
@@ -17,9 +20,14 @@ from email.mime.base import MIMEBase
 from email import encoders
 import os
 from datetime import date
+import win32print
 
 
 
+##Configuração do dispositivo
+ip = '201.92.45.49:8090'
+username = 'admin'
+password = 'Start010'
 
 
 # Configurações do banco de dados
@@ -67,6 +75,381 @@ def conecta_bd():
   database='DbIntelliMetrics')
   return conexao
 
+class IntelbrasAccessControlAPI:
+    def __init__(self, ip: str, username: str, passwd: str):
+        self.ip = ip
+        self.username = username
+        self.passwd = passwd
+        self.digest_auth = requests.auth.HTTPDigestAuth(self.username, self.passwd)
+
+    def delete_all_users_v2(self) -> str:
+        '''
+        This command delete all user and credential incluse in device
+        '''
+        try:
+            url = "http://{}/cgi-bin/AccessUser.cgi?action=removeAll".format(
+                str(self.ip)
+            )
+            result = requests.get(url, auth=self.digest_auth, stream=True, timeout=20, verify=False)  # noqa
+
+            if result.status_code != 200:
+                raise Exception()
+            return str(result.text)
+        except Exception as e:
+            raise Exception("ERROR - During Remove All Users using V2 command - ", e)
+
+
+    def add_user_v2(self, CardName: str, UserID: int, UserType: int, Password: int, Authority: int, Doors: int,
+                    TimeSections: int, ValidDateStart: str, ValidDateEnd: str):
+        UserList = (
+
+                '''{
+                        "UserList": [
+                            {
+                            "UserID": "''' + str(UserID) + '''",
+                            "UserName": "''' + str(CardName) + '''",
+                            "UserType": ''' + str(UserType) + ''',
+                            "Authority": ''' + str(Authority) + ''',
+                            "Password": "''' + str(Password) + '''",
+                            "Doors": ''' + '[' + str(Doors) + ']' + ''',
+                            "TimeSections": ''' + '[' + str(TimeSections) + ']' + ''',
+                            "ValidFrom": "''' + str(ValidDateStart) + '''",
+                            "ValidTo": "''' + str(ValidDateEnd) + '''"
+                        }
+                    ]
+                }''')
+        try:
+            url = "http://{}/cgi-bin/AccessUser.cgi?action=insertMulti".format(
+                str(self.ip),
+            )
+            result = requests.get(url, data=UserList, auth=self.digest_auth, stream=True, timeout=20,
+                                  verify=False)  # noqa
+            if result.status_code != 200:
+                raise Exception()
+            return str(result.text)
+        except Exception:
+            raise Exception("deu pau - During Add New User using V2 command - ")
+
+    def update_user_v2(self, CardName: str, UserID: int, UserType: int, Password: int, Authority: int, Doors: int,
+                       TimeSections: int, ValidDateStart: str, ValidDateEnd: str) -> str:
+        UserList = (
+
+                '''{
+                        "UserList": [
+                            {
+                                "UserName": "''' + str(CardName) + '''",
+                            "UserID": "''' + str(UserID) + '''",
+                            "UserType": ''' + str(UserType) + ''',
+                            "Password": "''' + str(Password) + '''",
+                            "Authority": "''' + str(Authority) + '''",
+                            "Doors": "''' + '[' + str(Doors) + ']' + '''",
+                            "TimeSections": "''' + '[' + str(TimeSections) + ']' + '''",
+                            "ValidFrom": "''' + str(ValidDateStart) + '''",
+                            "ValidTo": "''' + str(ValidDateEnd) + '''"
+                        }
+                    ]
+                }''')
+        try:
+            url = "http://{}/cgi-bin/AccessUser.cgi?action=updateMulti".format(
+                str(self.ip),
+            )
+
+            result = requests.get(url, data=UserList, auth=self.digest_auth, stream=True, timeout=20,
+                                  verify=False)  # noqa
+            #print("result.text")
+            if result.status_code != 200:
+                raise Exception()
+            return str(result.text)
+        except Exception:
+            raise Exception("ERROR - During Update User using V2 command - ")
+
+    def get_all_users(self, count: int) -> dict:
+        try:
+            url = "http://{}/cgi-bin/recordFinder.cgi?action=doSeekFind&name=AccessControlCard&count={}".format(
+                str(self.ip),
+                str(count),
+            )
+            result = requests.get(url, auth=self.digest_auth, stream=True, timeout=20, verify=False)  # noqa
+            raw = result.text.strip().splitlines()
+
+            data = self._raw_to_dict(raw)
+            if result.status_code != 200:
+                raise Exception()
+            return data
+        except Exception:
+            raise Exception("ERROR - During Get Users")
+
+    def get_users_count(self) -> dict:
+        try:
+            url = "http://{}/cgi-bin/recordFinder.cgi?action=getQuerySize&name=AccessUserInfo".format(
+                str(self.ip),
+            )
+            result = requests.get(url, auth=self.digest_auth, stream=True, timeout=20, verify=False)  # noqa
+            raw = result.text.strip().splitlines()
+
+            data = self._raw_to_dict(raw)
+            if result.status_code != 200:
+                raise Exception()
+            return data
+        except Exception:
+            raise Exception("ERROR - During Get Users Count")
+
+    def get_user_cardno(self, CardNoList: str) -> dict:
+        try:
+            url = "http://{}/cgi-bin/AccessCard.cgi?action=list&CardNoList[0]={}".format(
+                str(self.ip),
+                str(CardNoList).upper(),
+            )
+            result = requests.get(url, auth=self.digest_auth, stream=True, timeout=20, verify=False)  # noqa
+            raw = result.text.strip().splitlines()
+
+            data = self._raw_to_dict(raw)
+            if result.status_code != 200:
+                raise Exception()
+            return data
+        except Exception:
+            raise Exception("ERROR - During Get Users CardNo")
+
+    def get_user_recno(self, recno: int) -> dict:
+        try:
+            url = "http://{}/cgi-bin/recordUpdater.cgi?action=get&name=AccessControlCard&recno={}".format(
+                str(self.ip),
+                str(recno),
+            )
+            result = requests.get(url, auth=self.digest_auth, stream=True, timeout=20, verify=False)  # noqa
+            raw = result.text.strip().splitlines()
+
+            data = self._raw_to_dict(raw)
+            if result.status_code != 200:
+                raise Exception()
+            return data
+        except Exception:
+            raise Exception("ERROR - During Get Users RecNo")
+
+    def get_user_id(self, UserIDList: int) -> dict:
+        try:
+            url = "http://{}/cgi-bin/AccessUser.cgi?action=list&UserIDList[0]={}".format(
+                str(self.ip),
+                str(UserIDList),
+            )
+            result = requests.get(url, auth=self.digest_auth, stream=True, timeout=20, verify=False)  # noqa
+            raw = result.text.strip().splitlines()
+
+            data = self._raw_to_dict(raw)
+            if result.status_code != 200:
+                raise Exception()
+            return data
+        except Exception:
+            raise Exception("ERROR - During Get Users Id")
+
+
+    def set_remove_users_id(self, UserIDList: int) -> dict:
+        try:
+            url = "http://{}/cgi-bin/AccessUser.cgi?action=removeMulti&UserIDList[0]={}".format(
+                str(self.ip),
+                str(UserIDList),
+            )
+            result = requests.get(url, auth=self.digest_auth, stream=True, timeout=20, verify=False)  # noqa
+            raw = result.text.strip().splitlines()
+
+            data = self._raw_to_dict(raw)
+            if result.status_code != 200:
+                raise Exception()
+            return data
+        except Exception:
+            raise Exception("ERROR - During Remove Users By ID")
+
+    def add_card_v2(self, UserID: int, CardNo: int, CardType: int, CardStatus: int) -> dict:
+        '''
+        UserID: ID do usuário
+        CardNo: Número do cartão
+        CardType: Tipo do Cartão; 0- Ordinary card; 1- VIP card; 2- Guest card; 3- Patrol card; 4- Blocklist card; 5- Duress card
+        CardStatus: Status do Cartão; 0- Normal; 1- Cancelado; 2- Congelado
+        '''
+        CardList = (
+
+                '''{
+                        "CardList": [
+                            {
+                                "UserID": "''' + str(UserID) + '''",
+                            "CardNo": "''' + str(CardNo) + '''",
+                            "CardType": ''' + str(CardType) + ''',
+                            "CardStatus": "''' + str(CardStatus) + '''"
+                        }
+                    ]
+                }''')
+
+
+        url = "http://{}/cgi-bin/AccessCard.cgi?action=insertMulti".format(
+            str(self.ip),
+            str(UserID),
+            str(CardNo).upper(),
+            str(CardType),
+            str(CardStatus),
+        )
+        result = requests.post(url, data=CardList, auth=self.digest_auth, stream=True, timeout=20,
+                               verify=False)  # noqa
+
+
+
+
+    def _raw_to_dict(self, raw):
+        data = {}
+        for i in raw:
+            if len(i) > 1:
+                name = i[:i.find("=")]
+                val = i[i.find("=") + 1:]
+                try:
+                    len(data[name])
+                except:
+                    data[name] = val
+            else:
+                data["NaN"] = "NaN"
+        return data
+
+
+
+api = IntelbrasAccessControlAPI(ip, username, password)
+
+
+def le_arquivo():
+    try:
+        print("entrei na função")
+        filename = os.path.join(app.config['UPLOAD_FOLDER'], 'CadastroFun.txt')
+        with (open(filename, "r") as arquivo):
+            print("abrindo arquivo")
+            linhas = arquivo.readlines()
+            for linha in linhas:
+
+                nrCodEmpregado = (linha[0:6])
+                dsNomeEmpregado = (linha[6:86])
+                dsLogradouro = (linha[86:136])
+                dsNumCasa = (linha[136:141])
+                dsComplemento = (linha[141:156])
+                dsBairro = (linha[156:176])
+                dsCidade = (linha[176:196])
+                dsFuncao = (linha[560:610])
+                dsPis = (linha[798:821])
+                dsCpf = int(linha[763:774])
+                dsSenha = int(linha[763:766])
+                dsEmpresa = ("Predilar Soluções")
+                dsEntrada = ("00:00")
+                dsSaida = ("00:00")
+                cdPerfil = 1
+                dsEscala = (linha[421:424])
+                nrCargaHoraria = 44
+                nrCargaHorariaMes = 220
+                dsCelular =""
+                dsEmail="@"
+                dsUser = username
+                dtRegistro = datetime.now().strftime("%d/%m/%Y")
+                #print(nrCodEmpregado)
+                #print(dsNomeEmpregado)
+                #print(dsLogradouro)
+                #print(dsNumCasa)
+                #print(dsComplemento)
+                #print(dsBairro)
+                #print(dsCidade)
+                #print(dsFuncao)
+                #print(dsPis)
+                #print(dsCpf)
+                #print(arquivo.name)
+                #print(linha)
+                Inserir_TbFuncionario(nrCodEmpregado, dsNomeEmpregado, dsCpf, dsLogradouro, dsNumCasa, dsComplemento, dsBairro, dsCidade, dsEntrada, dsSaida, cdPerfil, dsFuncao, dsPis, dsEmpresa, dsEscala, nrCargaHoraria, nrCargaHorariaMes, dsCelular, dsEmail, dsUser)
+                api.add_user_v2(dsNomeEmpregado, dsCpf, 0, dsSenha, 2, 0, 255, '2024-10-15 00:10:00', '2030-01-01 00:00:00')
+                api.add_card_v2(dsCpf, dsCpf, 0, 0)
+                print(dsNomeEmpregado)
+                print('cadastrado com sucesso!')
+        return {"message": "Cadastrados com sucesso !"}
+    except Exception as e:
+        return {"error": f"Não foi possivel cadastrar, tente mais tarde ou ligue para o suporte {e}"}
+
+
+def inserir_tb_funcionario(
+        dsBairro,
+        dsCidade,
+        dsComplemento,
+        dsFuncao,
+        dsLogradouro,
+        dsNomeEmpregado,
+        dsNumCasa,
+        dsUser,
+        dtRegistro,
+        nrCodEmpregado,
+        TbFuncionariocol,
+):
+    # Conecta ao banco de dados
+    conexao = conecta_bd()
+    cursor = conexao.cursor(dictionary=True)
+
+    try:
+        # Verifica se o registro já existe
+        verifica_comando = """
+            SELECT 1 FROM DbIntelliMetrics.TbFuncionario
+            WHERE nrCodEmpregado = %s
+        """
+        cursor.execute(verifica_comando, (nrCodEmpregado,))
+        resultado = cursor.fetchone()
+
+        if resultado:
+            print("Empregado já existe com nrCodEmpregado:", nrCodEmpregado)
+            return
+
+        # Prepara o comando de inserção
+        comando = """
+            INSERT INTO DbIntelliMetrics.TbFuncionario (
+                dsBairro, dsCidade, dsComplemento, dsFuncao, dsLogradouro,
+                dsNomeEmpregado, dsNumCasa, dsUser, dtRegistro, nrCodEmpregado, TbFuncionariocol
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        valores = (
+            dsBairro, dsCidade, dsComplemento, dsFuncao, dsLogradouro,
+            dsNomeEmpregado, dsNumCasa, dsUser, dtRegistro, nrCodEmpregado, TbFuncionariocol
+        )
+
+        # Executa a inserção
+        cursor.execute(comando, valores)
+        conexao.commit()
+        print("Registro inserido com sucesso.")
+
+    except Exception as e:
+        print("Ocorreu um erro ao inserir o registro:", e)
+
+    finally:
+        # Fecha a conexão com o banco de dados
+        cursor.close()
+        conexao.close()
+
+
+# Exemplo de uso
+# inserir_tb_funcionario("Bairro Exemplo", "Cidade Exemplo", ... , 123)
+
+def imprimir_zpl(texto):
+    # Abre a impressora padrão
+    impressora = win32print.GetDefaultPrinter()
+    print(impressora)
+
+    # Usa o bloco de código try-finally para garantir que a impressora seja fechada corretamente
+    try:
+        # Obtém um handle para o driver de impressora
+        hPrinter = win32print.OpenPrinter(impressora)
+        print(hPrinter)
+
+        # Inicia um documento de impressão
+        hJob = win32print.StartDocPrinter(hPrinter, 1, ("Documento", None, "RAW"))
+        win32print.StartPagePrinter(hPrinter)
+        print(hJob)
+        # Converte o texto em bytes e imprime
+        win32print.WritePrinter(hPrinter, texto.encode('utf-8'))
+        print(texto.encode('utf-8'))
+        # Finaliza a página e o documento
+        win32print.EndPagePrinter(hPrinter)
+        win32print.EndDocPrinter(hPrinter)
+        print("04")
+    finally:
+        # Fecha a conexão com a impressora
+        win32print.ClosePrinter(hPrinter)
+        print("05")
 
 
 
@@ -260,14 +643,52 @@ def pesquisa_status():
   conexao.close()
   return selecao
 
-def Inserir_TbFuncionario(nrCodEmpregado, dsNomeEmpregado, dsEntrada, dsSaida, cdPerfil, dsFuncao, dsEmpresa, dsEscala, nrCargaHoraria, nrCargaHorariaMes, dsCelular, dsEmail):
-    conexao = conecta_bd()
-    cursor = conexao.cursor(dictionary=True)
-    comando = f'insert into DbIntelliMetrics.TbFuncionario (nrCodEmpregado, dsNomeEmpregado, dsEntrada, dsSaida, cdPerfil, dsFuncao, dsEmpresa, dsEscala, nrCargaHoraria, nrCargaHorariaMes, dsCelular, dsEmail) values ("{nrCodEmpregado}", "{dsNomeEmpregado}", "{dsEntrada}", "{dsSaida}", "{cdPerfil}", "{dsFuncao}", "{dsEmpresa}", "{dsEscala}", "{nrCargaHoraria}", "{nrCargaHorariaMes}", "{dsCelular}", "{dsEmail}")'
-    cursor.execute(comando)
-    conexao.commit()
-    cursor.close()
-    conexao.close()
+def Inserir_TbFuncionario(nrCodEmpregado, dsNomeEmpregado, dsCpf, dsLogradouro, dsNumCasa, dsComplemento, dsBairro, dsCidade, dsEntrada, dsSaida, cdPerfil, dsFuncao, dsPis, dsEmpresa, dsEscala, nrCargaHoraria, nrCargaHorariaMes, dsCelular, dsEmail, dsUser):
+        # Conectar ao banco de dados
+        conexao = conecta_bd()
+        cursor = conexao.cursor(dictionary=True)
+
+        try:
+            # Verificar se o registro já existe
+            verifica_comando = """
+                SELECT 1 FROM DbIntelliMetrics.TbFuncionario
+                WHERE nrCodEmpregado = %s
+            """
+            cursor.execute(verifica_comando, (nrCodEmpregado,))
+            resultado = cursor.fetchone()
+
+            if resultado:
+                print("Empregado já existe com nrCodEmpregado:", nrCodEmpregado)
+                return
+
+            # Preparar o comando de inserção
+            comando = """
+                INSERT INTO DbIntelliMetrics.TbFuncionario (nrCodEmpregado, dsNomeEmpregado, dsCpf, dsLogradouro, dsNumCasa, dsComplemento, dsBairro, dsCidade, dsEntrada, dsSaida, cdPerfil, dsFuncao, dsPis, dsEmpresa, dsEscala, nrCargaHoraria, nrCargaHorariaMes, dsCelular, dsEmail, stStatus, dsUser)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s, %s, %s)
+            """
+            valores = (
+                nrCodEmpregado, dsNomeEmpregado, dsCpf, dsLogradouro, dsNumCasa, dsComplemento, dsBairro, dsCidade,
+                dsEntrada, dsSaida, cdPerfil, dsFuncao, dsPis, dsEmpresa, dsEscala, nrCargaHoraria, nrCargaHorariaMes,
+                dsCelular, dsEmail, 1, dsUser
+            )
+
+            # Executar inserção
+            cursor.execute(comando, valores)
+            print(comando,valores)
+            conexao.commit()
+            print("Registro inserido com sucesso.")
+
+        except Exception as e:
+            print("Ocorreu um erro ao inserir o registro:", e)
+
+        finally:
+            # Fechar o cursor e a conexão com o banco de dados
+            cursor.close()
+            conexao.close()
+
+    # Exemplo de uso
+    # inserir_tb_funcionario(1, "Nome Exemplo", "08:00", "17:00", 1, "Função", "Empresa", "Escala", 40, 160, "999999999", "email@example.com")
+
 
 def Alterar_TbFuncionario(nrCodEmpregado, dsNomeEmpregado, dsCpf, dsEmail, dsCelular, dsEntrada, dsSaida, cdPerfil, dsFuncao, dsEmpresa, dsEscala, nrCargaHoraria, nrCargaHorariaMes):
     conexao = conecta_bd()
@@ -464,7 +885,31 @@ def logip():
     #return render_template( content=render_template('log_ip.html'))
     return render_template('log_ip.html')
 
+UPLOAD_FOLDER = './uploads' # Create this folder if it doesn't exist
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+##subir imagem
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({'error': 'Arquivo não localizado'})
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'Selecione um Arquivo'})
+    if file and file.filename.endswith('.fun'):
+        filename = os.path.join(app.config['UPLOAD_FOLDER'], 'CadastroFun.txt')
+        file.save(filename)
+
+        # Call xpto() after successful file save
+        result = le_arquivo()
+        if "error" in result:
+            return jsonify({'error': result['error']})
+        else:
+            return jsonify({'Upload': 'Carregamento do arquivo com sucesso!', 'Cadastramento no ponto': result['message']})
+
+    else:
+        return jsonify({'error': 'O Arquivo deve ser um .fun parametrizado'})
 
 
 @app.route('/log_ip')
@@ -488,13 +933,42 @@ def dashboard():
     print(username)
     return render_template('navbar.html', username=username)  # Substitua 'template.html' pelo seu nome de arquivo
 
+@app.route('/teste')
+def teste():
+    return render_template('teste.html')
 
 
-@app.route('/upload')
+
+
+
+@app.route('/teste_impressao')
+def teste_impressao():
+    # Dimensões da etiqueta em cm
+    largura_cm = 10
+    altura_cm = 7
+    margem_cm = 0.5
+
+    # Converte para pontos
+    largura_pontos = (largura_cm - 2 * margem_cm) * 28.35
+    altura_pontos = (altura_cm - 2 * margem_cm) * 28.35
+    margem_pontos = margem_cm * 28.35
+
+    # Comando ZPL para a etiqueta
+    zpl = "TESTE DE IMPRESSÃO OK"
+    imprimir_zpl(zpl)
+
+    return redirect(url_for('teste'))
+
+
+
+
+@app.route('/upload_planilha')
 def upload_form():
-    return render_template('upload.html')
-@app.route('/upload', methods=['POST'])
-def upload_file():
+    return render_template('upload_planilha.html')
+
+#upload planilha transporte
+@app.route('/upload_planilha', methods=['POST'])
+def upload_file_planilha():
     if 'file' not in request.files:
         return 'Nenhum arquivo enviado', 400
 
@@ -595,7 +1069,7 @@ def login():
         if username != "Luiz":
             return render_template('home.html',username=username)
         else:
-            return render_template('upload.html',username=username)
+            return render_template('teste.html', username=username)
     else:
         Inserir_TbLog("TbLogin", "ACESSO INVÁLIDO", dsIp, login_usuario)
         return render_template('login.html', message='Usuário ou senha inválidos!')
