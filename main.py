@@ -1,8 +1,5 @@
 from datetime import datetime, time
 from io import BytesIO
-
-import win32gui
-import win32ui
 from flask import Flask, jsonify,  render_template,  request, redirect, flash,  url_for, send_file
 import mysql.connector
 from forms import FormCliente, FormDestinatario, FormUsuario, FuncionarioForm
@@ -20,7 +17,8 @@ from email.mime.base import MIMEBase
 from email import encoders
 import os
 from datetime import date
-import win32print
+import cups
+
 
 
 
@@ -425,34 +423,30 @@ def inserir_tb_funcionario(
 # inserir_tb_funcionario("Bairro Exemplo", "Cidade Exemplo", ... , 123)
 
 def imprimir_zpl(texto):
-    # Abre a impressora padrão
-    impressora = win32print.GetDefaultPrinter()
-    print(impressora)
 
-    # Usa o bloco de código try-finally para garantir que a impressora seja fechada corretamente
-    try:
-        # Obtém um handle para o driver de impressora
-        hPrinter = win32print.OpenPrinter(impressora)
-        print(hPrinter)
+    # Conecta ao servidor CUPS
+    conn = cups.Connection()
 
-        # Inicia um documento de impressão
-        hJob = win32print.StartDocPrinter(hPrinter, 1, ("Documento", None, "RAW"))
-        win32print.StartPagePrinter(hPrinter)
-        print(hJob)
-        # Converte o texto em bytes e imprime
-        win32print.WritePrinter(hPrinter, texto.encode('utf-8'))
-        print(texto.encode('utf-8'))
-        # Finaliza a página e o documento
-        win32print.EndPagePrinter(hPrinter)
-        win32print.EndDocPrinter(hPrinter)
-        print("04")
-    finally:
-        # Fecha a conexão com a impressora
-        win32print.ClosePrinter(hPrinter)
-        print("05")
+    # Obtém a impressora padrão
+    impressora = conn.getDefault()
 
+    if not impressora:
+        print("Nenhuma impressora padrão encontrada.")
+        return
 
+    # Cria um arquivo temporário para o trabalho de impressão
+    with open("/tmp/arquivo_impressao.txt", "w") as arquivo:
+        arquivo.write(texto)
 
+    # Define opções de impressão (pode mudar conforme a necessidade)
+    print_options = {}
+
+    # Envia o documento para a fila de impressão
+    conn.printFile(impressora, "/tmp/arquivo_impressao.txt", "Documento", print_options)
+    print("Documento enviado para a impressora.")
+
+# Exemplo de uso
+#imprimir_texto("Olá, mundo! Este é um teste de impressão.")
 
 
 def get_today_data():
