@@ -7,7 +7,8 @@ import requests
 import qrcode
 import pybase64
 import pandas as pd
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text, exc
+import re
 import mysql.connector
 import json
 import smtplib
@@ -17,7 +18,7 @@ from email.mime.base import MIMEBase
 from email import encoders
 import os
 from datetime import date
-
+#import cups
 
 
 
@@ -39,13 +40,28 @@ TABLE_NAME = 'TbDadosPlanilha'  # Nome da tabela
 banco_url = f'mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
 
 COLUMN_MAPPING = {
+    'Id': 'dsId',
+    'Linha': 'nrLinha',
+    'CodigoItem': 'dsCodigoItem',
+    'Descricao': 'dsDescricao',
+    'cUnidade': 'dsUnidade',
+    'CodigoLote':'dsCodigoLote',
+    'Quantidade': 'dsQuantidade',
+    'ValorUnitario': 'nrVlunitario',
+    'ValorTotal': 'nrVlTotal',
+    'qAtendida': 'nrQAtendida',
+    'qPendente': 'nrQpendente',
+    'FracionaLinha': 'bFracionaLinha',
+    'ExpedicaoId': 'nrExpedicaoOld',
+    'LoteImportacao': 'dsLoteImportacao',
+    'LoteFabrica': 'dsLoteFabrica',
     'NF': 'dsNF',
     'Ordem Recebimento': 'dsOrdemRec',
     'CÓDIGO': 'dsCodigo',
+    'LINHA': 'nrLinha',
     'DESCRIÇÃO': 'dsDescricao',
     'QTD NF': 'nrQtde',
     'SO': 'dsSO',
-    'LINHA': 'nrLinha',
     'QUANTIDADE DE CAIXAS': 'nrQtdeCaixas',
     'QTD RECEBIDA (PEÇAS)': 'nrQtdeRecPecas',
     'NUMERO DE SERIE': 'dsNumeroSerie',
@@ -53,10 +69,11 @@ COLUMN_MAPPING = {
     'DIMENSÕES': 'dsDimensoes',
     'LOCALIZAÇÃO': 'dsLocalizacao',
     'OBS OPERAÇÃO': 'dsObs',
-    'SO + LINHA': 'dsSoLinha',
+    'SO + LINHa': 'dsSoLinha',
     'TIPO Armazenagem': 'dsTipoArmazenagem',
     'Nome da Planilha': 'dsNomePlanilha'  # Adicionando o campo nome_da_planilha
 }
+
 
 
 
@@ -72,6 +89,24 @@ def conecta_bd():
   password='IntelliMetr!c$',
   database='DbIntelliMetrics')
   return conexao
+
+def substituir_caracteres(s):
+    """
+    Substitui os caracteres ':', ';', '-', e espaço por vazio em uma string.
+
+    :param s: A string de entrada.
+    :return: A string com os caracteres substituídos.
+    """
+    # Define a expressão regular para capturar os caracteres desejados
+    pattern = r'[:;\-\s]'
+
+    # Use re.sub para substituir todos os caracteres correspondentes por vazio
+    resultado = re.sub(pattern, '', s)
+
+    return resultado
+
+
+
 
 class IntelbrasAccessControlAPI:
     def __init__(self, ip: str, username: str, passwd: str):
@@ -537,14 +572,33 @@ def Alterar_TbPonto(cdPonto, dsRegistro01, dsRegistro02, dsRegistro03, dsRegistr
     conexao.close()
 
 def gravar_dados_no_banco(df):
-    # Cria a string de conexão com o banco de dados MySQL
-    banco_url = f'mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
 
-    # Cria a conexão com o banco de dados
+ # Configurações de conexão com o banco de dados MySQL
+    banco_url = f'mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+    print("to_aqui ?")
+# Cria a conexão com o banco de dados
     engine = create_engine(banco_url)
 
-    # Insere os dados na tabela, substituindo os dados existentes ou adicionando
-    df.to_sql(TABLE_NAME, con=engine, if_exists='append', index=False)
+    try:
+        # Checa se a tabela já existe, e lê o esquema
+        query = f"SELECT * FROM {TABLE_NAME} LIMIT 0"
+        current_df = pd.read_sql(query, con=engine)
+        print(current_df)
+        print(query)
+
+        # Garante que os DataFrames têm as mesmas colunas
+        for column in current_df.columns.difference(df.columns):
+            df[column] = None  # Coloca NaNs nas colunas que faltam no novo df
+
+        # Insere os dados na tabela
+        df.to_sql(TABLE_NAME, con=engine, if_exists='append', index=False)
+    except exc.SQLAlchemyError as e:
+        print(f"Error on inserting data: {str(e)}")
+
+
+
+
+
 
 
 
@@ -774,17 +828,6 @@ def EnviaImgWhats(ArquivoBase64, dsCelular):
     response = requests.request("POST", url, headers=headers, data=payload)
     return response.text
 
-def gravar_dados_no_banco(df):
-    # Cria a string de conexão com o banco de dados MySQL
-    banco_url = f'mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
-
-    # Cria a conexão com o banco de dados
-    engine = create_engine(banco_url)
-
-    # Insere os dados na tabela, substituindo os dados existentes ou adicionando
-    df.to_sql(TABLE_NAME, con=engine, if_exists='replace', index=False)
-
-
 
 
 def send_email(subject, body, to_email, from_email, password, smtp_server='smtp.gmail.com', smtp_port=587):
@@ -849,6 +892,39 @@ dsIp = None
 def home():
     return render_template('login.html')
 
+
+@app.route('/print', methods=['POST'])
+def print_document():
+    # Espera que o texto a ser impresso seja enviado no corpo da solicitação
+    content = request.form.get('content', '')
+
+    if not content:
+        return "Conteúdo não pode estar vazio!", 400
+
+    try:
+        # Conecte-se ao servidor CUPS
+        conn = cups.Connection()
+
+        # Obtenha o nome da impressora padrão
+        printers = conn.getPrinters()
+        default_printer = printers.keys()[0] if printers else None
+
+        if not default_printer:
+            return "Nenhuma impressora disponível.", 500
+
+        # Crie um arquivo temporário para o conteúdo a ser impresso
+        with open('/tmp/temp_print_file.txt', 'w') as temp_file:
+            temp_file.write(content)
+
+        # Enviar trabalho de impressão
+        conn.printFile(default_printer, '/tmp/temp_print_file.txt', "Flask Print Job", {})
+
+        return "Documento enviado para a impressora com sucesso!", 200
+
+    except Exception as e:
+        return f"Ocorreu um erro ao imprimir: {str(e)}", 500
+
+
 @app.route('/logip')
 def logip():
     #return render_template( content=render_template('log_ip.html'))
@@ -858,27 +934,45 @@ UPLOAD_FOLDER = './uploads' # Create this folder if it doesn't exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-##subir imagem
+
+@app.route('/upload')
+def upload_form():
+    return render_template('upload.html')
 @app.route('/upload', methods=['POST'])
-def upload_file():
+def upload():
     if 'file' not in request.files:
-        return jsonify({'error': 'Arquivo não localizado'})
+        return 'Nenhum arquivo enviado', 400
+
     file = request.files['file']
+
     if file.filename == '':
-        return jsonify({'error': 'Selecione um Arquivo'})
-    if file and file.filename.endswith('.fun'):
-        filename = os.path.join(app.config['UPLOAD_FOLDER'], 'CadastroFun.txt')
-        file.save(filename)
+        return 'Arquivo não selecionado', 400
 
-        # Call xpto() after successful file save
-        result = le_arquivo()
-        if "error" in result:
-            return jsonify({'error': result['error']})
-        else:
-            return jsonify({'Upload': 'Carregamento do arquivo com sucesso!', 'Cadastramento no ponto': result['message']})
+    try:
+        # Lê a planilha do Excel
+        df = pd.read_excel(file)
+        print(file.filename)
+        print("02")
 
-    else:
-        return jsonify({'error': 'O Arquivo deve ser um .fun parametrizado'})
+        # Adiciona uma nova coluna com o nome da planilha
+        nome_planilha = file.filename
+        df['Nome da Planilha'] = nome_planilha
+
+        # Rename columns based on COLUMN_MAPPING
+        df.rename(columns=COLUMN_MAPPING, inplace=True)
+
+        # Converte o DataFrame para um dicionário
+        data_dict = df.to_dict(orient='records')
+        print(data_dict)
+        print(df)
+
+
+        # Conectar ao banco de dados e gravar dados
+        gravar_dados_no_banco(df)
+        return redirect(url_for('mostrar_dados'))
+        #return {'data': data_dict}, 200
+    except Exception as e:
+        return str(e), 400
 
 
 @app.route('/log_ip')
@@ -907,15 +1001,33 @@ def teste():
     return render_template('teste.html')
 
 
+app.config['UPLOAD_FOLDER'] = './uploads'
+
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
 
 
+@app.route('/upload_file_plan', methods=['GET', 'POST'])
+def upload_file_plan():
+    dados = None
+
+    if request.method == 'POST':
+        file = request.files['file']
+
+        if file and file.filename.endswith('.xlsx'):
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+            file.save(file_path)
+
+            # Processa o arquivo Excel
+            df = pd.read_excel(file_path)
+            dados = df.to_dict(orient='records')  # Transformar em lista de dicionários
+            print(dados)
+            # Remove o arquivo após processamento, se desejado
+            os.remove(file_path)
+
+    return render_template('upload.html', dados=dados)
 
 
-
-
-@app.route('/upload_planilha')
-def upload_form():
-    return render_template('upload_planilha.html')
 
 #upload planilha transporte
 @app.route('/upload_planilha', methods=['POST'])
@@ -932,6 +1044,7 @@ def upload_file_planilha():
         # Lê a planilha do Excel
         df = pd.read_excel(file)
         print(file.filename)
+        print("entrei")
 
         # Adiciona uma nova coluna com o nome da planilha
         nome_planilha = file.filename
@@ -1020,7 +1133,7 @@ def login():
         if username != "Luiz":
             return render_template('home.html',username=username)
         else:
-            return render_template('teste.html', username=username)
+            return render_template('upload.html', username=username)
     else:
         Inserir_TbLog("TbLogin", "ACESSO INVÁLIDO", dsIp, login_usuario)
         return render_template('login.html', message='Usuário ou senha inválidos!')
@@ -1206,7 +1319,7 @@ def mostrar_dados():
         engine = create_engine(banco_url)
 
         # Faz uma consulta para selecionar os dados ordenados pela data mais recente
-        query = text(f"SELECT distinct dsNF, dsOrdemRec, dsCodigo, dsDescricao, nrQtde, dsSO, nrLinha, nrQtdeCaixas, nrQtdeRecPecas, dsNumeroSerie, nrPeso, dsDimensoes, dsLocalizacao, dsObs, dsSoLinha, dsTipoArmazenagem, dsNomePlanilha  FROM DbIntelliMetrics.TbDadosPlanilha ")  # Supondo que haja uma coluna `id` que indica a ordem
+        query = text(f"SELECT  *  FROM DbIntelliMetrics.TbDadosPlanilha ")  # Supondo que haja uma coluna `id` que indica a ordem
         #print(query)
         with engine.connect() as conn:
             result = conn.execute(query)
