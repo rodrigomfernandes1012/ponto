@@ -38,25 +38,21 @@
             let data = rows.map(tr => {
                 let cells = Array.from(tr.getElementsByTagName("td"));
                 return {
-                    dsNF: cells[0].innerText,
-                    dsOrdemRec: cells[1].innerText,
-                    dsCodigo: cells[2].innerText,
+                    dsId: cells[0].innerText,
+                    nrLinha: cells[1].innerText,
+                    dsCodigoItem: cells[2].innerText,
                     dsDescricao: cells[3].innerText,
-                    nrQtde: cells[4].innerText,
-                    dsSO: cells[5].innerText,
-                    nrLinha: cells[6].innerText,
-                    nrQtdeCaixas: cells[7].innerText,
-                    nrQtdeRecPecas: cells[8].innerText,
-                    dsNumeroSerie: cells[9].innerText,
-                    nrPeso: cells[10].innerText,
-                    dsDimensoes: cells[11].innerText,
-                    dsLocalizacao: cells[12].innerText,
-                    dsObs: cells[13].innerText,
-                    dsSoLinha: cells[14].innerText,
-                    dsTipoArmazenagem: cells[15].innerText,
-                    dsNomePlanilha: cells[16].innerText,
-                    dtRegistro: cells[17].innerText,
-                    dsStatus: cells[18].innerText
+                    dsUnidade: cells[4].innerText,
+                    dsCodigoLote: cells[5].innerText,
+                    dsQuantidade: cells[6].innerText,
+                    nrVlunitario: cells[7].innerText,
+                    nrVlTotal: cells[8].innerText,
+                    nrQAtendida: cells[9].innerText,
+                    nrQpendente: cells[10].innerText,
+                    bFracionaLinha: cells[11].innerText,
+                    nrExpedicaoOld: cells[12].innerText,
+                    dsLoteImportacao: cells[13].innerText,
+                    dsLoteFabrica: cells[14].innerText
                 };
             });
 
@@ -82,36 +78,37 @@
                 alert('Erro ao exportar os dados');
             }
         }
+         function goToPlanilha() {
+            window.location.href = '/upload';
+        }
     </script>
 </head>
 <body>
     <div class="container">
+        <button onclick="goToPlanilha()" class="nav-btn">Voltar</button>
+
         <button onclick="exportToExcel();">Exportar para Excel</button>
         <table class="data-table" id="dataTable">
             <thead>
                 <tr>
-                    <th>Nota Fiscal</th>
-                    <th>Ordem de Recebimento</th>
-                    <th>Código</th>
-                    <th>Descrição</th>
-                    <th>Quantidade NF</th>
-                    <th>SO</th>
+                    <th>ID</th>
                     <th>Linha</th>
-                    <th>Quantidade de Caixas</th>
-                    <th>Quantidade Recebida (Peças)</th>
-                    <th>Número de Série</th>
-                    <th>Peso</th>
-                    <th>Dimensões</th>
-                    <th>Localização</th>
-                    <th>Observação</th>
-                    <th>SO + Linha</th>
-                    <th>Tipo de Armazenagem</th>
-                    <th>Nome da Planilha</th>
-                    <th>Data Leitura</th>
-                    <th>Status</th>
+                    <th>Código do Item</th>
+                    <th>Descrição</th>
+                    <th>Unidade</th>
+                    <th>Código do Lote</th>
+                    <th>Quantidade</th>
+                    <th>Valor Unitário</th>
+                    <th>Valor Total</th>
+                    <th>Quantidade Atendida</th>
+                    <th>Quantidade Pendente</th>
+                    <th>Fraciona Linha</th>
+                    <th>Expedição Antiga</th>
+                    <th>Lote de Importação</th>
+                    <th>Lote de Fábrica</th>
                 </tr>
                 <tr>
-                    {% for i in range(19) %}
+                    {% for i in range(15) %}
                     <th>
                         <input type="text" id="filter{{ i }}" onkeyup="filterTable()" placeholder="Filtrar...">
                     </th>
@@ -121,25 +118,21 @@
             <tbody>
                 {% for dado in dados %}
                 <tr>
-                    <td>{{ dado.dsNF }}</td>
-                    <td>{{ dado.dsOrdemRec }}</td>
-                    <td>{{ dado.dsCodigo }}</td>
-                    <td>{{ dado.dsDescricao }}</td>
-                    <td>{{ dado.nrQtde }}</td>
-                    <td>{{ dado.dsSO }}</td>
+                    <td>{{ dado.dsId }}</td>
                     <td>{{ dado.nrLinha }}</td>
-                    <td>{{ dado.nrQtdeCaixas }}</td>
-                    <td>{{ dado.nrQtdeRecPecas }}</td>
-                    <td>{{ dado.dsNumeroSerie }}</td>
-                    <td>{{ dado.nrPeso }}</td>
-                    <td>{{ dado.dsDimensoes }}</td>
-                    <td>{{ dado.dsLocalizacao }}</td>
-                    <td>{{ dado.dsObs }}</td>
-                    <td>{{ dado.dsSoLinha }}</td>
-                    <td>{{ dado.dsTipoArmazenagem }}</td>
-                    <td>{{ dado.dsNomePlanilha }}</td>
-                    <td>{{ dado.dtRegistro }}</td>
-                    <td>{{ dado.dsStatus }}</td>
+                    <td>{{ dado.dsCodigoItem }}</td>
+                    <td>{{ dado.dsDescricao }}</td>
+                    <td>{{ dado.dsUnidade }}</td>
+                    <td>{{ dado.dsCodigoLote }}</td>
+                    <td>{{ dado.dsQuantidade }}</td>
+                    <td>{{ dado.nrVlunitario }}</td>
+                    <td>{{ dado.nrVlTotal }}</td>
+                    <td>{{ dado.nrQAtendida }}</td>
+                    <td>{{ dado.nrQpendente }}</td>
+                    <td>{{ dado.bFracionaLinha }}</td>
+                    <td>{{ dado.nrExpedicaoOld }}</td>
+                    <td>{{ dado.dsLoteImportacao }}</td>
+                    <td>{{ dado.dsLoteFabrica }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
