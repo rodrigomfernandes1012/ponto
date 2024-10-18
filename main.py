@@ -1067,6 +1067,36 @@ def upload_file_planilha():
 
 
 @app.route('/cubagemold', methods=['GET'])
+def cubagemold():
+    # Capturar os parâmetros da query string
+    xEtiqueta = request.args.get('xEtiqueta')
+    nPeso = request.args.get('nPeso')
+    nAlt = request.args.get('nAlt')
+    nLarg = request.args.get('nLarg')
+    nComp = request.args.get('nComp')
+    token = request.args.get('token')
+
+    # Validar se todos os parâmetros necessários estão presentes
+    if not all([xEtiqueta, nPeso, nAlt, nLarg, nComp, token]):
+        print('Erro ao obter')
+        return jsonify({"error": "Todos os parâmetros devem ser fornecidos."}), 400
+
+    # Montar o dicionário com os dados
+    dados_cubagem = {
+        "xEtiqueta": xEtiqueta,
+        "nPeso": float(nPeso),  # Convertendo para float
+        "nAlt": float(nAlt),    # Convertendo para float
+        "nLarg": float(nLarg),  # Convertendo para float
+        "nComp": float(nComp)   # Convertendo para float
+    }
+    print(dados_cubagem)
+    Update_TbDadosPlanilha(dados_cubagem)
+    # Retornar o dicionário como resposta JSON
+    return jsonify(dados_cubagem), 200
+
+
+
+@app.route('/cubagem', methods=['GET'])
 def cubagem():
     # Capturar os parâmetros da query string
     xEtiqueta = request.args.get('xEtiqueta')
@@ -1093,6 +1123,7 @@ def cubagem():
     Update_TbDadosPlanilha(dados_cubagem)
     # Retornar o dicionário como resposta JSON
     return jsonify(dados_cubagem), 200
+
 
 
 
