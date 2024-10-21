@@ -1376,30 +1376,6 @@ def mostrar_dados():
     except Exception as e:
         return str(e), 400
 
-@app.route('/print', methods=['POST'])
-def print_selected():
-    try:
-        data = json.loads(request.data.decode('utf-8'))
-        print(data)
-        # Aqui você itera sobre os dados recebidos e imprime utilizando uma impressora (cups, por exemplo).
-        conn = cups.Connection()
-        printer_name = conn.getDefault() #Pega a impressora padrão do sistema
-
-        #Verificando se existe alguma impressora disponível
-        if not conn.getPrinters():
-            return jsonify({'message': 'Nenhuma impressora encontrada.'})
-
-        for item in data['dados']:
-            text_to_print = f"ID: {item['id']}\nLote Importação: {item['loteImportacao']}\nLote Fábrica: {item['loteFabrica']}\n\n"
-            job_id = conn.printFile(printer_name, "/tmp/print_data.txt", f"Print job {item['id']}", {})
-            with open('/tmp/print_data.txt', 'w') as f:
-                f.write(text_to_print)
-
-        return jsonify({'message': 'Impressão enviada para a fila.'})
-
-    except Exception as e:
-        return jsonify({'message': f'Erro ao imprimir: {str(e)}'}), 500
-
 
 
 
@@ -1533,27 +1509,6 @@ def planilha():
         print(data1)
     return pesquisa_planilha()
 
-#@app.route('/planilha', methods=['POST'])
-#def imprimir():
-#    try:
-#        data1 = request.get_json()
-#        texto = data1.get('mensagem')
-#        print(texto)
-#        print(data1)
-#        if not texto:
-#            return jsonify({'error': 'Mensagem não fornecida'}), 400
-
-        # aqui você pode escolher a impressora
-#        success = (texto)
-#        if success:
-#            return jsonify({'message': 'Impressão bem-sucedida!'}), 200
-#        else:
-#            return jsonify({'error': 'Erro na impressão'}), 500
-
-#    except Exception as e:
-#        return jsonify({'error': str(e)}), 500
-
-
 
 
 
@@ -1573,13 +1528,6 @@ def export_data():
 
     # Enviando o arquivo
     return send_file(output, download_name="planilha", mimetype='xlsx', as_attachment=True)
-@app.route('/read_com3')
-def read_com3():
-    data = ler_dados_com3()
-    if data:
-        return jsonify({'data': data})
-    else:
-        return jsonify({'data': 'Erro ao conectar à porta COM3.'})
 
 
 def main():
