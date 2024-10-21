@@ -1,9 +1,104 @@
 {% extends 'base.html' %}
+{% block head %}
+<div class="container">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
 
+        h1 {
+            margin-bottom: 20px;
+            color: #4a4a4a;
+        }
+
+        table {
+            width: 80%;
+            max-width: 1600px;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            color: #555;
+            font-weight: 500;
+        }
+
+        td {
+            background-color: #fff;
+        }
+
+        input input[type="date"], input[type="time"] {
+            width: 100px; /*calc(100% - 20px);*/
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+        input[type="text"], select, textarea {
+            width: 180px; /*calc(100% - 20px);*/
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #28a745;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        button:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+          #search-container {
+             margin-bottom: 20px;
+                            }
+          #search-input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+{% endblock %}
 {% block body %}
     <div class="container">
           <!-- Botão para navegar para a página /dados.html -->
-        <button onclick="goToDados()" class="nav-btn">Ir para Dados</button>
+
 
         <form action="/upload" method="post" enctype="multipart/form-data">
             <div class="form-group">
@@ -11,7 +106,12 @@
                 <input type="file" id="file" name="file" accept=".xlsx" required class="file-input">
             </div>
             <button type="submit" class="submit-btn">Enviar</button>
+
+
         </form>
+          <div class="form-group">
+                  <button onclick="goToDados()" class="nav-btn">Ir para Dados</button>
+                  </div>
 
 
     </div>
@@ -21,5 +121,5 @@
             window.location.href = '/dados';
         }
     </script>
-
+</div>
 {% endblock %}

@@ -1,142 +1,225 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dados do Banco</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% extends 'base.html' %}
+{% block head %}
+<div class="container">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #4a4a4a;
+        }
+
+        table {
+            width: 80%;
+            max-width: 1600px;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            color: #555;
+            font-weight: 500;
+        }
+
+        td {
+            background-color: #fff;
+        }
+
+        input[type="date"], input[type="time"] {
+            width: 100px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+
+        input[type="text"], select, textarea {
+            width: 180px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #28a745;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        button:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+
+        #search-container {
+            margin-bottom: 20px;
+        }
+
+        #search-input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <meta charSet="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+
     <script>
-        function filterTable() {
-            let table = document.getElementById("dataTable");
-            let tr = table.getElementsByTagName("tr");
-            let filters = [];
-
-            for (let i = 0; i < table.rows[1].cells.length; i++) {
-                let input = document.getElementById("filter" + i);
-                filters.push(input.value.toLowerCase());
-            }
-
-            for (let i = 2; i < tr.length; i++) {
-                let tds = tr[i].getElementsByTagName("td");
-                let rowMatchesFilter = true;
-
-                for (let j = 0; j < tds.length; j++) {
-                    if (tds[j]) {
-                        let txtValue = tds[j].textContent || tds[j].innerText;
-                        if (filters[j] && !txtValue.toLowerCase().includes(filters[j])) {
-                            rowMatchesFilter = false;
-                        }
-                    }
-                }
-                tr[i].style.display = rowMatchesFilter ? "" : "none";
-            }
-        }
-
         async function exportToExcel() {
-            let table = document.getElementById("dataTable");
-            let rows = Array.from(table.getElementsByTagName("tr")).slice(2); // Pulo o cabeçalho e a linha de filtros
-            let data = rows.map(tr => {
-                let cells = Array.from(tr.getElementsByTagName("td"));
-                return {
-                    dsId: cells[0].innerText,
-                    nrLinha: cells[1].innerText,
-                    dsCodigoItem: cells[2].innerText,
-                    dsDescricao: cells[3].innerText,
-                    dsUnidade: cells[4].innerText,
-                    dsCodigoLote: cells[5].innerText,
-                    dsQuantidade: cells[6].innerText,
-                    nrVlunitario: cells[7].innerText,
-                    nrVlTotal: cells[8].innerText,
-                    nrQAtendida: cells[9].innerText,
-                    nrQpendente: cells[10].innerText,
-                    bFracionaLinha: cells[11].innerText,
-                    nrExpedicaoOld: cells[12].innerText,
-                    dsLoteImportacao: cells[13].innerText,
-                    dsLoteFabrica: cells[14].innerText
+            const table = document.getElementById('dataTable');
+            const workbook = XLSX.utils.table_to_book(table);
+            XLSX.writeFile(workbook, 'dados_banco.xlsx');
+        }
+
+        function goToPlanilha() {
+            window.location.href = '{{ url_for("upload") }}'; // Altere "upload" para o nome correto da rota
+        }
+
+        async function printSelectedRows() {
+            const checkedRows = [];
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            checkboxes.forEach(checkbox => {
+                const row = checkbox.closest('tr');
+                const cells = row.querySelectorAll('td');
+                const data = {
+                    id: cells[1].textContent, // assume que o ID está na 2ª coluna
+                    loteImportacao: cells[14].textContent,
+                    loteFabrica: cells[15].textContent
                 };
+                checkedRows.push(data);
             });
 
-            const response = await fetch('/export', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ dados: data })
-            });
+            if (checkedRows.length === 0) {
+                alert("Selecione ao menos um registro para imprimir.");
+                return;
+            }
 
-            if (response.ok) {
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'dados.xlsx'; // Nome do arquivo a ser baixado
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                window.URL.revokeObjectURL(url);
-            } else {
-                alert('Erro ao exportar os dados');
+            try {
+                const response = await fetch('/print', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ dados: checkedRows })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    alert
+                    alert(data.message); // Exibe mensagem de sucesso ou erro.
+                } else {
+                    throw new Error('Erro ao imprimir os dados.');
+                }
+            } catch (error) {
+                console.error("Erro ao imprimir:", error);
+                alert('Ocorreu um erro ao imprimir os dados.');
             }
         }
-         function goToPlanilha() {
-            window.location.href = '/upload';
+
+        function openPrinterDialog() {
+            alert("Para imprimir, use a função 'Imprimir Selecionados'. A escolha da impressora padrão é feita no servidor.");
+        }
+
+        function toggleAllCheckboxes(source) {
+            const checkboxes = document.querySelectorAll('#dataTable input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = source.checked;
+            });
         }
     </script>
-</head>
-<body>
-    <div class="container">
-        <button onclick="goToPlanilha()" class="nav-btn">Voltar</button>
+</div>
+{% endblock %}
 
-        <button onclick="exportToExcel();">Exportar para Excel</button>
-        <table class="data-table" id="dataTable">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Linha</th>
-                    <th>Código do Item</th>
-                    <th>Descrição</th>
-                    <th>Unidade</th>
-                    <th>Código do Lote</th>
-                    <th>Quantidade</th>
-                    <th>Valor Unitário</th>
-                    <th>Valor Total</th>
-                    <th>Quantidade Atendida</th>
-                    <th>Quantidade Pendente</th>
-                    <th>Fraciona Linha</th>
-                    <th>Expedição Antiga</th>
-                    <th>Lote de Importação</th>
-                    <th>Lote de Fábrica</th>
-                </tr>
-                <tr>
-                    {% for i in range(15) %}
-                    <th>
-                        <input type="text" id="filter{{ i }}" onkeyup="filterTable()" placeholder="Filtrar...">
-                    </th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for dado in dados %}
-                <tr>
-                    <td>{{ dado.dsId }}</td>
-                    <td>{{ dado.nrLinha }}</td>
-                    <td>{{ dado.dsCodigoItem }}</td>
-                    <td>{{ dado.dsDescricao }}</td>
-                    <td>{{ dado.dsUnidade }}</td>
-                    <td>{{ dado.dsCodigoLote }}</td>
-                    <td>{{ dado.dsQuantidade }}</td>
-                    <td>{{ dado.nrVlunitario }}</td>
-                    <td>{{ dado.nrVlTotal }}</td>
-                    <td>{{ dado.nrQAtendida }}</td>
-                    <td>{{ dado.nrQpendente }}</td>
-                    <td>{{ dado.bFracionaLinha }}</td>
-                    <td>{{ dado.nrExpedicaoOld }}</td>
-                    <td>{{ dado.dsLoteImportacao }}</td>
-                    <td>{{ dado.dsLoteFabrica }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</body>
-</html>
+{% block body %}
+<div class="container">
+
+    <button onclick="goToPlanilha()" class="nav-btn">Voltar</button>
+    <button onclick="exportToExcel()">Exportar para Excel</button>
+    <button onclick="printSelectedRows()">Imprimir Selecionados</button>
+    <button onclick="openPrinterDialog()">Selecionar Impressora</button>
+
+    <table class="data-table" id="dataTable">
+        <thead>
+            <tr>
+                <th><input type="checkbox" onclick="toggleAllCheckboxes(this)"></th>
+                <th>ID</th>
+                <th>Linha</th>
+                <th>Código do Item</th>
+                <th>Descrição</th>
+                <th>Unidade</th>
+                <th>Código do Lote</th>
+                <th>Quantidade</th>
+                <th>Valor Unitário</th>
+                <th>Valor Total</th>
+                <th>Quantidade Atendida</th>
+                <th>Quantidade Pendente</th>
+                <th>Fraciona Linha</th>
+                <th>Expedição Antiga</th>
+                <th>Lote de Importação</th>
+                <th>Lote de Fábrica</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dado in dados %}
+            <tr>
+                <td><input type="checkbox"></td>
+                <td>{{ dado.dsId }}</td>
+                <td>{{ dado.nrLinha }}</td>
+                <td>{{ dado.dsCodigoItem }}</td>
+                <td>{{ dado.dsDescricao }}</td>
+                <td>{{ dado.dsUnidade }}</td>
+                <td>{{ dado.dsCodigoLote }}</td>
+                <td>{{ dado.dsQuantidade }}</td>
+                <td>{{ dado.nrVlunitario }}</td>
+                <td>{{ dado.nrVlTotal }}</td>
+                <td>{{ dado.nrQAtendida }}</td>
+                <td>{{ dado.nrQpendente }}</td>
+                <td>{{ dado.bFracionaLinha }}</td>
+                <td>{{ dado.nrExpedicaoOld }}</td>
+                <td>{{ dado.dsLoteImportacao }}</td>
+                <td>{{ dado.dsLoteFabrica }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
