@@ -18,7 +18,8 @@ from email.mime.base import MIMEBase
 from email import encoders
 import os
 from datetime import date
-#import cups
+import cups
+
 
 
 
@@ -589,6 +590,12 @@ def gravar_dados_no_banco(df):
         # Garante que os DataFrames têm as mesmas colunas
         for column in current_df.columns.difference(df.columns):
             df[column] = None  # Coloca NaNs nas colunas que faltam no novo df
+            # Remove caracteres indesejados do campo 'dsCodigoLote'
+            if 'dsCodigoLote' in df.columns:
+                df['dsCodigoLote'] = df['dsCodigoLote'].str.replace(';', '', regex=True) \
+                    .str.replace('-', '', regex=True) \
+                    .str.replace(':', '', regex=True) \
+                    .str.replace(' ', '', regex=True)
 
         # Insere os dados na tabela
         df.to_sql(TABLE_NAME, con=engine, if_exists='append', index=False)
@@ -612,6 +619,30 @@ def pesquisa_usuarios():
   cursor.close()
   conexao.close()
   return selecao
+
+def pesquisa_planilha():
+  conexao = conecta_bd()
+  cursor = conexao.cursor(dictionary=True)
+  comando = f'SELECT cdTbDadosPlanilha, dsId, dsCodigoLote  FROM DbIntelliMetrics.TbDadosPlanilha where stimpresso = 0 and (dsLoteimportacao is not null or dsLoteFabrica is not null);'
+  cursor.execute(comando)
+  selecao = cursor.fetchall() # ler o banco de dados
+  cursor.close()
+  conexao.close()
+  return selecao
+
+def update_st_impresso(ds_id_list):
+    for ds_id in ds_id_list['dsId']:
+        conexao = conecta_bd()
+        cursor = conexao.cursor(dictionary=True)
+        query = "UPDATE TbDadosPlanilha SET stImpresso = 1 WHERE stImpresso = 0 and  cdTbDadosPlanilha = %s"
+        cursor.execute(query, (ds_id,))
+        print(f"Atualizado stImpresso para 1 para o ID: {ds_id}")
+
+        # Confirma as mudanças no banco de dados
+        conexao.commit()
+        print("Atualizações concluídas.")
+
+
 
 def pesquisa_funcionarios():
   conexao = conecta_bd()
@@ -745,11 +776,12 @@ def Inserir_TbLog(dsTbAcesso, dsAcao, dsIp,  dsLogin):
 
 def Update_TbDadosPlanilha(dados):
     agora = datetime.now()
-    dsEtiqueta =(dados.get('xEtiqueta'))
+    dsEtiqueta =  substituir_caracteres( (dados.get('xEtiqueta')))
     nrPeso  = (dados.get('nPeso'))
     nrAlt = (dados.get('nAlt'))
     nrLarg = (dados.get('nLarg'))
     nrComp = (dados.get('nComp'))
+
     #dtRegistro =  agora.strftime("%d/%m/%Y %H:%M")
    # for dado in dados:
    #     nrPeso = str(dado['nPeso'])
@@ -763,7 +795,7 @@ def Update_TbDadosPlanilha(dados):
 
     conexao = conecta_bd()
     cursor = conexao.cursor(dictionary=True)
-    comando = f'update DbIntelliMetrics.TbDadosPlanilha set nrPeso = "{nrPeso}", dsDimensoes = concat("{nrAlt}"  " x "  "{nrComp}"  " x "  "{nrLarg}")" where dsSOlinha = "{dsEtiqueta}"'
+    comando = f"update DbIntelliMetrics.TbDadosPlanilha set nrPeso = '{nrPeso}', dsDimensoes = concat('{nrAlt}'  ' x '  '{nrComp}'  ' x '  '{nrLarg}'), dsLoteFabrica = '{dsEtiqueta}', stimpresso = 0  where dsCodigoLote = '{dsEtiqueta}'"
     print(comando)
     cursor.execute(comando)
     conexao.commit()
@@ -893,37 +925,6 @@ def home():
     return render_template('login.html')
 
 
-@app.route('/print', methods=['POST'])
-def print_document():
-    # Espera que o texto a ser impresso seja enviado no corpo da solicitação
-    content = request.form.get('content', '')
-
-    if not content:
-        return "Conteúdo não pode estar vazio!", 400
-
-    try:
-        # Conecte-se ao servidor CUPS
-        conn = cups.Connection()
-
-        # Obtenha o nome da impressora padrão
-        printers = conn.getPrinters()
-        default_printer = printers.keys()[0] if printers else None
-
-        if not default_printer:
-            return "Nenhuma impressora disponível.", 500
-
-        # Crie um arquivo temporário para o conteúdo a ser impresso
-        with open('/tmp/temp_print_file.txt', 'w') as temp_file:
-            temp_file.write(content)
-
-        # Enviar trabalho de impressão
-        conn.printFile(default_printer, '/tmp/temp_print_file.txt', "Flask Print Job", {})
-
-        return "Documento enviado para a impressora com sucesso!", 200
-
-    except Exception as e:
-        return f"Ocorreu um erro ao imprimir: {str(e)}", 500
-
 
 @app.route('/logip')
 def logip():
@@ -938,6 +939,10 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 @app.route('/upload')
 def upload_form():
     return render_template('upload.html')
+
+@app.route('/qz')
+def qz():
+    return render_template('qz.html')
 @app.route('/upload', methods=['POST'])
 def upload():
     if 'file' not in request.files:
@@ -1029,6 +1034,7 @@ def upload_file_plan():
 
 
 
+
 #upload planilha transporte
 @app.route('/upload_planilha', methods=['POST'])
 def upload_file_planilha():
@@ -1099,7 +1105,7 @@ def cubagemold():
 @app.route('/cubagem', methods=['GET'])
 def cubagem():
     # Capturar os parâmetros da query string
-    xEtiqueta = request.args.get('xEtiqueta')
+    xEtiqueta = substituir_caracteres(request.args.get('xEtiqueta'))
     nPeso = request.args.get('nPeso')
     nAlt = request.args.get('nAlt')
     nLarg = request.args.get('nLarg')
@@ -1124,6 +1130,16 @@ def cubagem():
     # Retornar o dicionário como resposta JSON
     return jsonify(dados_cubagem), 200
 
+@app.route('/get_zpl', methods=['POST'])
+def get_zpl():
+    # Gerar comando ZPL
+    texto = request.json.get('texto', 'Texto padrão')
+    zpl = f"""
+    ^XA
+    ^FO50,50^ADN,36,20^FD{texto}^FS
+    ^XZ
+    """
+    return jsonify({ 'zpl': zpl })
 
 
 
@@ -1360,6 +1376,30 @@ def mostrar_dados():
     except Exception as e:
         return str(e), 400
 
+@app.route('/print', methods=['POST'])
+def print_selected():
+    try:
+        data = json.loads(request.data.decode('utf-8'))
+        print(data)
+        # Aqui você itera sobre os dados recebidos e imprime utilizando uma impressora (cups, por exemplo).
+        conn = cups.Connection()
+        printer_name = conn.getDefault() #Pega a impressora padrão do sistema
+
+        #Verificando se existe alguma impressora disponível
+        if not conn.getPrinters():
+            return jsonify({'message': 'Nenhuma impressora encontrada.'})
+
+        for item in data['dados']:
+            text_to_print = f"ID: {item['id']}\nLote Importação: {item['loteImportacao']}\nLote Fábrica: {item['loteFabrica']}\n\n"
+            job_id = conn.printFile(printer_name, "/tmp/print_data.txt", f"Print job {item['id']}", {})
+            with open('/tmp/print_data.txt', 'w') as f:
+                f.write(text_to_print)
+
+        return jsonify({'message': 'Impressão enviada para a fila.'})
+
+    except Exception as e:
+        return jsonify({'message': f'Erro ao imprimir: {str(e)}'}), 500
+
 
 
 
@@ -1482,6 +1522,40 @@ def data():
 @app.route('/data2')
 def data2():
     return get_today_data()
+
+@app.route('/planilha', methods=['GET','POST'])
+def planilha():
+    if request.method == 'POST':
+        data1 = request.get_json()
+        texto = data1.get('mensagem')
+        update_st_impresso(data1)
+        print(texto)
+        print(data1)
+    return pesquisa_planilha()
+
+#@app.route('/planilha', methods=['POST'])
+#def imprimir():
+#    try:
+#        data1 = request.get_json()
+#        texto = data1.get('mensagem')
+#        print(texto)
+#        print(data1)
+#        if not texto:
+#            return jsonify({'error': 'Mensagem não fornecida'}), 400
+
+        # aqui você pode escolher a impressora
+#        success = (texto)
+#        if success:
+#            return jsonify({'message': 'Impressão bem-sucedida!'}), 200
+#        else:
+#            return jsonify({'error': 'Erro na impressão'}), 500
+
+#    except Exception as e:
+#        return jsonify({'error': str(e)}), 500
+
+
+
+
 
 @app.route('/export', methods=['POST'])
 def export_data():
