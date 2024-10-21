@@ -18,7 +18,7 @@ from email.mime.base import MIMEBase
 from email import encoders
 import os
 from datetime import date
-import cups
+
 
 
 
