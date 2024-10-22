@@ -1383,8 +1383,16 @@ def mostrar_dados():
 def data():
     conexao = conecta_bd()
     cursor = conexao.cursor(dictionary=True)
-    start_date = request.args.get('start', '')
-    end_date = request.args.get('end', '')
+  #  start_date = request.args.get('start', '')
+  #  end_date = request.args.get('end', '')
+  #  funcionario = request.args.get('employee', '')
+  #  print(funcionario)
+    today = datetime.today().strftime('%Y-%m-%d')
+    start_date = request.args.get('start', today)
+    end_date = request.args.get('end', today)
+    funcionario = request.args.get('employee', '')
+
+
 
     query = """
         SELECT 
@@ -1400,19 +1408,21 @@ def data():
             dsTipoRegistro,
             dsObservacao
         FROM
-            DbIntelliMetrics.TbPonto
+            DbIntelliMetrics.TbPonto 
     """
  #   print(query)
  #   print('incio')
  #   print(start_date)
  #   print(end_date)
-    if start_date != '' and end_date != '':
-        query += " WHERE dsRegistroAut >='" + start_date + "' AND dsRegistroAut <='" + end_date + "'"
+    if start_date != '' and end_date != '' or funcionario != '':
+        query += " WHERE dsRegistroAut >='" + start_date + "' AND dsRegistroAut <='" + end_date + "' and dsCardname like'%" + funcionario + "%' order by dsRegistroAut"
         #params = (start_date, end_date)
         cursor.execute(query)
       #  print('oi')
       #  print(query)
     else:
+        query += "  order by dsRegistroAut"
+
         cursor.execute(query)
       #  print('oi2')
 
