@@ -83,6 +83,15 @@
             outline: none;
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
         }
+          #search-container {
+             margin-bottom: 20px;
+                            }
+          #search-input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+  }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 {% endblock %}
@@ -116,11 +125,12 @@
         </tbody>
     </table>
 
-    <button id="save-button">Salvar</button>
+    <!--<button id="save-button">Salvar</button> -->
     <button class="btn btn-danger" id="export-excel" onclick="exportToExcel()">Exportar Excel</button>
 
 
     <script>
+
 
 
 /*
