@@ -1,4 +1,4 @@
-
+{% extends 'base.html' %}
 {% block head %}
 <div class="container">
     <style>
@@ -45,8 +45,8 @@
             background-color: #fff;
         }
 
-        input input[type="date"], input[type="time"] {
-            width: 100px; /*calc(100% - 20px);*/
+        input[type="date"], input[type="time"] {
+            width: 100px;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
@@ -54,7 +54,7 @@
             margin-top: 5px;
         }
         input[type="text"], select, textarea {
-            width: 180px; /*calc(100% - 20px);*/
+            width: 180px;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
@@ -83,37 +83,32 @@
             outline: none;
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
         }
-          #search-container {
-             margin-bottom: 20px;
-                            }
-          #search-input {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
-  }
+        #search-container {
+            margin-bottom: 20px;
+        }
+        #search-input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 {% endblock %}
+
 {% block body %}
     <div class="container">
-          <!-- Botão para navegar para a página /dados.html -->
-
-
+        <h1>Upload de Planilha</h1>
         <form action="/upload" method="post" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="file" class="file-label">Escolha a Planilha (.xlsx)</label>
                 <input type="file" id="file" name="file" accept=".xlsx" required class="file-input">
             </div>
             <button type="submit" class="submit-btn">Enviar</button>
-
-
         </form>
-          <div class="form-group">
-                  <button onclick="goToDados()" class="nav-btn">Ir para Dados</button>
-                  </div>
-
-
+        <div class="form-group">
+            <button onclick="goToDados()" class="nav-btn">Ir para Dados</button>
+        </div>
     </div>
 
     <script>
