@@ -41,37 +41,22 @@ TABLE_NAME = 'TbDadosPlanilha'  # Nome da tabela
 banco_url = f'mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
 
 COLUMN_MAPPING = {
-    'Id': 'dsId',
-    'Linha': 'nrLinha',
-    'CodigoItem': 'dsCodigoItem',
-    'Descricao': 'dsDescricao',
-    'cUnidade': 'dsUnidade',
-    'CodigoLote':'dsCodigoLote',
-    'Quantidade': 'dsQuantidade',
-    'ValorUnitario': 'nrVlunitario',
-    'ValorTotal': 'nrVlTotal',
-    'qAtendida': 'nrQAtendida',
-    'qPendente': 'nrQpendente',
-    'FracionaLinha': 'bFracionaLinha',
-    'ExpedicaoId': 'nrExpedicaoOld',
-    'LoteImportacao': 'dsLoteImportacao',
-    'LoteFabrica': 'dsLoteFabrica',
-    'NF': 'dsNF',
+    'RECEBIMENTO WMS': 'nrRecWms',
     'Ordem Recebimento': 'dsOrdemRec',
+    'linha': 'nrLinha',
     'CÓDIGO': 'dsCodigo',
-    'LINHA': 'nrLinha',
     'DESCRIÇÃO': 'dsDescricao',
-    'QTD NF': 'nrQtde',
+    'QTD NF':'nrQtdeNf',
     'SO': 'dsSO',
+    'ITEM': 'dsItem',
     'QUANTIDADE DE CAIXAS': 'nrQtdeCaixas',
-    'QTD RECEBIDA (PEÇAS)': 'nrQtdeRecPecas',
-    'NUMERO DE SERIE': 'dsNumeroSerie',
+    'QTD RECEBIDA (PEÇAS)': 'nrQtdeRecebida',
     'PESO': 'nrPeso',
     'DIMENSÕES': 'dsDimensoes',
     'LOCALIZAÇÃO': 'dsLocalizacao',
-    'OBS OPERAÇÃO': 'dsObs',
-    'SO + LINHa': 'dsSoLinha',
-    'TIPO Armazenagem': 'dsTipoArmazenagem',
+    'OBS OPERAÇÃO': 'dsObsOpe',
+    'QUANTIDADE DE PALLET': 'nrQtdePallet',
+    'STATUS': 'dsStatus',
     'Nome da Planilha': 'dsNomePlanilha'  # Adicionando o campo nome_da_planilha
 }
 
@@ -623,7 +608,7 @@ def pesquisa_usuarios():
 def pesquisa_planilha():
   conexao = conecta_bd()
   cursor = conexao.cursor(dictionary=True)
-  comando = f'SELECT cdTbDadosPlanilha, dsId, dsCodigoLote  FROM DbIntelliMetrics.TbDadosPlanilha where stimpresso = 0 and (dsLoteimportacao is not null or dsLoteFabrica is not null);'
+  comando = f'SELECT cdTbDadosPlanilha, dsId, dsCodigoLote  FROM DbIntelliMetrics.TbDadosPlanilha );'
   cursor.execute(comando)
   selecao = cursor.fetchall() # ler o banco de dados
   cursor.close()
@@ -776,26 +761,18 @@ def Inserir_TbLog(dsTbAcesso, dsAcao, dsIp,  dsLogin):
 
 def Update_TbDadosPlanilha(dados):
     agora = datetime.now()
-    dsEtiqueta =  substituir_caracteres( (dados.get('xEtiqueta')))
+    dsEtiqueta =   (dados.get('xEtiqueta'))
     nrPeso  = (dados.get('nPeso'))
+
     nrAlt = (dados.get('nAlt'))
     nrLarg = (dados.get('nLarg'))
     nrComp = (dados.get('nComp'))
 
-    #dtRegistro =  agora.strftime("%d/%m/%Y %H:%M")
-   # for dado in dados:
-   #     nrPeso = str(dado['nPeso'])
-   #     nrAlt = dado['nAlt']
-   #     nrLarg = dado['nLarg']
-   ##     nrComp = dado['nComp']
-    #    dsEtiqueta = dado['xEtiqueta']
 
-   # print(nrPeso)
-    #print(dsEtiqueta)
 
     conexao = conecta_bd()
     cursor = conexao.cursor(dictionary=True)
-    comando = f"update DbIntelliMetrics.TbDadosPlanilha set nrPeso = '{nrPeso}', dsDimensoes = concat('{nrAlt}'  ' x '  '{nrComp}'  ' x '  '{nrLarg}'), dsLoteFabrica = '{dsEtiqueta}', stimpresso = 0  where dsCodigoLote = '{dsEtiqueta}'"
+    comando = f"update DbIntelliMetrics.TbDadosPlanilha set nrPeso = '{nrPeso}', dsDimensoes = concat('{nrAlt}'  ' x '  '{nrComp}'  ' x '  '{nrLarg}') where dsSO = '{dsEtiqueta}'"
     print(comando)
     cursor.execute(comando)
     conexao.commit()
@@ -856,6 +833,7 @@ def EnviaImgWhats(ArquivoBase64, dsCelular):
     dicionario["message_body"] = ArquivoBase64
     dicionario["contact_phone_number"] = dsCelular
     payload = json.dumps(dicionario)
+    print(payload)
     headers = {'Content-Type': 'application/json'}
     response = requests.request("POST", url, headers=headers, data=payload)
     return response.text
@@ -931,20 +909,19 @@ def logip():
     #return render_template( content=render_template('log_ip.html'))
     return render_template('log_ip.html')
 
-UPLOAD_FOLDER = './uploads' # Create this folder if it doesn't exist
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+#UPLOAD_FOLDER = './uploads' # Create this folder if it doesn't exist
+#os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+#app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
-@app.route('/upload')
-def upload_form():
-    return render_template('upload.html')
+#@app.route('/upload')
+#def upload_form():
+#    return render_template('upload.html')
 
-@app.route('/qz')
-def qz():
-    return render_template('qz.html')
+
 @app.route('/upload', methods=['POST'])
 def upload():
+    print("toaqui")
     if 'file' not in request.files:
         return 'Nenhum arquivo enviado', 400
 
@@ -1037,7 +1014,7 @@ def upload_file_plan():
 
 #upload planilha transporte
 @app.route('/upload_planilha', methods=['POST'])
-def upload_file_planilha():
+def upload_planilha():
     if 'file' not in request.files:
         return 'Nenhum arquivo enviado', 400
 
@@ -1075,7 +1052,7 @@ def upload_file_planilha():
 @app.route('/cubagemold', methods=['GET'])
 def cubagemold():
     # Capturar os parâmetros da query string
-    xEtiqueta = request.args.get('xEtiqueta')
+    Etiqueta = request.args.get('Etiqueta')
     nPeso = request.args.get('nPeso')
     nAlt = request.args.get('nAlt')
     nLarg = request.args.get('nLarg')
@@ -1083,13 +1060,13 @@ def cubagemold():
     token = request.args.get('token')
 
     # Validar se todos os parâmetros necessários estão presentes
-    if not all([xEtiqueta, nPeso, nAlt, nLarg, nComp, token]):
+    if not all([Etiqueta, nPeso, nAlt, nLarg, nComp, token]):
         print('Erro ao obter')
         return jsonify({"error": "Todos os parâmetros devem ser fornecidos."}), 400
 
     # Montar o dicionário com os dados
     dados_cubagem = {
-        "xEtiqueta": xEtiqueta,
+        "Etiqueta": Etiqueta,
         "nPeso": float(nPeso),  # Convertendo para float
         "nAlt": float(nAlt),    # Convertendo para float
         "nLarg": float(nLarg),  # Convertendo para float
@@ -1105,12 +1082,14 @@ def cubagemold():
 @app.route('/cubagem', methods=['GET'])
 def cubagem():
     # Capturar os parâmetros da query string
-    xEtiqueta = substituir_caracteres(request.args.get('xEtiqueta'))
+    xEtiqueta = (request.args.get('xEtiqueta'))
     nPeso = request.args.get('nPeso')
     nAlt = request.args.get('nAlt')
     nLarg = request.args.get('nLarg')
     nComp = request.args.get('nComp')
     token = request.args.get('token')
+    print(xEtiqueta)
+    print(nPeso)
 
     # Validar se todos os parâmetros necessários estão presentes
     if not all([xEtiqueta, nPeso, nAlt, nLarg, nComp, token]):
@@ -1120,7 +1099,7 @@ def cubagem():
     # Montar o dicionário com os dados
     dados_cubagem = {
         "xEtiqueta": xEtiqueta,
-        "nPeso": float(nPeso),  # Convertendo para float
+        "nPeso": (nPeso),  # Convertendo para float
         "nAlt": float(nAlt),    # Convertendo para float
         "nLarg": float(nLarg),  # Convertendo para float
         "nComp": float(nComp)   # Convertendo para float
@@ -1147,7 +1126,8 @@ def get_zpl():
 def enviawhats():
     data = request.get_json()
     dsCpf = data.get('cpf')
-    dsCelular = data.get('celular')
+    #dsCelular = str(55) & data.get('celular')
+    dsCelular = '55' + str(data.get('celular', ''))
     print(dsCelular)
     # Lógica para enviar QR via WhatsApp
     # Suponhamos que a função abaixo faz isso:
