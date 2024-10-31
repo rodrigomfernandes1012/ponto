@@ -608,7 +608,7 @@ def pesquisa_usuarios():
 def pesquisa_planilha():
   conexao = conecta_bd()
   cursor = conexao.cursor(dictionary=True)
-  comando = f'SELECT cdTbDadosPlanilha, dsId, dsCodigoLote  FROM DbIntelliMetrics.TbDadosPlanilha );'
+  comando = f'SELECT *  FROM DbIntelliMetrics.TbDadosPlanilha ;'
   cursor.execute(comando)
   selecao = cursor.fetchall() # ler o banco de dados
   cursor.close()
@@ -767,17 +767,17 @@ def Update_TbDadosPlanilha(dados):
     nrAlt = (dados.get('nAlt'))
     nrLarg = (dados.get('nLarg'))
     nrComp = (dados.get('nComp'))
-
-
+    nrQtd = (dados.get('nQtd'))
 
     conexao = conecta_bd()
     cursor = conexao.cursor(dictionary=True)
-    comando = f"update DbIntelliMetrics.TbDadosPlanilha set nrPeso = '{nrPeso}', dsDimensoes = concat('{nrAlt}'  ' x '  '{nrComp}'  ' x '  '{nrLarg}') where dsSO = '{dsEtiqueta}'"
+    comando = f"update DbIntelliMetrics.TbDadosPlanilha set nrQtdeRecebida = '{nrQtd}', nrPeso = '{nrPeso}', dsDimensoes = concat('{nrAlt}'  ' x '  '{nrComp}'  ' x '  '{nrLarg}') where dsSO = '{dsEtiqueta}'"
     print(comando)
     cursor.execute(comando)
     conexao.commit()
     cursor.close()
     conexao.close()
+
     return "cadastrado com sucesso"
 
 
@@ -914,9 +914,9 @@ def logip():
 #app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
-#@app.route('/upload')
-#def upload_form():
-#    return render_template('upload.html')
+@app.route('/upload')
+def upload_form():
+    return render_template('upload.html')
 
 
 @app.route('/upload', methods=['POST'])
@@ -1087,9 +1087,11 @@ def cubagem():
     nAlt = request.args.get('nAlt')
     nLarg = request.args.get('nLarg')
     nComp = request.args.get('nComp')
+    nQtd = request.args.get('nQtd')
     token = request.args.get('token')
     print(xEtiqueta)
     print(nPeso)
+    print(nQtd)
 
     # Validar se todos os parâmetros necessários estão presentes
     if not all([xEtiqueta, nPeso, nAlt, nLarg, nComp, token]):
@@ -1102,7 +1104,8 @@ def cubagem():
         "nPeso": (nPeso),  # Convertendo para float
         "nAlt": float(nAlt),    # Convertendo para float
         "nLarg": float(nLarg),  # Convertendo para float
-        "nComp": float(nComp)   # Convertendo para float
+        "nComp": float(nComp),   # Convertendo para float
+        "nQtd": float(nQtd)  # Convertendo para float
     }
     print(dados_cubagem)
     Update_TbDadosPlanilha(dados_cubagem)
@@ -1336,23 +1339,19 @@ def comparar_listas(dicionario_a, dicionario_b):
     return dicionario_diferencas
 
 
-@app.route('/dados', methods=['GET'])
+@app.route('/dados')
+def dados():
+    return render_template('dados.html')
+
+
+
+@app.route('/get_dados', methods=['GET'])
 def mostrar_dados():
+    print("chamou")
     try:
-        # Cria a string de conexão com o banco de dados MySQL
-        banco_url = f'mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
-
-        # Cria a conexão com o banco de dados
-        engine = create_engine(banco_url)
-
-        # Faz uma consulta para selecionar os dados ordenados pela data mais recente
-        query = text(f"SELECT  *  FROM DbIntelliMetrics.TbDadosPlanilha ")  # Supondo que haja uma coluna `id` que indica a ordem
-        #print(query)
-        with engine.connect() as conn:
-            result = conn.execute(query)
-            dados = result.fetchall()
-
-        return render_template('dados.html', dados=dados)
+        get_dados = pesquisa_planilha()
+        print(get_dados)
+        return jsonify(get_dados)
     except Exception as e:
         return str(e), 400
 
