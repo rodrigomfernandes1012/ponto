@@ -103,124 +103,105 @@
 
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
 
+
+
+
+
+    <table class="data-table" id="dados">
+        <thead>
+            <tr>
+                <th>RECEBIMENTO WMS</th>
+                <th>Ordem Recebimento</th>
+                <th>Linha</th>
+                <th>Código</th>
+                <th>Descrição</th>
+                <th>QTD NF</th>
+                <th>SO</th>
+                <th>Item</th>
+                <th>Quantidade de Caixas</th>
+                <th>QTD Recebida</th>
+                <th>Peso</th>
+                <th>Dimensões</th>
+                <th>Localização</th>
+                <th>Obs Operação</th>
+                <th>Quantidade de Pallet</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+
+
+        <div class="container">
+            <button onclick="goToPlanilha()" class="nav-btn">Voltar</button>
+            <button onclick="exportToExcel()">Exportar para Excel</button>
+        </div>
+
+
+            <!-- Linhas de dados serão inseridas aqui -->
+        </tbody>
+    </table>
+
+
+
     <script>
-        async function exportToExcel() {
-            const table = document.getElementById('dataTable');
-            const workbook = XLSX.utils.table_to_book(table);
-            XLSX.writeFile(workbook, 'dados_banco.xlsx');
-        }
 
-        function goToPlanilha() {
-            window.location.href = '{{ url_for("upload") }}'; // Altere "upload" para o nome correto da rota
-        }
-
-        async function printSelectedRows() {
-            const checkedRows = [];
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
-            checkboxes.forEach(checkbox => {
-                const row = checkbox.closest('tr');
-                const cells = row.querySelectorAll('td');
-                const data = {
-                    id: cells[1].textContent, // assume que o ID está na 2ª coluna
-                    loteImportacao: cells[14].textContent,
-                    loteFabrica: cells[15].textContent
-                };
-                checkedRows.push(data);
-            });
-
-            if (checkedRows.length === 0) {
-                alert("Selecione ao menos um registro para imprimir.");
-                return;
-            }
-
+            async function fetchData() {
             try {
-                const response = await fetch('/print', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ dados: checkedRows })
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    alert
-                    alert(data.message); // Exibe mensagem de sucesso ou erro.
-                } else {
-                    throw new Error('Erro ao imprimir os dados.');
-                }
-            } catch (error) {
-                console.error("Erro ao imprimir:", error);
-                alert('Ocorreu um erro ao imprimir os dados.');
-            }
+            const response = await fetch('/get_dados');
+            const dados = await response.json();
+            renderTable(dados);
+        } catch (error) {
+            console.error('Erro ao buscar dados:', error);
+        }
         }
 
-        function openPrinterDialog() {
-            alert("Para imprimir, use a função 'Imprimir Selecionados'. A escolha da impressora padrão é feita no servidor.");
+            function renderTable(dados) {
+            const tableBody = document.getElementById('dados').querySelector('tbody');
+            tableBody.innerHTML = ''; // Limpa a tabela antes de re-renderizar
+
+            dados.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                    <td>${item.nrRecWms}</td>
+                    <td>${item.dsOrdemRec}</td>
+                    <td>${item.nrLinha}</td>
+                    <td>${item.dsCodigo}</td>
+                    <td>${item.dsDescricao}</td>
+                    <td>${item.nrQtdeNf}</td>
+                    <td>${item.dsSO}</td>
+                    <td>${item.dsItem}</td>
+                    <td>${item.nrQtdeCaixas}</td>
+                    <td>${item.nrQtdeRecebida}</td>
+                    <td>${item.nrPeso}</td>
+                    <td>${item.dsDimensoes}</td>
+                    <td>${item.dsLocalizacao}</td>
+                    <td>${item.dsObsOpe}</td>
+                    <td>${item.nrQtdePallet}</td>
+                    <td>${item.status}</td>
+                `;
+            tableBody.appendChild(row);
+        });
         }
 
-        function toggleAllCheckboxes(source) {
-            const checkboxes = document.querySelectorAll('#dataTable input[type="checkbox"]');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = source.checked;
-            });
-        }
+            // Atualiza a tabela a cada 10 segundos
+            setInterval(fetchData, 10000);
+
+            // Chama fetchData ao carregar a página
+            fetchData();
+
+
+    async function exportToExcel() {
+    const table = document.getElementById('dados');
+    const workbook = XLSX.utils.table_to_book(table);
+    XLSX.writeFile(workbook, 'dados_banco.xlsx');
+    }
+
+    function goToPlanilha() {
+    window.location.href = '{{ url_for("upload") }}'; // Altere "upload" para o nome correto da rota
+    }
+
+
     </script>
 </div>
 {% endblock %}
 
-{% block body %}
-<div class="container">
-
-    <button onclick="goToPlanilha()" class="nav-btn">Voltar</button>
-    <button onclick="exportToExcel()">Exportar para Excel</button>
-
-
-    <table class="data-table" id="dataTable">
-        <thead>
-            <tr>
-                <th><input type="checkbox" onclick="toggleAllCheckboxes(this)"></th>
-                <th>RECEBIMENTO WMS</th>
-                <th>Ordem Recebimento</th>
-                <th>linha</th>
-                <th>CÓDIGO</th>
-                <th>DESCRIÇÃO</th>
-                <th>QTD NF</th>
-                <th>SO</th>
-                <th>ITEM</th>
-                <th>QUANTIDADE DE CAIXAS</th>
-                <th>QTD RECEBIDA (PEÇAS)</th>
-                <th>PESO</th>
-                <th>DIMENSÕES</th>
-                <th>LOCALIZAÇÃO</th>
-                <th>OBS OPERAÇÃO</th>
-                <th>QUANTIDADE DE PALLET</th>
-                <th>STATUS</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for dado in dados %}
-            <tr>
-                <td><input type="checkbox"></td>
-                <td>{{ dado.nrRecWms }}</td>
-                <td>{{ dado.dsOrdemRec }}</td>
-                <td>{{ dado.nrLinha }}</td>
-                <td>{{ dado.dsCodigo }}</td>
-                <td>{{ dado.dsDescricao }}</td>
-                <td>{{ dado.nrQtdeNf }}</td>
-                <td>{{ dado.dsSO }}</td>
-                <td>{{ dado.dsItem }}</td>
-                <td>{{ dado.nrQtdeCaixas }}</td>
-                <td>{{ dado.nrQtdeRecebida }}</td>
-                <td>{{ dado.nrPeso }}</td>
-                <td>{{ dado.dsDimensoes }}</td>
-                <td>{{ dado.dsLocalizacao }}</td>
-                <td>{{ dado.dsObsOpe }}</td>
-                <td>{{ dado.nrQtdePallet }}</td>
-                <td>{{dado.status}}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-{% endblock %}
