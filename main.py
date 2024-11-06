@@ -777,6 +777,7 @@ def Update_TbDadosPlanilha(dados):
     agora = datetime.now()
     dsEtiqueta =   (dados.get('xEtiqueta'))
     dsSo, dsItem = separar_dados(dsEtiqueta)
+    dsItem = int(dsItem)
     nrPeso  = (dados.get('nPeso'))
 
     nrAlt = (dados.get('nAlt'))
