@@ -949,8 +949,8 @@ def upload():
     try:
         # Lê a planilha do Excel
         df = pd.read_excel(file)
-        print(file.filename)
-        print("02")
+
+
 
         # Adiciona uma nova coluna com o nome da planilha
         nome_planilha = file.filename
@@ -961,8 +961,7 @@ def upload():
 
         # Converte o DataFrame para um dicionário
         data_dict = df.to_dict(orient='records')
-        print(data_dict)
-        print(df)
+
 
 
         # Conectar ao banco de dados e gravar dados
@@ -1042,8 +1041,7 @@ def upload_planilha():
     try:
         # Lê a planilha do Excel
         df = pd.read_excel(file)
-        print(file.filename)
-        print("entrei")
+
 
         # Adiciona uma nova coluna com o nome da planilha
         nome_planilha = file.filename
@@ -1088,7 +1086,7 @@ def cubagemold():
         "nLarg": float(nLarg),  # Convertendo para float
         "nComp": float(nComp)   # Convertendo para float
     }
-    print(dados_cubagem)
+
     Update_TbDadosPlanilha(dados_cubagem)
     # Retornar o dicionário como resposta JSON
     return jsonify(dados_cubagem), 200
@@ -1104,14 +1102,12 @@ def cubagem():
     nComp = request.args.get('nComp')
     nQtd = request.args.get('nQtd')
     token = request.args.get('token')
-    print(xEtiqueta)
-    print(nPeso)
-    print(nQtd)
+
     Inserir_TbLog("TbDadosPlanilha", "Get_Cubagem", xEtiqueta, xEtiqueta)
 
     # Validar se todos os parâmetros necessários estão presentes
     if not all([xEtiqueta, nPeso, nAlt, nLarg, nComp, token]):
-        print('Erro ao obter')
+
         return jsonify({"error": "Todos os parâmetros devem ser fornecidos."}), 400
 
     # Tratar caso xEtiqueta ou nQtd sejam vazios
@@ -1128,7 +1124,7 @@ def cubagem():
         "nQtd": nQtd             # nQtd já é um float ou 0.0
     }
 
-    print(dados_cubagem)
+
     Update_TbDadosPlanilha(dados_cubagem)
     # Retornar o dicionário como resposta JSON
     return jsonify(dados_cubagem), 200
@@ -1371,7 +1367,7 @@ def mostrar_dados():
     print("chamou")
     try:
         get_dados = pesquisa_planilha()
-        print(get_dados)
+
         return jsonify(get_dados)
     except Exception as e:
         return str(e), 400
@@ -1495,7 +1491,7 @@ def data():
         diferencas = comparar_listas(dic01, dic02)
 
         # Exibir as diferenças
-        print("Diferenças encontradas:")
+
         for item in diferencas:
             #print(item)
            # print(item['cdPonto'])
@@ -1503,7 +1499,7 @@ def data():
             Alterar_TbPonto(item['cdPonto'], item['dsRegistro01_B'], item['dsRegistro02_B'], item['dsRegistro03_B'], item['dsRegistro04_B'], item['dsData'],item['dsTipoRegistro_B'],item['dsObservacao_B'])
 
     return jsonify(result)
-    print(dicionario_diferencas)
+
 
 @app.route('/data2')
 def data2():
@@ -1515,8 +1511,7 @@ def planilha():
         data1 = request.get_json()
         texto = data1.get('mensagem')
         update_st_impresso(data1)
-        print(texto)
-        print(data1)
+
     return pesquisa_planilha()
 
 
