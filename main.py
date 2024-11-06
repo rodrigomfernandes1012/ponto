@@ -1078,11 +1078,10 @@ def cubagemold():
     return jsonify(dados_cubagem), 200
 
 
-
 @app.route('/cubagem', methods=['GET','POST'])
 def cubagem():
     # Capturar os parâmetros da query string
-    xEtiqueta = (request.args.get('xEtiqueta'))
+    xEtiqueta = request.args.get('xEtiqueta')
     nPeso = request.args.get('nPeso')
     nAlt = request.args.get('nAlt')
     nLarg = request.args.get('nLarg')
@@ -1097,17 +1096,21 @@ def cubagem():
     if not all([xEtiqueta, nPeso, nAlt, nLarg, nComp, token]):
         print('Erro ao obter')
         return jsonify({"error": "Todos os parâmetros devem ser fornecidos."}), 400
-    if xEtiqueta == '':
-        xEtiqueta = 0
+
+    # Tratar caso xEtiqueta ou nQtd sejam vazios
+    xEtiqueta = xEtiqueta if xEtiqueta else 0
+    nQtd = float(nQtd) if nQtd else 0.0
+
     # Montar o dicionário com os dados
     dados_cubagem = {
         "xEtiqueta": xEtiqueta,
-        "nPeso": (nPeso),  # Convertendo para float
+        "nPeso": float(nPeso),  # Convertendo para float
         "nAlt": float(nAlt),    # Convertendo para float
         "nLarg": float(nLarg),  # Convertendo para float
         "nComp": float(nComp),   # Convertendo para float
-        "nQtd": float(nQtd)  # Convertendo para float
+        "nQtd": nQtd             # nQtd já é um float ou 0.0
     }
+
     print(dados_cubagem)
     Update_TbDadosPlanilha(dados_cubagem)
     # Retornar o dicionário como resposta JSON
