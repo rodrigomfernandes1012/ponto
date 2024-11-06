@@ -18,6 +18,7 @@ from email.mime.base import MIMEBase
 from email import encoders
 import os
 from datetime import date
+import re
 
 
 
@@ -759,9 +760,23 @@ def Inserir_TbLog(dsTbAcesso, dsAcao, dsIp,  dsLogin):
     username = dsLogin
     return username
 
+
+def separar_dados(texto):
+    # Usar expressão regular para separar o texto por ;, / ou -
+    import re
+    dados = re.split(r'[;/-]', texto)
+
+    # Retornar as duas primeiras partes separadas
+    if len(dados) >= 2:
+        return dados[0].strip(), dados[1].strip()  # Remove espaços desnecessários
+    else:
+        raise ValueError("O texto deve conter pelo menos duas partes separadas por ;, / ou -.")
+
+
 def Update_TbDadosPlanilha(dados):
     agora = datetime.now()
     dsEtiqueta =   (dados.get('xEtiqueta'))
+    dsSo, dsItem = separar_dados(dsEtiqueta)
     nrPeso  = (dados.get('nPeso'))
 
     nrAlt = (dados.get('nAlt'))
@@ -771,7 +786,7 @@ def Update_TbDadosPlanilha(dados):
 
     conexao = conecta_bd()
     cursor = conexao.cursor(dictionary=True)
-    comando = f"update DbIntelliMetrics.TbDadosPlanilha set nrQtdeRecebida = '{nrQtd}', nrPeso = '{nrPeso}', dsDimensoes = concat('{nrAlt}'  ' x '  '{nrComp}'  ' x '  '{nrLarg}') where dsSO = '{dsEtiqueta}'"
+    comando = f"update DbIntelliMetrics.TbDadosPlanilha set nrQtdeRecebida = '{nrQtd}', nrPeso = '{nrPeso}', dsDimensoes = concat('{nrAlt}'  ' x '  '{nrComp}'  ' x '  '{nrLarg}') where dsSO = '{dsSo}' and dsItem = '{dsItem}'"
     print(comando)
     cursor.execute(comando)
     conexao.commit()
