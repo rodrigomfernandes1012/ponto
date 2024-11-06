@@ -787,7 +787,7 @@ def Update_TbDadosPlanilha(dados):
     conexao = conecta_bd()
     cursor = conexao.cursor(dictionary=True)
     comando = f"update DbIntelliMetrics.TbDadosPlanilha set nrQtdeRecebida = '{nrQtd}', nrPeso = '{nrPeso}', dsDimensoes = concat('{nrAlt}'  ' x '  '{nrComp}'  ' x '  '{nrLarg}') where dsSO = '{dsSo}' and dsItem = '{dsItem}'"
-    print(comando)
+    Inserir_TbLog("TbDadosPlanilha", "Update_Cubagem", dsSo, dsItem)
     cursor.execute(comando)
     conexao.commit()
     cursor.close()
@@ -1106,6 +1106,7 @@ def cubagem():
     print(xEtiqueta)
     print(nPeso)
     print(nQtd)
+    Inserir_TbLog("TbDadosPlanilha", "Get_Cubagem", xEtiqueta, xEtiqueta)
 
     # Validar se todos os parâmetros necessários estão presentes
     if not all([xEtiqueta, nPeso, nAlt, nLarg, nComp, token]):
