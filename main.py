@@ -909,9 +909,9 @@ def logip():
     #return render_template( content=render_template('log_ip.html'))
     return render_template('log_ip.html')
 
-#UPLOAD_FOLDER = './uploads' # Create this folder if it doesn't exist
-#os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-#app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+UPLOAD_FOLDER = './uploads' # Create this folder if it doesn't exist
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
 @app.route('/upload')
@@ -1079,7 +1079,7 @@ def cubagemold():
 
 
 
-@app.route('/cubagem', methods=['GET'])
+@app.route('/cubagem', methods=['GET','POST'])
 def cubagem():
     # Capturar os parâmetros da query string
     xEtiqueta = (request.args.get('xEtiqueta'))
@@ -1097,7 +1097,8 @@ def cubagem():
     if not all([xEtiqueta, nPeso, nAlt, nLarg, nComp, token]):
         print('Erro ao obter')
         return jsonify({"error": "Todos os parâmetros devem ser fornecidos."}), 400
-
+    if xEtiqueta == '':
+        xEtiqueta = 0
     # Montar o dicionário com os dados
     dados_cubagem = {
         "xEtiqueta": xEtiqueta,
