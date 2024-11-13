@@ -817,6 +817,7 @@ def Update_TbDadosPlanilha(dados):
             SET nrQtdeRecebida = '{nrQtd}', 
                 nrPeso = '{nrPeso}', 
                 dsDimensoes = CONCAT('{nrAlt}', ' x ', '{nrComp}', ' x ', '{nrLarg}'),
+                nrQtdeCaixas = '{nrQtd}',
                 dsStatus = 'Atualizado' 
             WHERE dsSO = '{dsSo}' AND dsItem = '{dsItem}'
         """
