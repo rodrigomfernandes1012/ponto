@@ -1,4 +1,3 @@
-
 {% block head %}
 <div class="container">
     <style>
@@ -45,22 +44,16 @@
             background-color: #fff;
         }
 
-        input[type="date"], input[type="time"] {
-            width: 100px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-            margin-top: 5px;
+        .alert-row {
+            background-color: #ffcccc; /* Fundo vermelho claro para alertar */
         }
 
+        input[type="date"], input[type="time"],
         input[type="text"], select, textarea {
-            width: 180px;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 16px;
-            margin-top: 5px;
         }
 
         button {
@@ -103,10 +96,6 @@
 
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
 
-
-
-
-
     <table class="data-table" id="dados">
         <thead>
             <tr>
@@ -129,39 +118,39 @@
             </tr>
         </thead>
         <tbody>
-
-
-        <div class="container">
-            <button onclick="goToPlanilha()" class="nav-btn">Voltar</button>
-            <button onclick="exportToExcel()">Exportar para Excel</button>
-        </div>
-
-
+            <div class="container">
+                <button onclick="goToPlanilha()" class="nav-btn">Voltar</button>
+                <button onclick="exportToExcel()">Exportar para Excel</button>
+            </div>
             <!-- Linhas de dados serão inseridas aqui -->
         </tbody>
     </table>
 
-
-
     <script>
-
-            async function fetchData() {
+        async function fetchData() {
             try {
-            const response = await fetch('/get_dados');
-            const dados = await response.json();
-            renderTable(dados);
-        } catch (error) {
-            console.error('Erro ao buscar dados:', error);
-        }
+                const response = await fetch('/get_dados');
+                const dados = await response.json();
+                renderTable(dados);
+            } catch (error) {
+                console.error('Erro ao buscar dados:', error);
+            }
         }
 
-            function renderTable(dados) {
+        function renderTable(dados) {
+
             const tableBody = document.getElementById('dados').querySelector('tbody');
             tableBody.innerHTML = ''; // Limpa a tabela antes de re-renderizar
 
             dados.forEach(item => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
+                const row = document.createElement('tr');
+
+                // Verificar se nrQtdeRecebida é maior que nrQtdeNf para aplicar a classe de alerta
+                if (item.nrQtdeNf < item.nrQtdeRecebida ) {
+                    row.classList.add('alert-row'); // Adiciona classe para alterar a cor de fundo
+                }
+
+                row.innerHTML = `
                     <td>${item.nrRecWms}</td>
                     <td>${item.dsOrdemRec}</td>
                     <td>${item.nrLinha}</td>
@@ -179,29 +168,25 @@
                     <td>${item.nrQtdePallet}</td>
                     <td>${item.status}</td>
                 `;
-            tableBody.appendChild(row);
-        });
+                tableBody.appendChild(row);
+            });
         }
 
-            // Atualiza a tabela a cada 10 segundos
-            setInterval(fetchData, 10000);
+        // Atualiza a tabela a cada 10 segundos
+        setInterval(fetchData, 10000);
 
-            // Chama fetchData ao carregar a página
-            fetchData();
+        // Chama fetchData ao carregar a página
+        fetchData();
 
+        async function exportToExcel() {
+            const table = document.getElementById('dados');
+            const workbook = XLSX.utils.table_to_book(table);
+            XLSX.writeFile(workbook, 'dados_banco.xlsx');
+        }
 
-    async function exportToExcel() {
-    const table = document.getElementById('dados');
-    const workbook = XLSX.utils.table_to_book(table);
-    XLSX.writeFile(workbook, 'dados_banco.xlsx');
-    }
-
-    function goToPlanilha() {
-    window.location.href = '{{ url_for("upload") }}'; // Altere "upload" para o nome correto da rota
-    }
-
-
+        function goToPlanilha() {
+            window.location.href = '{{ url_for("upload") }}'; // Altere "upload" para o nome correto da rota
+        }
     </script>
 </div>
 {% endblock %}
-
