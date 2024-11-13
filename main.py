@@ -609,7 +609,7 @@ def pesquisa_usuarios():
 def pesquisa_planilha():
   conexao = conecta_bd()
   cursor = conexao.cursor(dictionary=True)
-  comando = f'SELECT *  FROM DbIntelliMetrics.TbDadosPlanilha ;'
+  comando = f'SELECT *  FROM DbIntelliMetrics.TbDadosPlanilha order by dsSO, cdTbDadosPlanilha ;'
   cursor.execute(comando)
   selecao = cursor.fetchall() # ler o banco de dados
   cursor.close()
@@ -811,11 +811,13 @@ def Update_TbDadosPlanilha(dados):
     #if resultado and resultado['dsDimensoes'] is None:
     if any(resultado['dsDimensoes'] is  None for resultado in resultados):
         # Se encontrar, faz UPDATE
+        print("atualizado")
         comando = f"""
             UPDATE DbIntelliMetrics.TbDadosPlanilha 
             SET nrQtdeRecebida = '{nrQtd}', 
                 nrPeso = '{nrPeso}', 
-                dsDimensoes = CONCAT('{nrAlt}', ' x ', '{nrComp}', ' x ', '{nrLarg}') 
+                dsDimensoes = CONCAT('{nrAlt}', ' x ', '{nrComp}', ' x ', '{nrLarg}'),
+                dsStatus = 'Atualizado' 
             WHERE dsSO = '{dsSo}' AND dsItem = '{dsItem}'
         """
         Inserir_TbLog("TbDadosPlanilha", "Update_Cubagem", dsSo, dsItem)
@@ -835,19 +837,19 @@ def Update_TbDadosPlanilha(dados):
 
             comando = f"""
                         INSERT INTO DbIntelliMetrics.TbDadosPlanilha 
-                        (dsSO, dsItem, nrQtdeRecebida,  nrPeso, dsDimensoes, nrRecWms, dsOrdemRec, nrLinha, dsCodigo, dsDescricao, nrQtdeNf, nrQtdeCaixas, dsLocalizacao, dsObsOpe, nrQtdePallet) 
+                        (dsSO, dsItem, nrQtdeRecebida,  nrPeso, dsDimensoes, nrRecWms, dsOrdemRec, nrLinha, dsCodigo, dsDescricao, nrQtdeNf, nrQtdeCaixas, dsLocalizacao, dsObsOpe, nrQtdePallet, dsStatus) 
                         VALUES 
                         ('{dsSo}', '{dsItem}', '{nrQtd}', '{nrPeso}', CONCAT('{nrAlt}', ' x ', '{nrComp}', ' x ', '{nrLarg}'), 
                         '{nrRecWms}', '{dsOrdemRec}', '{nrLinha}', '{dsCodigo}', '{dsDescricao}', '{nrQtdeNf}', 
-                        '{totalQtdeRecebida}' + '{nrQtd}', '{dsLocalizacao}', '{dsObsOpe}', '{nrQtdePallet}' )
+                        '{totalQtdeRecebida}' + '{nrQtd}', '{dsLocalizacao}', '{dsObsOpe}', '{nrQtdePallet}', 'Inserido' )
                     """
             Inserir_TbLog("TbDadosPlanilha", "Insert_Cubagem", dsSo, dsItem)
 
-            # Executar o comando
-        cursor.execute(comando)
-        conexao.commit()
-        cursor.close()
-        conexao.close()
+    # Executar o comando
+    cursor.execute(comando)
+    conexao.commit()
+    cursor.close()
+    conexao.close()
 
     #conexao = conecta_bd()
     #cursor = conexao.cursor(dictionary=True)
@@ -1431,6 +1433,7 @@ def mostrar_dados():
     print("chamou")
     try:
         get_dados = pesquisa_planilha()
+        print(get_dados)
 
         return jsonify(get_dados)
     except Exception as e:
