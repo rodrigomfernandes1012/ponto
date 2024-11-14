@@ -48,6 +48,8 @@
             background-color: #ffcccc; /* Fundo vermelho claro para alertar */
         }
 
+
+
         input[type="text"] {
             padding: 5px;
             margin: 5px;
@@ -89,6 +91,7 @@
         <button onclick="goToPlanilha()" class="nav-btn">Voltar</button>
         <button onclick="exportToExcel()">Exportar para Excel</button>
     </div>
+    <div id="alert-message" style="display: none; color: red; margin: 10px; font-weight: bold;"></div>
 
     <table class="data-table" id="dados">
         <thead>
@@ -144,41 +147,63 @@
                 console.error('Erro ao buscar dados:', error);
             }
         }
+function renderTable(dados) {
+    const tableBody = document.getElementById('dados').querySelector('tbody');
+    const alertMessage = document.getElementById('alert-message');
+    tableBody.innerHTML = ''; // Limpa a tabela antes de re-renderizar
+    alertMessage.style.display = 'none'; // Oculta a mensagem de alerta inicialmente
 
-        function renderTable(dados) {
-            const tableBody = document.getElementById('dados').querySelector('tbody');
-            tableBody.innerHTML = ''; // Limpa a tabela antes de re-renderizar
+    // String acumulativa para mensagens de alerta
+    let alertMessages = [];
 
-            dados.forEach(item => {
-                const row = document.createElement('tr');
+    dados.forEach(item => {
+        const row = document.createElement('tr');
 
-                // Verificar se nrQtdeRecebida é maior que nrQtdeNf para aplicar a classe de alerta
-                if (item.nrQtdeNf < item.nrQtdeRecebida) {
-                    row.classList.add('alert-row'); // Adiciona classe para alterar a cor de fundo
-                }
+        // Converter os campos para número
+        const nrQtdeNf = Number(item.nrQtdeNf);
+        const nrQtdeCaixas = Number(item.nrQtdeCaixas);
+        const nrQtdeRecebida = Number(item.nrQtdeRecebida); // Se necessário para outras comparações
 
-                row.innerHTML = `
-                    <td>${item.nrRecWms}</td>
-                    <td>${item.dsOrdemRec}</td>
-                    <td>${item.nrLinha}</td>
-                    <td>${item.dsCodigo}</td>
-                    <td>${item.dsDescricao}</td>
-                    <td>${item.nrQtdeNf}</td>
-                    <td>${item.dsSO}</td>
-                    <td>${item.dsItem}</td>
-                    <td>${item.nrQtdeCaixas}</td>
-                    <td>${item.nrQtdeRecebida}</td>
-                    <td>${item.nrPeso}</td>
-                    <td>${item.dsDimensoes}</td>
-                    <td>${item.dsLocalizacao}</td>
-                    <td>${item.dsObsOpe}</td>
-                    <td>${item.nrQtdePallet}</td>
-                    <td>${item.dsStatus}</td>
-                `;
-                tableBody.appendChild(row);
-            });
+        // Verificar se nrQtdeRecebida é maior que nrQtdeNf
+        if (nrQtdeNf < nrQtdeRecebida) {
+            row.classList.add('alert-row'); // Adiciona classe para alterar a cor de fundo
         }
 
+        // Verificar se nrQtdeCaixas é maior que nrQtdeNf e acumular a mensagem de alerta
+        if (nrQtdeCaixas > nrQtdeNf) {
+            alertMessages.push(`Quantidade do código: ${item.dsCodigo}, ${item.dsDescricao}, é maior que a nota fiscal Qtde =  ${nrQtdeNf}.  Qtde registrada: ${nrQtdeCaixas}`);
+            row.style.backgroundColor = '#ffcccc'; // Altera a cor de fundo para vermelho claro
+        }
+
+        row.innerHTML = `
+            <td>${item.nrRecWms}</td>
+            <td>${item.dsOrdemRec}</td>
+            <td>${item.nrLinha}</td>
+            <td>${item.dsCodigo}</td>
+            <td>${item.dsDescricao}</td>
+            <td>${nrQtdeNf}</td>
+            <td>${item.dsSO}</td>
+            <td>${item.dsItem}</td>
+            <td>${nrQtdeCaixas}</td>
+            <td>${item.nrQtdeRecebida}</td>
+            <td>${item.nrPeso}</td>
+            <td>${item.dsDimensoes}</td>
+            <td>${item.dsLocalizacao}</td>
+            <td>${item.dsObsOpe}</td>
+            <td>${item.nrQtdePallet}</td>
+            <td>${item.dsStatus}</td>
+        `;
+        tableBody.appendChild(row);
+    });
+
+    // Exibir todas as mensagens de alerta, se houver
+    if (alertMessages.length > 0) {
+        alertMessage.style.display = 'block'; // Mostra a mensagem de alerta
+        alertMessage.innerText = alertMessages.join('\n'); // Juntar todas as mensagens em uma nova linha
+    } else {
+        alertMessage.style.display = 'none'; // Oculta a mensagem se não houver alertas
+    }
+}
           function filterTable(columnIndex) {
             const input = document.querySelectorAll("#dados thead tr:nth-child(2) input[type='text']");
             const filter = input[columnIndex].value.toLowerCase();
