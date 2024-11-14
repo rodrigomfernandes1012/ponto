@@ -775,52 +775,49 @@ def separar_dados(texto):
 
 def Update_TbDadosPlanilha(dados):
     agora = datetime.now()
-    dsEtiqueta =   (dados.get('xEtiqueta'))
+    dsEtiqueta = dados.get('xEtiqueta')
     dsSo, dsItem = separar_dados(dsEtiqueta)
     dsItem = int(dsItem)
-    nrPeso  = (dados.get('nPeso'))
+
+    nrPeso = float(dados.get('nPeso', 0))  # Convertendo para float e definindo um padrão
     nrQtd = 1
-    print(nrQtd)
-    nrAlt =   (dados.get('nAlt'))
-    nrLarg = (dados.get('nLarg'))  # Convertendo para float
-    nrComp = (dados.get('nComp'))  # Convertendo para float
-
-
-
+    nrAlt = float(dados.get('nAlt', 0))  # Convertendo para float
+    nrLarg = float(dados.get('nLarg', 0))  # Convertendo para float
+    nrComp = float(dados.get('nComp', 0))  # Convertendo para float
 
     conexao = conecta_bd()
     cursor = conexao.cursor(dictionary=True)
+
     # Obter a quantidade total de nrQtdeRecebida
     cursor.execute(
-        f"SELECT SUM(nrQtdeRecebida) AS totalQtdeRecebida "
-        f"FROM DbIntelliMetrics.TbDadosPlanilha WHERE dsSO = '{dsSo}' AND dsItem = '{dsItem}'"
+        "SELECT SUM(nrQtdeRecebida) AS totalQtdeRecebida "
+        "FROM DbIntelliMetrics.TbDadosPlanilha WHERE dsSO = %s AND dsItem = %s",
+        (dsSo, dsItem)
     )
     resultado_total = cursor.fetchone()
     totalQtdeRecebida = resultado_total['totalQtdeRecebida'] if resultado_total['totalQtdeRecebida'] is not None else 0
-    print(totalQtdeRecebida)
 
-
-    # Verificar se dsDimensoes é diferente de nulo
+    # Consultar dados existentes
     cursor.execute(
-        f"SELECT dsSO, dsItem, nrQtdeRecebida, nrQtdeCaixas, nrPeso, dsDimensoes, nrRecWms, dsOrdemRec, nrLinha,dsCodigo, dsDescricao, nrQtdeNf, nrQtdeCaixas, dsLocalizacao, dsObsOpe, nrQtdePallet  FROM DbIntelliMetrics.TbDadosPlanilha WHERE dsSO = '{dsSo}' AND dsItem = '{dsItem}'")
+        "SELECT dsSO, dsItem, nrQtdeRecebida, nrQtdeCaixas, nrPeso, dsDimensoes, nrRecWms, dsOrdemRec, "
+        "nrLinha, dsCodigo, dsDescricao, nrQtdeNf, dsLocalizacao, dsObsOpe, nrQtdePallet "
+        "FROM DbIntelliMetrics.TbDadosPlanilha WHERE dsSO = %s AND dsItem = %s",
+        (dsSo, dsItem)
+    )
     resultados = cursor.fetchall()
 
-    print(resultados)
-
-
-    #if resultado and resultado['dsDimensoes'] is None:
-    if any(resultado['dsDimensoes'] is  None for resultado in resultados):
+    if any(resultado['dsDimensoes'] is None for resultado in resultados):
         # Se encontrar, faz UPDATE
-        print("atualizado")
-        comando = f"""
+        comando = """
             UPDATE DbIntelliMetrics.TbDadosPlanilha 
-            SET nrQtdeRecebida = '{nrQtd}', 
-                nrPeso = '{nrPeso}', 
-                dsDimensoes = CONCAT('{nrAlt}', ' x ', '{nrComp}', ' x ', '{nrLarg}'),
-                nrQtdeCaixas = 1,
+            SET nrQtdeRecebida = %s, 
+                nrPeso = %s, 
+                dsDimensoes = CONCAT(%s, ' x ', %s, ' x ', %s), 
+                nrQtdeCaixas = %s, 
                 dsStatus = 'Atualizado' 
-            WHERE dsSO = '{dsSo}' AND dsItem = '{dsItem}'
+            WHERE dsSO = %s AND dsItem = %s
         """
+        cursor.execute(comando, (nrQtd, nrPeso, nrAlt, nrComp, nrLarg, 1, dsSo, dsItem))
         Inserir_TbLog("TbDadosPlanilha", "Update_Cubagem", dsSo, dsItem)
     else:
         if resultados:
@@ -836,33 +833,43 @@ def Update_TbDadosPlanilha(dados):
             dsObsOpe = ultimo_resultado['dsObsOpe']
             nrQtdePallet = ultimo_resultado['nrQtdePallet']
 
-            comando = f"""
-                        INSERT INTO DbIntelliMetrics.TbDadosPlanilha 
-                        (dsSO, dsItem, nrQtdeRecebida,  nrPeso, dsDimensoes, nrRecWms, dsOrdemRec, nrLinha, dsCodigo, dsDescricao, nrQtdeNf, nrQtdeCaixas, dsLocalizacao, dsObsOpe, nrQtdePallet, dsStatus) 
-                        VALUES 
-                        ('{dsSo}', '{dsItem}', '{nrQtd}', '{nrPeso}', CONCAT('{nrAlt}', ' x ', '{nrComp}', ' x ', '{nrLarg}'), 
-                        '{nrRecWms}', '{dsOrdemRec}', '{nrLinha}', '{dsCodigo}', '{dsDescricao}', '{nrQtdeNf}', 
-                        1, '{dsLocalizacao}', '{dsObsOpe}', '{nrQtdePallet}', 'Inserido' )
-                    """
-            Inserir_TbLog("TbDadosPlanilha", "Insert_Cubagem", dsSo, dsItem)
+            comando = """
+                INSERT INTO DbIntelliMetrics.TbDadosPlanilha 
+                (dsSO, dsItem, nrQtdeRecebida, nrPeso, dsDimensoes, nrRecWms, dsOrdemRec, nrLinha, 
+                 dsCodigo, dsDescricao, nrQtdeNf, nrQtdeCaixas, dsLocalizacao, dsObsOpe, nrQtdePallet, dsStatus) 
+                VALUES 
+                (%s, %s, %s, %s, CONCAT(%s, ' x ', %s, ' x ', %s), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'Inserido')
+            """
+            print("01")
+            print(comando)
+            cursor.execute(comando, (
+                dsSo, dsItem, nrQtd, nrPeso, nrAlt, nrComp, nrLarg,
+                nrRecWms, dsOrdemRec, nrLinha, dsCodigo, dsDescricao,
+                nrQtdeNf, nrQtdeCaixas, dsLocalizacao, dsObsOpe, nrQtdePallet
+            ))
+        else:
+            # Se não houver resultados, insere um registro padrão
+            comando = """
+                INSERT INTO DbIntelliMetrics.TbDadosPlanilha 
+                (dsSO, dsItem, nrQtdeRecebida, nrPeso, dsDimensoes, nrRecWms, dsOrdemRec, nrLinha, 
+                 dsCodigo, dsDescricao, nrQtdeNf, nrQtdeCaixas, dsLocalizacao, dsObsOpe, nrQtdePallet, dsStatus) 
+                VALUES 
+                (%s, %s, %s, %s, CONCAT(%s, ' x ', %s, ' x ', %s), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Não Localizado')
+            """
+            print("02")
+            print(comando)
+            cursor.execute(comando, (
+                dsSo, dsItem, nrQtd, nrPeso, nrAlt, nrComp, nrLarg
+            ))
 
-    # Executar o comando
-    cursor.execute(comando)
+        Inserir_TbLog("TbDadosPlanilha", "Insert_Cubagem", dsSo, dsItem)
+
+    # Commit e fechamento da conexão
     conexao.commit()
     cursor.close()
     conexao.close()
 
-    #conexao = conecta_bd()
-    #cursor = conexao.cursor(dictionary=True)
-    #comando = f"update DbIntelliMetrics.TbDadosPlanilha set nrQtdeRecebida = '{nrQtd}', nrPeso = '{nrPeso}', dsDimensoes = concat('{nrAlt}'  ' x '  '{nrComp}'  ' x '  '{nrLarg}') where dsSO = '{dsSo}' and dsItem = '{dsItem}'"
-    #Inserir_TbLog("TbDadosPlanilha", "Update_Cubagem", dsSo, dsItem)
-    #cursor.execute(comando)
-    #conexao.commit()
-    #cursor.close()
-    #conexao.close()
-
-    return "cadastrado com sucesso"
-
+    return "Cadastrado com sucesso"
 
 
 
