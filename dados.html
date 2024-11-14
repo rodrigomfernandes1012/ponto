@@ -1,0 +1,283 @@
+{% block head %}
+<div class="container">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #4a4a4a;
+        }
+
+        table {
+            width: 80%;
+            max-width: 1600px;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            color: #555;
+            font-weight: 500;
+        }
+
+        td {
+            background-color: #fff;
+        }
+
+        .alert-row {
+            background-color: #ffcccc; /* Fundo vermelho claro para alertar */
+        }
+
+
+
+        input[type="text"] {
+            padding: 5px;
+            margin: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #28a745;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        button:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+
+        #search-container {
+            margin-bottom: 20px;
+        }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.2.1/exceljs.min.js"></script>
+    <meta charSet="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+
+    <div id="search-container">
+        <button onclick="goToPlanilha()" class="nav-btn">Voltar</button>
+        <button onclick="exportToExcel()">Exportar para Excel</button>
+    </div>
+    <div id="alert-message" style="display: none; color: red; margin: 10px; font-weight: bold;"></div>
+
+    <table class="data-table" id="dados">
+        <thead>
+            <tr>
+                <th>REC. WMS</th>
+                <th>Ordem Recebimento</th>
+                <th>Linha</th>
+                <th>Código</th>
+                <th>Descrição</th>
+                <th>QTD NF</th>
+                <th>SO</th>
+                <th>Item</th>
+                <th>Qtde de Caixas</th>
+                <th>Qtde Recebida</th>
+                <th>Peso</th>
+                <th>Dimensões</th>
+                <th>Localização</th>
+                <th>Obs Operação</th>
+                <th>Qtde de Pallet</th>
+                <th>Status</th>
+            </tr>
+            <tr>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(0)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(1)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(2)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(3)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(4)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(5)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(6)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(7)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(8)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(9)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(10)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(11)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(12)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(13)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(14)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(15)"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Linhas de dados serão inseridas aqui -->
+        </tbody>
+    </table>
+
+    <script>
+        async function fetchData() {
+            try {
+                const response = await fetch('/get_dados');
+                const dados = await response.json();
+                renderTable(dados);
+            } catch (error) {
+                console.error('Erro ao buscar dados:', error);
+            }
+        }
+function renderTable(dados) {
+    const tableBody = document.getElementById('dados').querySelector('tbody');
+    const alertMessage = document.getElementById('alert-message');
+    tableBody.innerHTML = ''; // Limpa a tabela antes de re-renderizar
+    alertMessage.style.display = 'none'; // Oculta a mensagem de alerta inicialmente
+
+    // String acumulativa para mensagens de alerta
+    let alertMessages = [];
+
+    dados.forEach(item => {
+        const row = document.createElement('tr');
+
+        // Converter os campos para número
+        const nrQtdeNf = Number(item.nrQtdeNf);
+        const nrQtdeCaixas = Number(item.nrQtdeCaixas);
+        const nrQtdeRecebida = Number(item.nrQtdeRecebida); // Se necessário para outras comparações
+
+        // Verificar se nrQtdeRecebida é maior que nrQtdeNf
+        if (nrQtdeNf < nrQtdeRecebida) {
+            row.classList.add('alert-row'); // Adiciona classe para alterar a cor de fundo
+        }
+
+        // Verificar se nrQtdeCaixas é maior que nrQtdeNf e acumular a mensagem de alerta
+        if (nrQtdeCaixas > nrQtdeNf) {
+            alertMessages.push(`Quantidade do código: ${item.dsCodigo}, ${item.dsDescricao}, é maior que a nota fiscal Qtde =  ${nrQtdeNf}.  Qtde registrada: ${nrQtdeCaixas}`);
+            row.style.backgroundColor = '#ffcccc'; // Altera a cor de fundo para vermelho claro
+        }
+
+        row.innerHTML = `
+            <td>${item.nrRecWms}</td>
+            <td>${item.dsOrdemRec}</td>
+            <td>${item.nrLinha}</td>
+            <td>${item.dsCodigo}</td>
+            <td>${item.dsDescricao}</td>
+            <td>${nrQtdeNf}</td>
+            <td>${item.dsSO}</td>
+            <td>${item.dsItem}</td>
+            <td>${nrQtdeCaixas}</td>
+            <td>${item.nrQtdeRecebida}</td>
+            <td>${item.nrPeso}</td>
+            <td>${item.dsDimensoes}</td>
+            <td>${item.dsLocalizacao}</td>
+            <td>${item.dsObsOpe}</td>
+            <td>${item.nrQtdePallet}</td>
+            <td>${item.dsStatus}</td>
+        `;
+        tableBody.appendChild(row);
+    });
+
+    // Exibir todas as mensagens de alerta, se houver
+    if (alertMessages.length > 0) {
+        alertMessage.style.display = 'block'; // Mostra a mensagem de alerta
+        alertMessage.innerText = alertMessages.join('\n'); // Juntar todas as mensagens em uma nova linha
+    } else {
+        alertMessage.style.display = 'none'; // Oculta a mensagem se não houver alertas
+    }
+}
+          function filterTable(columnIndex) {
+            const input = document.querySelectorAll("#dados thead tr:nth-child(2) input[type='text']");
+            const filter = input[columnIndex].value.toLowerCase();
+            const tableBody = document.getElementById("dados").querySelector("tbody");
+            const rows = tableBody.getElementsByTagName("tr");
+
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName("td");
+                if (cells.length > 0) {
+                    const cellValue = cells[columnIndex].textContent || cells[columnIndex].innerText;
+                    rows[i].style.display = cellValue.toLowerCase().indexOf(filter) > -1 ? "" : "none";
+                }
+            }
+        }
+
+
+        // Atualiza a tabela a cada 10 segundos
+        setInterval(fetchData, 20000);
+
+        // Chama fetchData ao carregar a página
+        fetchData();
+async function exportToExcel() {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Dados');
+
+    // Obter cabeçalho da tabela
+    const table = document.getElementById('dados');
+    const headers = Array.from(table.rows[0].cells).map(cell => cell.textContent);
+
+    // Adicionar cabeçalho ao worksheet
+    worksheet.addRow(headers);
+
+    // Estilizar cabeçalho
+    headers.forEach((_, index) => {
+        const cell = worksheet.getCell(1, index + 1); // Células começam em 1
+        cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FF0000FF' } // Azul para o fundo
+        };
+        cell.font = {
+            color: { argb: 'FFFFFFFF' }, // Branco para o texto
+            bold: true
+        };
+    });
+
+    // Adicionar os dados da tabela
+    for (let i = 1; i < table.rows.length; i++) { // Começa na segunda linha
+        const rowData = Array.from(table.rows[i].cells).map(cell => cell.textContent);
+        worksheet.addRow(rowData);
+    }
+
+    // Ajustar largura das colunas
+    for (let colIndex = 0; colIndex < headers.length; colIndex++) {
+        let maxLength = Math.max(...Array.from(table.rows).map(row => row.cells[colIndex]?.innerText.length || 0));
+        worksheet.getColumn(colIndex + 1).width = maxLength + 2; // Ajusta largura da coluna
+    }
+
+    // Gerar e baixar o arquivo
+    workbook.xlsx.writeBuffer().then(function (buffer) {
+        const blob = new Blob([buffer], { type: "application/octet-stream" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "dados_banco.xlsx"; // Nome do arquivo
+        link.click();
+    }).catch(function (error) {
+        console.error("Erro ao gerar o arquivo Excel:", error);
+    });
+}
+
+
+        function goToPlanilha() {
+            window.location.href = '{{ url_for("upload") }}'; // Altere "upload" para o nome correto da rota
+        }
+    </script>
+</div>
+{% endblock %}
