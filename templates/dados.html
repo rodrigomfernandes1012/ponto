@@ -80,7 +80,7 @@
         }
     </style>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.2.1/exceljs.min.js"></script>
     <meta charSet="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
@@ -200,12 +200,55 @@
 
         // Chama fetchData ao carregar a página
         fetchData();
+async function exportToExcel() {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Dados');
 
-        async function exportToExcel() {
-            const table = document.getElementById('dados');
-            const workbook = XLSX.utils.table_to_book(table);
-            XLSX.writeFile(workbook, 'dados_banco.xlsx');
-        }
+    // Obter cabeçalho da tabela
+    const table = document.getElementById('dados');
+    const headers = Array.from(table.rows[0].cells).map(cell => cell.textContent);
+
+    // Adicionar cabeçalho ao worksheet
+    worksheet.addRow(headers);
+
+    // Estilizar cabeçalho
+    headers.forEach((_, index) => {
+        const cell = worksheet.getCell(1, index + 1); // Células começam em 1
+        cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FF0000FF' } // Azul para o fundo
+        };
+        cell.font = {
+            color: { argb: 'FFFFFFFF' }, // Branco para o texto
+            bold: true
+        };
+    });
+
+    // Adicionar os dados da tabela
+    for (let i = 1; i < table.rows.length; i++) { // Começa na segunda linha
+        const rowData = Array.from(table.rows[i].cells).map(cell => cell.textContent);
+        worksheet.addRow(rowData);
+    }
+
+    // Ajustar largura das colunas
+    for (let colIndex = 0; colIndex < headers.length; colIndex++) {
+        let maxLength = Math.max(...Array.from(table.rows).map(row => row.cells[colIndex]?.innerText.length || 0));
+        worksheet.getColumn(colIndex + 1).width = maxLength + 2; // Ajusta largura da coluna
+    }
+
+    // Gerar e baixar o arquivo
+    workbook.xlsx.writeBuffer().then(function (buffer) {
+        const blob = new Blob([buffer], { type: "application/octet-stream" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "dados_banco.xlsx"; // Nome do arquivo
+        link.click();
+    }).catch(function (error) {
+        console.error("Erro ao gerar o arquivo Excel:", error);
+    });
+}
+
 
         function goToPlanilha() {
             window.location.href = '{{ url_for("upload") }}'; // Altere "upload" para o nome correto da rota
