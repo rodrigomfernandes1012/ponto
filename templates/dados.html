@@ -48,12 +48,9 @@
             background-color: #ffcccc; /* Fundo vermelho claro para alertar */
         }
 
-        input[type="date"], input[type="time"],
-        input[type="text"], select, textarea {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
+        input[type="text"] {
+            padding: 5px;
+            margin: 5px;
         }
 
         button {
@@ -81,20 +78,17 @@
         #search-container {
             margin-bottom: 20px;
         }
-
-        #search-input {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-        }
     </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
     <meta charSet="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+
+    <div id="search-container">
+        <button onclick="goToPlanilha()" class="nav-btn">Voltar</button>
+        <button onclick="exportToExcel()">Exportar para Excel</button>
+    </div>
 
     <table class="data-table" id="dados">
         <thead>
@@ -116,12 +110,26 @@
                 <th>Qtde de Pallet</th>
                 <th>Status</th>
             </tr>
+            <tr>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(0)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(1)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(2)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(3)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(4)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(5)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(6)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(7)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(8)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(9)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(10)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(11)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(12)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(13)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(14)"></th>
+                <th><input type="text" placeholder="Filtrar" onkeyup="filterTable(15)"></th>
+            </tr>
         </thead>
         <tbody>
-            <div class="container">
-                <button onclick="goToPlanilha()" class="nav-btn">Voltar</button>
-                <button onclick="exportToExcel()">Exportar para Excel</button>
-            </div>
             <!-- Linhas de dados serão inseridas aqui -->
         </tbody>
     </table>
@@ -138,7 +146,6 @@
         }
 
         function renderTable(dados) {
-
             const tableBody = document.getElementById('dados').querySelector('tbody');
             tableBody.innerHTML = ''; // Limpa a tabela antes de re-renderizar
 
@@ -146,7 +153,7 @@
                 const row = document.createElement('tr');
 
                 // Verificar se nrQtdeRecebida é maior que nrQtdeNf para aplicar a classe de alerta
-                if (item.nrQtdeNf < item.nrQtdeRecebida ) {
+                if (item.nrQtdeNf < item.nrQtdeRecebida) {
                     row.classList.add('alert-row'); // Adiciona classe para alterar a cor de fundo
                 }
 
@@ -172,8 +179,24 @@
             });
         }
 
+          function filterTable(columnIndex) {
+            const input = document.querySelectorAll("#dados thead tr:nth-child(2) input[type='text']");
+            const filter = input[columnIndex].value.toLowerCase();
+            const tableBody = document.getElementById("dados").querySelector("tbody");
+            const rows = tableBody.getElementsByTagName("tr");
+
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName("td");
+                if (cells.length > 0) {
+                    const cellValue = cells[columnIndex].textContent || cells[columnIndex].innerText;
+                    rows[i].style.display = cellValue.toLowerCase().indexOf(filter) > -1 ? "" : "none";
+                }
+            }
+        }
+
+
         // Atualiza a tabela a cada 10 segundos
-        setInterval(fetchData, 10000);
+        setInterval(fetchData, 20000);
 
         // Chama fetchData ao carregar a página
         fetchData();
