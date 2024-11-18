@@ -258,7 +258,7 @@ def Inserir_TbPonto(dsCardNo, dsCardName, dsData, cdAcesso):
     # conexao.close()
     if resultado:
         slots = ['dsRegistro01', 'dsRegistro02', 'dsRegistro03', 'dsRegistro04']
-        slots.sort()''
+        slots.sort()
         for slot in slots:
             if resultado[slot]:
                 registro_existente_horario = resultado[slot]
@@ -3651,7 +3651,7 @@ def main():
    # port = int(os.environ.get("PORT", 8080))
    # app.run(host="127.0.0.1", port=port)
     port = int(os.environ.get("PORT", 80))
-    app.run(host="192.168.15.200", port=port)
+    app.run(host="192.168.0.200", port=port)
 
 
 if __name__ == "__main__":
