@@ -6,7 +6,7 @@ from forms import FormCliente, FormDestinatario, FormUsuario, FuncionarioForm
 import requests
 #import qrcode
 #import pybase64
-#import pandas as pd
+import pandas as pd
 from sqlalchemy import create_engine, text, exc
 import re
 import mysql.connector
