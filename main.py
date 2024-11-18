@@ -770,7 +770,7 @@ def separar_dados(texto):
     if len(dados) >= 2:
         return dados[0].strip(), dados[1].strip()  # Remove espaços desnecessários
     else:
-        raise ValueError("O texto deve conter pelo menos duas partes separadas por ;, / ou -.")
+        return dados[0].strip(), 0  # Remove espaços desnecessários
 
 
 def Update_TbDadosPlanilha(dados):
