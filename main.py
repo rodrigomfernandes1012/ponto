@@ -1040,7 +1040,7 @@ def upload():
 
         # Conectar ao banco de dados e gravar dados
         gravar_dados_no_banco(df)
-        return redirect(url_for('mostrar_dados'))
+        return redirect(url_for('dados'))
         #return {'data': data_dict}, 200
     except Exception as e:
         return str(e), 400
@@ -1130,7 +1130,7 @@ def upload_planilha():
 
         # Conectar ao banco de dados e gravar dados
         gravar_dados_no_banco(df)
-        return redirect(url_for('mostrar_dados'))
+        return redirect(url_for('dados'))
         #return {'data': data_dict}, 200
     except Exception as e:
         return str(e), 400
