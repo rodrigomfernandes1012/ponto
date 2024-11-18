@@ -4,9 +4,9 @@ from flask import Flask, jsonify,  render_template,  request, redirect, flash,  
 import mysql.connector
 from forms import FormCliente, FormDestinatario, FormUsuario, FuncionarioForm
 import requests
-import qrcode
-import pybase64
-import pandas as pd
+#import qrcode
+#import pybase64
+#import pandas as pd
 from sqlalchemy import create_engine, text, exc
 import re
 import mysql.connector
@@ -609,7 +609,7 @@ def pesquisa_usuarios():
 def pesquisa_planilha():
   conexao = conecta_bd()
   cursor = conexao.cursor(dictionary=True)
-  comando = f'SELECT *  FROM DbIntelliMetrics.TbDadosPlanilha ;'
+  comando = f'SELECT *  FROM DbIntelliMetrics.TbDadosPlanilha order by dsSO, cdTbDadosPlanilha ;'
   cursor.execute(comando)
   selecao = cursor.fetchall() # ler o banco de dados
   cursor.close()
@@ -775,27 +775,101 @@ def separar_dados(texto):
 
 def Update_TbDadosPlanilha(dados):
     agora = datetime.now()
-    dsEtiqueta =   (dados.get('xEtiqueta'))
+    dsEtiqueta = dados.get('xEtiqueta')
     dsSo, dsItem = separar_dados(dsEtiqueta)
     dsItem = int(dsItem)
-    nrPeso  = (dados.get('nPeso'))
 
-    nrAlt = (dados.get('nAlt'))
-    nrLarg = (dados.get('nLarg'))
-    nrComp = (dados.get('nComp'))
-    nrQtd = (dados.get('nQtd'))
+    nrPeso = float(dados.get('nPeso', 0))  # Convertendo para float e definindo um padrão
+    nrQtd = 1
+    nrAlt = float(dados.get('nAlt', 0))  # Convertendo para float
+    nrLarg = float(dados.get('nLarg', 0))  # Convertendo para float
+    nrComp = float(dados.get('nComp', 0))  # Convertendo para float
 
     conexao = conecta_bd()
     cursor = conexao.cursor(dictionary=True)
-    comando = f"update DbIntelliMetrics.TbDadosPlanilha set nrQtdeRecebida = '{nrQtd}', nrPeso = '{nrPeso}', dsDimensoes = concat('{nrAlt}'  ' x '  '{nrComp}'  ' x '  '{nrLarg}') where dsSO = '{dsSo}' and dsItem = '{dsItem}'"
-    Inserir_TbLog("TbDadosPlanilha", "Update_Cubagem", dsSo, dsItem)
-    cursor.execute(comando)
+
+    # Obter a quantidade total de nrQtdeRecebida
+    cursor.execute(
+        "SELECT SUM(nrQtdeRecebida) AS totalQtdeRecebida "
+        "FROM DbIntelliMetrics.TbDadosPlanilha WHERE dsSO = %s AND dsItem = %s",
+        (dsSo, dsItem)
+    )
+    resultado_total = cursor.fetchone()
+    totalQtdeRecebida = resultado_total['totalQtdeRecebida'] if resultado_total['totalQtdeRecebida'] is not None else 0
+
+    # Consultar dados existentes
+    cursor.execute(
+        "SELECT dsSO, dsItem, nrQtdeRecebida, nrQtdeCaixas, nrPeso, dsDimensoes, nrRecWms, dsOrdemRec, "
+        "nrLinha, dsCodigo, dsDescricao, nrQtdeNf, dsLocalizacao, dsObsOpe, nrQtdePallet "
+        "FROM DbIntelliMetrics.TbDadosPlanilha WHERE dsSO = %s AND dsItem = %s",
+        (dsSo, dsItem)
+    )
+    resultados = cursor.fetchall()
+
+    if any(resultado['dsDimensoes'] is None for resultado in resultados):
+        # Se encontrar, faz UPDATE
+        comando = """
+            UPDATE DbIntelliMetrics.TbDadosPlanilha 
+            SET nrQtdeRecebida = %s, 
+                nrPeso = %s, 
+                dsDimensoes = CONCAT(%s, ' x ', %s, ' x ', %s), 
+                nrQtdeCaixas = %s, 
+                dsStatus = 'Atualizado' 
+            WHERE dsSO = %s AND dsItem = %s
+        """
+        cursor.execute(comando, (nrQtd, nrPeso, nrAlt, nrComp, nrLarg, 1, dsSo, dsItem))
+        Inserir_TbLog("TbDadosPlanilha", "Update_Cubagem", dsSo, dsItem)
+    else:
+        if resultados:
+            ultimo_resultado = resultados[0]  # Pega o primeiro resultado
+            nrRecWms = ultimo_resultado['nrRecWms']
+            dsOrdemRec = ultimo_resultado['dsOrdemRec']
+            nrLinha = ultimo_resultado['nrLinha']
+            dsCodigo = ultimo_resultado['dsCodigo']
+            dsDescricao = ultimo_resultado['dsDescricao']
+            nrQtdeNf = ultimo_resultado['nrQtdeNf']
+            nrQtdeCaixas = 1
+            dsLocalizacao = ultimo_resultado['dsLocalizacao']
+            dsObsOpe = ultimo_resultado['dsObsOpe']
+            nrQtdePallet = ultimo_resultado['nrQtdePallet']
+
+            comando = """
+                INSERT INTO DbIntelliMetrics.TbDadosPlanilha 
+                (dsSO, dsItem, nrQtdeRecebida, nrPeso, dsDimensoes, nrRecWms, dsOrdemRec, nrLinha, 
+                 dsCodigo, dsDescricao, nrQtdeNf, nrQtdeCaixas, dsLocalizacao, dsObsOpe, nrQtdePallet, dsStatus) 
+                VALUES 
+                (%s, %s, %s, %s, CONCAT(%s, ' x ', %s, ' x ', %s), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'Inserido')
+            """
+            print("01")
+            print(comando)
+            cursor.execute(comando, (
+                dsSo, dsItem, nrQtd, nrPeso, nrAlt, nrComp, nrLarg,
+                nrRecWms, dsOrdemRec, nrLinha, dsCodigo, dsDescricao,
+                nrQtdeNf, nrQtdeCaixas, dsLocalizacao, dsObsOpe, nrQtdePallet
+            ))
+        else:
+            # Se não houver resultados, insere um registro padrão
+            comando = """
+                INSERT INTO DbIntelliMetrics.TbDadosPlanilha 
+                (dsSO, dsItem, nrQtdeRecebida, nrPeso, dsDimensoes, nrRecWms, dsOrdemRec, nrLinha, 
+                 dsCodigo, dsDescricao, nrQtdeNf, nrQtdeCaixas, dsLocalizacao, dsObsOpe, nrQtdePallet, dsStatus) 
+                VALUES 
+                (%s, %s, %s, %s, CONCAT(%s, ' x ', %s, ' x ', %s), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 'Não Localizado')
+            """
+            print("02")
+            print(comando)
+            cursor.execute(comando, (
+                dsSo, dsItem, nrQtd, nrPeso, nrAlt, nrComp, nrLarg
+            ))
+
+        Inserir_TbLog("TbDadosPlanilha", "Insert_Cubagem", dsSo, dsItem)
+
+    # Commit e fechamento da conexão
     conexao.commit()
     cursor.close()
     conexao.close()
 
-    return "cadastrado com sucesso"
-
+    return "Cadastrado com sucesso"
 
 
 
@@ -1106,9 +1180,9 @@ def cubagem():
     Inserir_TbLog("TbDadosPlanilha", "Get_Cubagem", xEtiqueta, xEtiqueta)
 
     # Validar se todos os parâmetros necessários estão presentes
-    if not all([xEtiqueta, nPeso, nAlt, nLarg, nComp, token]):
+    #if not all([xEtiqueta, nPeso, nAlt, nLarg, nComp, token]):
 
-        return jsonify({"error": "Todos os parâmetros devem ser fornecidos."}), 400
+     #   return jsonify({"error": "Todos os parâmetros devem ser fornecidos."}), 400
 
     # Tratar caso xEtiqueta ou nQtd sejam vazios
     xEtiqueta = xEtiqueta if xEtiqueta else 0
@@ -1123,7 +1197,7 @@ def cubagem():
         "nComp": float(nComp),   # Convertendo para float
         "nQtd": nQtd             # nQtd já é um float ou 0.0
     }
-
+    print(dados_cubagem)
 
     Update_TbDadosPlanilha(dados_cubagem)
     # Retornar o dicionário como resposta JSON
@@ -1367,6 +1441,7 @@ def mostrar_dados():
     print("chamou")
     try:
         get_dados = pesquisa_planilha()
+        print(get_dados)
 
         return jsonify(get_dados)
     except Exception as e:
@@ -1537,7 +1612,7 @@ def export_data():
 
 def main():
     port = int(os.environ.get("PORT", 80))
-    app.run(host="192.168.15.200", port=port)
+    app.run(host="192.168.0.200", port=port)
 
 
 if __name__ == "__main__":
