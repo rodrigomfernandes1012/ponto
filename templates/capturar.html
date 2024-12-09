@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captura de Imagem</title>
+    <link rel="stylesheet" href="/static/StylesTx20.css">
+    <style>
+
+
+    </style>
+</head>
+<body>
+    <div class="barra-superior">
+
+        <img src="{{ url_for('static', filename='imagens/td.png') }}" alt="td.png">
+
+        <button id="captureButton" style="margin-right: 10px;">Importar</button>
+        <button id="processButton" style="display: none;">Busca Coordenadas</button>
+
+        <button id="gerarChamadoButton" style="display: none;">Gerar Chamado</button>
+
+    </div>
+    <div class="barra-superior1">
+        <div class="tabela-container" id="tabelaOrigemContainer1">
+            <h2>Selecione o melhor endereço de origem</h2>
+        </div>
+        <div class="tabela-container" id="tabelaDestinoContainer1">
+            <h2>Selecione o melhor endereço de destino</h2>
+        </div>
+    </div>
+
+        <div class="barra-dados">
+            <div class="tabela-container" id="tabelaOrigemContainer">
+            </div>
+                <div class="tabela-container" id="tabelaDestinoContainer">
+            </div>
+        </div>
+
+
+
+<div class="barra-superior2">
+    <div class="field-group">
+        <div class="input-container">
+            <label for="voucher">Voucher Voll:</label>
+            <input type="text" id="voucher" placeholder="Voucher Voll"class="large-input3">
+        </div>
+        <div class="input-container">
+            <label for="viajantes">Viajante:</label>
+            <input type="text" id="viajantes" placeholder="Viajante" class="large-input13a">
+        </div>
+    </div>
+
+    </div>
+    <div class="field-group">
+        <div class="input-container">
+            <label for="origem">Origem:</label>
+            <input type="text" id="origem" placeholder="Origem"class="large-input10">
+        </div>
+        <div class="input-container">
+            <label for="inputLatOrigem">Lat Origem:</label>
+            <input type="text" id="inputLatOrigem" placeholder="Latitude Origem"class="large-input3">
+        </div>
+        <div class="input-container">
+            <label for="inputLongOrigem">Long Origem:</label>
+            <input type="text" id="inputLongOrigem" placeholder="Longitude Origem"class="large-input3">
+        </div>
+    </div>
+    <div class="field-group">
+        <div class="input-container">
+            <label for="destino">Destino:</label>
+            <input type="text" id="destino" placeholder="Destino"class="large-input10">
+        </div>
+        <div class="input-container">
+            <label for="inputLatDestino">Lat Destino:</label>
+            <input type="text" id="inputLatDestino" placeholder="Latitude Destino"class="large-input3">
+        </div>
+        <div class="input-container">
+            <label for="inputLongDestino">Long Destino:</label>
+            <input type="text" id="inputLongDestino" placeholder="Longitude Destino"class="large-input3">
+        </div>
+
+    </div>
+<div class="field-group">
+        <div class="input-container">
+            <label for="datas">Data:</label>
+            <input type="text" id="datas" placeholder="Data"class="large-input3">
+        </div>
+        <div class="input-container">
+            <label for="hora">Hora:</label>
+            <input type="text" id="hora" placeholder="Hora"class="large-input3">
+        </div>
+        <div class="input-container">
+            <label for="valor">Valor:</label>
+            <input type="text" id="valor" placeholder="Valor" class="large-input3">
+        </div>
+        <div class="input-container">
+            <label for="telefone">Telefone:</label>
+            <input type="text" id="telefone" placeholder="telefone" class="large-input3">
+        </div>
+</div>
+    <div class="field-group">
+    <div class="input-container">
+            <label for="observacao">Observação:</label>
+            <input type="text" id="observacao" placeholder="Observacao" class="large-input17">
+        </div>
+    </div>
+<script src="../static/js/script.js"></script>
+</body>
+</html>
