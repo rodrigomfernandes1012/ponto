@@ -51,6 +51,9 @@ h1 {
     background-color: #ddd; /* Efeito de destaque quando a linha é hovered */
 }
 
+
+
+
 .data-table input[type="text"] {
     width: 100%;
     padding: 5px;
@@ -64,4 +67,11 @@ h1 {
     border-color: #4c79af; /* Mudança de cor no foco */
     outline: none; /* Remove o contorno padrão */
     box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); /* Sombra no foco */
+}
+.col-so {
+    width: 0px; /* Define a largura para a coluna 'SO' */
+}
+
+.alert-row {
+    background-color: #ffcccc; /* Fundo vermelho claro */
 }
