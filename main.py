@@ -745,12 +745,13 @@ def capture_image():
             imagem = ImageGrab.grab(bbox=bbox)
             image_path = 'imagens/voucher.jpeg'
             imagem.save(image_path)
-          # Chame a função OCR e obtenha o texto
+            print "Chame a função OCR e obtenha o texto"
             texto = ocr()  # Chamando a função ocr que vai processar a imagem
             dados_viagem = separar_campo(texto)
 
 
-            #print("fim")
+            print("fim")
+            print (dados_viagem)
             return jsonify({"message": dados_viagem, "endereco": "teste de endereço",  "text": dados_viagem})
 
         except Exception as e:
