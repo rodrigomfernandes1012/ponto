@@ -8,7 +8,7 @@ from datetime import datetime
 import json
 import string
 import random
-import pyautogui
+#import pyautogui
 from PIL import ImageGrab
 import time
 import os
