@@ -741,12 +741,12 @@ def capture_image():
             print("api/capture")
             bbox = (200, 200, 1100, 1100)  # Definição da área a ser capturada
             imagem = ImageGrab.grab(bbox=bbox)  # Captura a tela
-
+            print("vamos criar o diretorio")
             # Caminho onde a imagem será salva
             image_dir = 'imagens'
             os.makedirs(image_dir, exist_ok=True)  # Cria o diretório se não existir
             image_path = os.path.join(image_dir, 'voucher.jpeg')  # Cria o caminho completo para salvar a imagem
-
+            print("diretorio criado")
             # Salva a imagem
             imagem.save(image_path)
             print(f"Imagem capturada e salva em: {image_path}")

@@ -37,7 +37,7 @@ env.read_env()
 API_KEY = env("API_KEY")
 
 # Exemplo de como usar a API key
-print(f"A chave da API é: {API_KEY}")
+#print(f"A chave da API é: {API_KEY}")
 
 #from main import medir_tempo_execucao
 def capture_area(top_left, bottom_right):
