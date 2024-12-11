@@ -734,35 +734,38 @@ def gerar_chamado():
     return jsonify({'message': 'Chamado gerado com sucesso!'}, wpet), 200
 
 
-@app.route('/api/capture-image', methods=['GET','POST'])
+@app.route('/api/capture-image', methods=['GET', 'POST'])
 def capture_image():
-
     if request.method == 'POST':
         try:
             print("api/capture")
-            bbox = (200, 200, 1100, 1100)  # tela cheia
-            ##esq, sup, largura, altura
-            #bbox = (100, 90, 1650, 1000)  # Ajuste conforme necessário
-            imagem = ImageGrab.grab(bbox=bbox)
-            print(imagem)
-            image_path = 'voucher.jpeg'
+            bbox = (200, 200, 1100, 1100)  # Definição da área a ser capturada
+            imagem = ImageGrab.grab(bbox=bbox)  # Captura a tela
+
+            # Caminho onde a imagem será salva
+            image_dir = 'imagens'
+            os.makedirs(image_dir, exist_ok=True)  # Cria o diretório se não existir
+            image_path = os.path.join(image_dir, 'voucher.jpeg')  # Cria o caminho completo para salvar a imagem
+
+            # Salva a imagem
             imagem.save(image_path)
+            print(f"Imagem capturada e salva em: {image_path}")
+
+            # Chame a função OCR para processar a imagem
             print("Chame a função OCR e obtenha o texto")
-            texto = ocr()  # Chamando a função ocr que vai processar a imagem
+            texto = ocr(image_path)  # Passa o caminho da imagem para a função ocr
             dados_viagem = separar_campo(texto)
 
+            print("Fim")
+            print(dados_viagem)
 
-            print("fim")
-            print (dados_viagem)
-            return jsonify({"message": dados_viagem, "endereco": "teste de endereço",  "text": dados_viagem})
+            return jsonify({"message": dados_viagem, "endereco": "teste de endereço", "text": dados_viagem})
 
         except Exception as e:
             # Captura e lida com quaisquer erros que podem ocorrer
-            return jsonify({"error": "Ocorreu um erro ao capturar a imagem. " + str(e)}), 500
+            return jsonify({"error": "Ocorreu um erro ao capturar a imagem: " + str(e)}), 500
     else:
-
-
-        return (vresultado_origem)
+        return jsonify({"message": "Método não suportado, apenas POST permitido."}), 405
 
 
 def main():

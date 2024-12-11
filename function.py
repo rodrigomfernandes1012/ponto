@@ -12,6 +12,10 @@ import random
 from PIL import ImageGrab
 import time
 import os
+from environs import Env
+
+from PIL import ImageGrab
+
 from function_ponto import Inserir_TbLog
 
 latitude = '-23.54232154313991'
@@ -22,8 +26,18 @@ vresultado_origem = {'dados_viagem': []}
 vresultado_destino = {'dados_viagem': []}
 vresultado_dados_geral = {'dados_geral': []}
 
-API_KEY = os.getenv('API_KEY')
 
+
+# Cria uma instância do Env
+env = Env()
+# Carrega as variáveis do arquivo .env
+env.read_env()
+
+# Acessa a chave da API
+API_KEY = env("API_KEY")
+
+# Exemplo de como usar a API key
+print(f"A chave da API é: {API_KEY}")
 
 #from main import medir_tempo_execucao
 def capture_area(top_left, bottom_right):
