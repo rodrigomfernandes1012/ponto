@@ -745,7 +745,7 @@ def capture_image():
             imagem = ImageGrab.grab(bbox=bbox)
             image_path = 'imagens/voucher.jpeg'
             imagem.save(image_path)
-            print "Chame a função OCR e obtenha o texto"
+            print("Chame a função OCR e obtenha o texto")
             texto = ocr()  # Chamando a função ocr que vai processar a imagem
             dados_viagem = separar_campo(texto)
 
