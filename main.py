@@ -739,6 +739,7 @@ def capture_image():
 
     if request.method == 'POST':
         try:
+            print("api/capture")
             bbox = (200, 200, 1100, 1100)  # tela cheia
             ##esq, sup, largura, altura
             #bbox = (100, 90, 1650, 1000)  # Ajuste conforme necessário
