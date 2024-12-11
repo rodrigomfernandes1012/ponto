@@ -744,7 +744,8 @@ def capture_image():
             ##esq, sup, largura, altura
             #bbox = (100, 90, 1650, 1000)  # Ajuste conforme necessário
             imagem = ImageGrab.grab(bbox=bbox)
-            image_path = 'imagens/voucher.jpeg'
+            print(imagem)
+            image_path = 'voucher.jpeg'
             imagem.save(image_path)
             print("Chame a função OCR e obtenha o texto")
             texto = ocr()  # Chamando a função ocr que vai processar a imagem
@@ -766,7 +767,7 @@ def capture_image():
 
 def main():
     port = int(os.environ.get("PORT", 80))
-    app.run(host="192.168.0.200", port=port)
+    app.run(host="192.168.0.113", port=port)
 
 
 if __name__ == "__main__":
