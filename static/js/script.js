@@ -1,70 +1,4 @@
-// Criação do contêiner para a caixa de texto
-const container = document.createElement('div');
-container.style.display = 'flex';
-container.style.flexDirection = 'column';
-document.body.appendChild(container);
 
-//container.style.position = 'relative';
-const messageBox = document.createElement('textarea');
-messageBox.id = 'text';
-messageBox.rows = 8;
-messageBox.cols = 30;
-messageBox.style.position = 'absolute';
-messageBox.style.top = '400px';
-messageBox.style.left = '700px';
-messageBox.style.marginBottom = '10px';
-messageBox.style.display = 'block';
-messageBox.style.width = '800px';
-messageBox.style.height = '235px'; // Aumenta a altura da caixa
-messageBox.style.fontSize = '18px';
-container.appendChild(messageBox);
-
-
-
-// Adiciona o event listener para o botão de captura
-document.getElementById('captureButton').addEventListener('click', () => {
-    let countdown = 5;
-    const countdownDisplay = document.createElement('div');
-    countdownDisplay.id = 'countdownDisplay';
-    countdownDisplay.style.fontSize = '30px';
-    countdownDisplay.style.marginTop = '30px';
-    document.body.appendChild(countdownDisplay);
-
-    const interval = setInterval(() => {
-        if (countdown > 0) {
-            countdownDisplay.innerText = `Captura em ${countdown} segundos...`;
-            countdown--;
-        } else {
-            clearInterval(interval);
-            countdownDisplay.innerText = 'Capturando imagem...';
-
-            // Chama o método POST para capturar a imagem
-            fetch('/api/capture-image', {
-                method: 'POST'
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Erro na captura da imagem');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.error) {
-                    alert(data.error);
-                } else {
-                    messageBox.value = data.message;
-                    messageBox.style.display = 'block';
-                    document.getElementById('processButton').style.display = 'block';
-                    document.getElementById('gerarChamadoButton').style.display = 'block';
-                }
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                alert('Erro na conexão com o servidor.');
-            });
-        }
-    }, 1000);
-});
 
 // Adiciona o event listener para o botão de processar
 document.getElementById('processButton').addEventListener('click', () => {
@@ -85,6 +19,11 @@ document.getElementById('processButton').addEventListener('click', () => {
             alert(data.error);
         } else {
             exibirDadosEmTabela(data.dados_viagem, 'tabelaOrigemContainer'); // Passa os dados de origem
+             // messageBox.value = data.message;
+              //      messageBox.style.display = 'block';
+                    document.getElementById('processButton').style.display = 'block';
+                    document.getElementById('gerarChamadoButton').style.display = 'block';
+
         }
     })
     .catch(error => {
@@ -119,6 +58,168 @@ document.getElementById('processButton').addEventListener('click', () => {
 function limitarTexto(texto, limite) {
     return texto.length > limite ? texto.substring(0, limite) + '...' : texto;
 }
+
+// botao novo
+document.getElementById('capture').onclick = async function() {
+    // Inicia a contagem regressiva antes de capturar
+    let countdown = 1;
+    const countdownDisplay = document.getElementById('countdown');
+
+    const countdownInterval = setInterval(() => {
+        countdownDisplay.innerText = countdown;
+        countdown--;
+
+        if (countdown < 0) {
+            clearInterval(countdownInterval);
+            capturarTela(); // Chama a função para capturar a tela
+        }
+    }, 1000);
+};
+
+// Função para capturar a tela
+async function capturarTela() {
+    try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        const video = document.createElement('video');
+
+        video.srcObject = stream;
+        video.play();
+
+        // Aguardar um segundo para garantir que a captura esteja pronta
+        setTimeout(async () => {
+            // Criar um canvas para capturar a imagem
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+
+            // Defina a área que deseja capturar
+            const x = 180; // Posição x do canto superior esquerdo
+            const y = 180; // Posição y do canto superior esquerdo
+            const width = 850; // Largura da área a ser capturada
+            const height = 1200; // Altura da área a ser capturada
+
+            const scaleFactor = 1;
+            canvas.width = width * scaleFactor;  // Aumenta a largura do canvas
+            canvas.height = height * scaleFactor; // Aumenta a altura do canvas
+
+            // Desenhe a parte específica do vídeo no canvas
+            context.drawImage(video, x, y, width, height, 0, 0, canvas.width, canvas.height);
+
+            // Para o stream de vídeo
+            stream.getTracks().forEach(track => track.stop());
+
+            // Converter o canvas para Data URL
+            var dataURL = canvas.toDataURL("image/jpeg");
+
+            // Criar um formulário para enviar a imagem
+            var data = new FormData();
+            data.append('file', dataURLtoBlob(dataURL), 'screenshot.jpeg');
+
+            // Enviar a imagem ao servidor Flask
+            fetch('/api/ocr', {
+                method: 'POST',
+                body: data
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log(result);
+                alert("Imagem enviada com sucesso.");
+
+                // Adicionar lógica para preencher campos com os dados retornados, se necessário
+                    //messageBox.value = data.message;
+                    //messageBox.style.display = 'block';
+                    document.getElementById('processButton').style.display = 'block';
+                    document.getElementById('gerarChamadoButton').style.display = 'block';
+                // Adiciona o event listener para o botão de processar
+document.getElementById('processButton').addEventListener('click', () => {
+    // Chama a função para buscar o voucher
+    buscarVoucher();
+    // Chama o método GET para obter os dados de origem
+    fetch('/api/get-origem', {
+        method: 'GET'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Erro ao obter dados de origem');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+        } else {
+            exibirDadosEmTabela(data.dados_viagem, 'tabelaOrigemContainer'); // Passa os dados de origem
+              //messageBox.value = data.message;
+                   // messageBox.style.display = 'block';
+                    document.getElementById('processButton').style.display = 'block';
+                    document.getElementById('gerarChamadoButton').style.display = 'block';
+
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro na conexão com o servidor.');
+    });
+
+    // Chama o método GET para obter os dados de destino
+    fetch('/api/get-destino', {
+        method: 'GET'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Erro ao obter dados de destino');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+        } else {
+            exibirDadosEmTabela(data.dados_viagem, 'tabelaDestinoContainer'); // Passa os dados de destino
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro na conexão com o servidor.');
+    });
+});
+
+// Função para limitar o texto a um número específico de caracteres
+function limitarTexto(texto, limite) {
+    return texto.length > limite ? texto.substring(0, limite) + '...' : texto;
+}
+
+
+                // Fim da logica
+
+            })
+            .catch(error => {
+                console.error('Erro ao enviar a imagem:', error);
+                alert("Houve um erro ao enviar a imagem.");
+            });
+
+        }, 1000); // Aguardar 1 segundo para capturar
+    } catch (error) {
+        console.error('Erro ao capturar a tela:', error);
+        alert("Houve um erro ao capturar a tela.");
+    }
+}
+
+// Função para converter Data URL em Blob
+function dataURLtoBlob(dataURL) {
+    var arr = dataURL.split(',');
+    var mime = arr[0].match(/:(.*?);/)[1];
+    var bstr = atob(arr[1]);
+    var n = bstr.length;
+    var u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: mime });
+}
+
+// fim do botao novo
+
+
 
 // Adiciona o event listener para o botão "Gerar Chamado"
 // Adiciona o event listener para o botão "Gerar Chamado"
