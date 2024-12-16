@@ -45,7 +45,7 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 
 @app.route('/')
 def home():
-    return render_template('capturar.html')
+    return render_template('login.html')
 
 @app.route('/api/ocr', methods=['POST'])
 def ocr():
