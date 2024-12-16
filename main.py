@@ -9,7 +9,13 @@ ip = '201.92.45.49:8090'
 username = 'admin'
 password = 'Start010'
 
+# Carregar as credenciais da variável de ambiente
+google_creds = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
 
+# Se a variável de ambiente for carregada, você pode fazer o seguinte
+if google_creds:
+    with open('path/to/your/credentials.json', 'w') as f:
+        f.write(google_creds)
 
 
 
