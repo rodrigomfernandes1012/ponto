@@ -2,9 +2,11 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Captura de Imagem</title>
     <link rel="stylesheet" href="/static/StylesTx20.css">
+
     <style>
 
 
@@ -15,10 +17,12 @@
 
         <img src="{{ url_for('static', filename='imagens/td.png') }}" alt="td.png">
 
-        <button id="captureButton" style="margin-right: 10px;">Importar</button>
-        <button id="processButton" style="display: none;">Busca Coordenadas</button>
 
+        <button id="capture">Capturar Tela</button>
+        <button id="processButton" style="display: none;">Busca Coordenadas</button>
+        <h2 id="countdown">1</h2>  <!-- Para a contagem regressiva -->
         <button id="gerarChamadoButton" style="display: none;">Gerar Chamado</button>
+
 
     </div>
     <div class="barra-superior1">
@@ -100,11 +104,13 @@
         </div>
 </div>
     <div class="field-group">
-    <div class="input-container">
+        <div class="input-container">
             <label for="observacao">Observação:</label>
             <input type="text" id="observacao" placeholder="Observacao" class="large-input17">
         </div>
     </div>
+
+
 <script src="../static/js/script.js"></script>
 </body>
 </html>
