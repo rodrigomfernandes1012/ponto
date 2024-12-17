@@ -40,6 +40,7 @@ env.read_env()
 # Acessa a chave da API
 API_KEY = env("API_KEY")
 
+
 # Exemplo de como usar a API key
 #print(f"A chave da API é: {API_KEY}")
 
