@@ -29,8 +29,6 @@ vresultado_destino = {'dados_viagem': []}
 vresultado_dados_geral = {'dados_geral': []}
 
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "credenciais.json"
-
 
 # Cria uma instância do Env
 env = Env()
