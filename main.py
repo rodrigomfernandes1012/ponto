@@ -14,7 +14,7 @@ google_creds = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
 
 # Se a variável de ambiente for carregada, você pode fazer o seguinte
 if google_creds:
-    with open('path/to/your/credentials.json', 'w') as f:
+    with open('credentials.json', 'w') as f:
         f.write(google_creds)
 
 
