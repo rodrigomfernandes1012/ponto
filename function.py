@@ -34,7 +34,7 @@ env = Env()
 env.read_env()
 
 # Acessa a chave da API
-#API_KEY = env("API_KEY")
+API_KEY = env("API_KEY")
 #GOOGLE_APPLICATION_CREDENTIALS = "credentials.json"
 
 # Exemplo de como usar a API key
