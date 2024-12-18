@@ -9,11 +9,8 @@ ip = '201.92.45.49:8090'
 username = 'admin'
 password = 'Start010'
 
-load_dotenv()  # Carrega as variáveis do arquivo .env
-google_creds = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
-
 # Carregar as credenciais da variável de ambiente
-#google_creds = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+google_creds = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
 
 # Se a variável de ambiente for carregada, você pode fazer o seguinte
 if google_creds:
@@ -22,8 +19,7 @@ if google_creds:
 
 
 
-
-#print(credentials_path)  # Verifique se o caminho é o esperado
+print(google_creds)  # Verifique se o caminho é o esperado
 
 
 
