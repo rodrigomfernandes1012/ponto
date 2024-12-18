@@ -9,13 +9,21 @@ ip = '201.92.45.49:8090'
 username = 'admin'
 password = 'Start010'
 
-# Carregar as credenciais da variável de ambiente
+load_dotenv()  # Carrega as variáveis do arquivo .env
 google_creds = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+
+# Carregar as credenciais da variável de ambiente
+#google_creds = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
 
 # Se a variável de ambiente for carregada, você pode fazer o seguinte
 if google_creds:
     with open('credentials.json', 'w') as f:
         f.write(google_creds)
+
+
+
+
+#print(credentials_path)  # Verifique se o caminho é o esperado
 
 
 
@@ -55,6 +63,10 @@ def home():
 
 @app.route('/api/ocr', methods=['POST'])
 def ocr():
+    #credentials_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+    #if not credentials_path:
+        #return "Google credentials not set.", 500
+
     if 'file' not in request.files:
         return jsonify({"error": "Nenhum arquivo enviado."}), 400
 
@@ -88,7 +100,7 @@ def ocr():
     # Imprimir o dicionário no terminal
     novo = (separar_campo(texto_extraido))
     print(novo)
-    "API OCR"
+    print("API OCR")
     return jsonify(resultado_json)
 @app.route('/logip')
 def logip():

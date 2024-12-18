@@ -17,7 +17,7 @@ import io
 from PIL import Image
 from google.cloud import vision
 import io
-
+from dotenv import load_dotenv
 from function_ponto import Inserir_TbLog
 
 #latitude = '-16.64'
@@ -36,8 +36,8 @@ env = Env()
 env.read_env()
 
 # Acessa a chave da API
-API_KEY = env("API_KEY")
-
+#API_KEY = env("API_KEY")
+#GOOGLE_APPLICATION_CREDENTIALS = "credentials.json"
 
 # Exemplo de como usar a API key
 #print(f"A chave da API é: {API_KEY}")
