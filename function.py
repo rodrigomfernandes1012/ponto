@@ -1,23 +1,21 @@
-import requests
-from xml.etree import ElementTree as ET
-import pytesseract
 import cv2
-from functools import wraps
+import io
+import json
+import os
+import random
+import requests
+import string
+import tempfile
 import time
 from datetime import datetime
-import json
-import string
-import random
-#import pyautogui
-from PIL import ImageGrab
-import time
-import os
-from environs import Env
-import io
-from PIL import Image
-from google.cloud import vision
-import io
 from dotenv import load_dotenv
+from environs import Env
+from functools import wraps
+from google.cloud import vision
+from PIL import Image
+from PIL import ImageGrab
+import pytesseract
+from xml.etree import ElementTree as ET
 from function_ponto import Inserir_TbLog
 
 #latitude = '-16.64'

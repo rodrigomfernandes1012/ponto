@@ -51,6 +51,15 @@ def ocr():
     #credentials_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
     #if not credentials_path:
         #return "Google credentials not set.", 500
+    # Carrega as credenciais a partir da variável de ambiente
+    credentials_json = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+
+    # Crie um arquivo temporário para usar as credenciais
+    if credentials_json:
+        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+            temp_file.write(credentials_json.encode('utf-8'))
+            temp_file_path = temp_file.name
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = temp_file_path
 
     if 'file' not in request.files:
         return jsonify({"error": "Nenhum arquivo enviado."}), 400
