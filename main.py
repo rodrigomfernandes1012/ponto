@@ -44,6 +44,10 @@ app.config['UPLOAD_FOLDER'] = './uploads'
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 
+def salva_imagem(file):
+    save_path = os.path.join('imagens', 'screenshot.jpeg')  # Diretório onde a imagem será salva
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)  # Cria o diretório se não existir
+    file.save(save_path)  # Salva a imagem
 
 
 @app.route('/')
@@ -70,14 +74,13 @@ def ocr():
 
     file = request.files['file']
 
+    # Salvar a imagem com um nome padrão "voucher.jpeg"
+
+
     if file.filename == '':
         return jsonify({"error": "Nenhum arquivo selecionado."}), 400
 
-        # Salvar a imagem recebida
-    #save_folder = 'imagens'  # Direção onde as imagens serão salvas
-    #os.makedirs(save_folder, exist_ok=True)  # Cria o diretório se não existir
-    #saved_image_path = os.path.join(save_folder, file.filename)
-    #file.save(saved_image_path)
+
 
     # Converte a imagem em bytes e processa com o Google Cloud Vision
     client = vision.ImageAnnotatorClient()
@@ -86,6 +89,8 @@ def ocr():
 
     response = client.text_detection(image=image)
     texts = response.text_annotations
+    # Salvar a imagem recebida
+
 
     if response.error.message:
         return jsonify({"error": response.error.message}), 500
@@ -105,6 +110,7 @@ def ocr():
     novo = (separar_campo(texto_extraido))
     print(novo)
     print("API OCR")
+    salva_imagem(file)
     return jsonify(resultado_json)
 @app.route('/logip')
 def logip():
