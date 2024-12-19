@@ -26,9 +26,13 @@ app = Flask(__name__)
 app.secret_key = '5160e59712d22d50e708220336549982'  # Necessário para usar sessões
 app.config['SECRET_KEY'] = '5160e59712d22d50e708220336549982'
 
+
+
 users = {
     "Luiz": "0312@2024", "usuario": "senha123", "rodrigo@taxidigital.net": "101275", "yham.miranda@predilarsolucoes.com.br": "1608@2024", "isabel@predilarsolucoes.com.br": "1608@2024", "maria.silva@predilarsolucoes.com.br": "2308@2024", "alex.acoroni@predilarsolucoes.com.br": "0410@2024"
 }
+
+print(users)
 
 UPLOAD_FOLDER = './uploads' # Create this folder if it doesn't exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -68,6 +72,12 @@ def ocr():
 
     if file.filename == '':
         return jsonify({"error": "Nenhum arquivo selecionado."}), 400
+
+        # Salvar a imagem recebida
+    #save_folder = 'imagens'  # Direção onde as imagens serão salvas
+    #os.makedirs(save_folder, exist_ok=True)  # Cria o diretório se não existir
+    #saved_image_path = os.path.join(save_folder, file.filename)
+    #file.save(saved_image_path)
 
     # Converte a imagem em bytes e processa com o Google Cloud Vision
     client = vision.ImageAnnotatorClient()
