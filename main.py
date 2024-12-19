@@ -89,6 +89,7 @@ def ocr():
 
     response = client.text_detection(image=image)
     texts = response.text_annotations
+    print(response.text_annotations)
     # Salvar a imagem recebida
 
 
@@ -108,9 +109,8 @@ def ocr():
 
     # Imprimir o dicionário no terminal
     novo = (separar_campo(texto_extraido))
-    print(novo)
-    print("API OCR")
-    salva_imagem(file)
+
+
     return jsonify(resultado_json)
 @app.route('/logip')
 def logip():
