@@ -110,6 +110,11 @@ async function capturarTela() {
             // Converter o canvas para Data URL
             var dataURL = canvas.toDataURL("image/jpeg");
 
+             // Exibir a imagem capturada na tela
+            const imgElement = document.getElementById('capturedImage'); // Elemento onde a imagem será exibida
+            imgElement.src = dataURL; // Define o src da imagem como o Data URL
+
+
             // Criar um formulário para enviar a imagem
             var data = new FormData();
             data.append('file', dataURLtoBlob(dataURL), 'screenshot.jpeg');
