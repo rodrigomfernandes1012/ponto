@@ -1,6 +1,6 @@
 from datetime import datetime, time
 from io import BytesIO
-from flask import Flask, jsonify,  render_template,  request, redirect, flash,  url_for, send_file
+from flask import Flask, jsonify,  render_template,  request, redirect, flash,  url_for, send_file, send_from_directory
 import mysql.connector
 from forms import FormCliente, FormDestinatario, FormUsuario, FuncionarioForm
 import requests
