@@ -92,9 +92,9 @@ async function capturarTela() {
             const context = canvas.getContext('2d');
 
             // Defina a área que deseja capturar
-            const x = 180; // Posição x do canto superior esquerdo
-            const y = 180; // Posição y do canto superior esquerdo
-            const width = 850; // Largura da área a ser capturada
+            const x = 10; // Posição x do canto superior esquerdo
+            const y = 10; // Posição y do canto superior esquerdo
+            const width = 1050; // Largura da área a ser capturada
             const height = 1200; // Altura da área a ser capturada
 
             const scaleFactor = 1;
