@@ -112,6 +112,10 @@ def ocr():
 
 
     return jsonify(resultado_json)
+
+@app.route('/voucher')
+def mostrar_voucher():
+    return send_from_directory('imagens', 'voucher.jpeg')
 @app.route('/logip')
 def logip():
     #return render_template( content=render_template('log_ip.html'))
