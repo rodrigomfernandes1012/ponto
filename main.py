@@ -99,6 +99,8 @@ def ocr():
     # Retorna o texto detectado, substituindo quebras de linha por espaço
     texto_extraido = texts[0].description.replace('\n', ' ') if texts else "Nenhum texto detectado."
     texto_extraido = texto_extraido.replace('\n', ' ')
+    Inserir_TbLog(dsTbAcesso='img', dsLogin='teste', dsIp=ip,  dsAcao=texto_extraido)
+
     # Converter o texto em um dicionário JSON
     resultado_json = {}
     for linha in texto_extraido.splitlines():
