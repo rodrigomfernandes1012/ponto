@@ -89,7 +89,7 @@ def ocr():
 
     response = client.text_detection(image=image)
     texts = response.text_annotations
-    print(response.text_annotations)
+    #print(response.text_annotations)
     # Salvar a imagem recebida
 
 
@@ -830,14 +830,14 @@ def capture_image():
             print("aqui02")
 
             # Caminho onde a imagem será salva
-            image_dir = 'imagens'
-            os.makedirs(image_dir, exist_ok=True)  # Cria o diretório se não existir
-            image_path = os.path.join(image_dir, 'voucher.jpeg')
-            print("aqui03")
+            #image_dir = 'imagens'
+            #os.makedirs(image_dir, exist_ok=True)  # Cria o diretório se não existir
+            #image_path = os.path.join(image_dir, 'voucher.jpeg')
+            #print("aqui03")
 
             # Salva a imagem
-            imagem.save(image_path)
-            print(f"Imagem capturada e salva em: {image_path}")
+            #imagem.save(image_path)
+            #print(f"Imagem capturada e salva em: {image_path}")
 
             # Chame a função OCR para processar a imagem (substitua pelo seu código de OCR)
             texto = ocr()
