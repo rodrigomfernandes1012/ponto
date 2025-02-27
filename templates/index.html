@@ -1,26 +1,17 @@
-<html>
-  <head>
-
-    <title>Posicione o QR Code em frente a camera</title>
-  </head>
-  <body>
-    <h1>Posicione o QR Code em frente a camera</h1>
-    <img src="{{ url_for('home') }}">
-     <input id="input" type="text" name="fname"><br>
-     <button onclick="myFunction()" type="button">Submit</button>
-     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
-     <script>
-function myFunction() {
-  var name = document.getElementById("input").value;
-  console.log(name);
-  $.post("/takeimage",
-   {
-     name: name
-   },
-   function(data, status){
-     alert("Data: " + data + "\nStatus: " + status);
-   });
-}
-</script>
-  </body>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Imprimir Etiqueta</title
+        </head>
+<body>
+    <div class="container">
+        <h1>Impressão de Etiqueta</h1>
+        <form method="POST" action="/imprimir">
+            <button type="submit" class="button">Imprimir</button>
+        </form>
+    </div>
+</body>
 </html>
