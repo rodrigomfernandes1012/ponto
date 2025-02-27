@@ -1,199 +1,77 @@
-import json
-from io import BytesIO
-from flask import Flask, request, render_template, send_file, jsonify, jsonify,  render_template,  request, redirect, flash,  url_for
-import pandas as pd
-from sqlalchemy import create_engine, text
-import mysql.connector
+from flask import Flask, render_template, request
+import socket
 import os
-import json
-
-def conecta_bd():
-  conexao = mysql.connector.connect(
-  host='dbintellimetrics.c3kc6gou2fhz.us-west-2.rds.amazonaws.com',
-  user='admin',
-  password='IntelliMetr!c$',
-  database='DbIntelliMetrics')
-  return conexao
-
-
-# Configurações do banco de dados
-DB_USER = 'admin'  # Substituir pelo seu usuário
-DB_PASSWORD = 'IntelliMetr!c$'  # Substituir pela sua senha
-DB_HOST = 'dbintellimetrics.c3kc6gou2fhz.us-west-2.rds.amazonaws.com'  # ou o IP do seu servidor MySQL
-DB_PORT = '3306'  # Porta padrão do MySQL
-DB_NAME = 'DbIntelliMetrics'  # Nome do seu banco de dados
-TABLE_NAME = 'TbDadosPlanilha'  # Nome da tabela
-
-
-
-
 
 app = Flask(__name__)
 
-
-banco_url = f'mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
-
-COLUMN_MAPPING = {
-    'NF': 'dsNF',
-    'Ordem Recebimento': 'dsOrdemRec',
-    'CÓDIGO': 'dsCodigo',
-    'DESCRIÇÃO': 'dsDescricao',
-    'QTD NF': 'nrQtde',
-    'SO': 'dsSO',
-    'LINHA': 'nrLinha',
-    'QUANTIDADE DE CAIXAS': 'nrQtdeCaixas',
-    'QTD RECEBIDA (PEÇAS)': 'nrQtdeRecPecas',
-    'NUMERO DE SERIE': 'dsNumeroSerie',
-    'PESO': 'nrPeso',
-    'DIMENSÕES': 'dsDimensoes',
-    'LOCALIZAÇÃO': 'dsLocalizacao',
-    'OBS OPERAÇÃO': 'dsObs',
-    'SO + LINHA': 'dsSoLinha',
-    'TIPO Armazenagem': 'dsTipoArmazenagem',
-    'Nome da Planilha': 'dsNomePlanilha'  # Adicionando o campo nome_da_planilha
-}
-
-
-
-
-@app.route('/cubagem', methods=['POST'])
-def cubagem():
-    dados = request.get_json()
-    payload = json.dumps(dados)
-    print(dados)
-    return ({'message': 'Peso recebido com sucesso', 'peso': dados}), 200
-
-
-@app.route('/upload')
-def upload_form():
-    return render_template('upload.html')
-
-@app.route('/get_planilhas', methods=['GET'])
-def get_planilhas():
-    db_connection = conecta_bd()
-    cursor = db_connection.cursor()
-    cursor.execute("SELECT DISTINCT dsNomePlanilha FROM TbDadosPlanilha")
-    results = cursor.fetchall()
-    planilhas = [row[0] for row in results]
-    cursor.close()
-    db_connection.close()
-    print(planilhas)
-    return jsonify(planilhas)
-
-
-def download_planilha():
-    planilha_selecionada = request.json['planilha']
-    print(planilha_selecionada)
-    db_connection = conecta_bd()
-    cursor = db_connection.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM TbDadosPlanilha WHERE dsNomePlanilha = %s", (planilha_selecionada,))
-    dados = cursor.fetchall()
-    cursor.close()
-    db_connection.close()
-
-    # Criando um DataFrame com os dados
-    df = pd.DataFrame(dados)
-    print(dados)
-
-    # Usando BytesIO para criar um buffer de memória
-    output = BytesIO()
-    df.to_excel(output, index=False, engine='openpyxl', sheet_name='Dados')
-
-    # Rewind the buffer
-    output.seek(0)
-
-    return send_file(output,
-                     attachment_filename=planilha_selecionada,
-                     as_attachment=True)
-
-
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    if 'file' not in request.files:
-        return 'Nenhum arquivo enviado', 400
-
-    file = request.files['file']
-
-    if file.filename == '':
-        return 'Arquivo não selecionado', 400
-
+def imprimir_codigo_zpl(ip, porta, zpl_code):
     try:
-        # Lê a planilha do Excel
-        df = pd.read_excel(file)
-        print(file.filename)
-
-        # Adiciona uma nova coluna com o nome da planilha
-        nome_planilha = file.filename
-        df['Nome da Planilha'] = nome_planilha
-
-        # Rename columns based on COLUMN_MAPPING
-        df.rename(columns=COLUMN_MAPPING, inplace=True)
-
-        # Converte o DataFrame para um dicionário
-        data_dict = df.to_dict(orient='records')
-
-
-        # Conectar ao banco de dados e gravar dados
-        gravar_dados_no_banco(df)
-        return redirect(url_for('mostrar_dados'))
-        #return {'data': data_dict}, 200
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((ip, porta))
+            s.sendall(zpl_code.encode())
+            print("Código ZPL enviado com sucesso.")
     except Exception as e:
-        return str(e), 400
+        print(f"Erro ao enviar o código ZPL: {e}")
 
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-@app.route('/dados', methods=['GET'])
-def mostrar_dados():
-    try:
-        # Cria a string de conexão com o banco de dados MySQL
-        banco_url = f'mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+@app.route('/imprimir', methods=['POST'])
+def imprimir():
+    # Variável com o texto da empresa
+    empresa_nome = "VDCLOG VITORIA DA CONQUISTA"
 
-        # Cria a conexão com o banco de dados
-        engine = create_engine(banco_url)
+    # Código ZPL com a variável
+    zpl_code = f"""
+    ^XA
+    ^CF0,30
+    ^FO10,50^FD{empresa_nome}^FS
+    ^FO0,135^GB680,1,3,B^FS ; LINHA
+    ^FO610,0^GB240,120,140,B^FS ; CAIXA PRETA
+    ^FO670,10^CF0,30^FR^FDMINUTA^FS 
+    ^FO630,70^CF0,50^FR^FD1054809^FS 
+    ^FO680,140^GB210,100,100,B^FS 
+    ^FO710,170^CF0,50^FR^FD???^FS 
+    ^FO10,170^CF0,30^FD??? - VDC LOG^FS
+    ^FO0,240^GB880,1,3,B^FS ; LINHA
+    ^FO10,220^CF0,20^FDDESTINO 19.852.860/0001-81^FS
+    ^FO10,270^FDVDC LOG TRANSPORTE E LOGISTICA MULTIMODAL LTDA^FS
+    ^FO10,320^FDAVENIDA RAFAEL SPINOLA, 100^FS
+    ^FO10,370^FDZABELE^FS
+    ^FO10,420^CF0,20^FCEP: 45078000TEL: (77) 3426-7150^FS
+    ^FO10,470^FD??????? - ??^FS
 
-        # Faz uma consulta para selecionar os dados ordenados pela data mais recente
-        query = text(f"SELECT distinct dsNF, dsOrdemRec, dsCodigo, dsDescricao, nrQtde, dsSO, nrLinha, nrQtdeCaixas, nrQtdeRecPecas, dsNumeroSerie, nrPeso, dsDimensoes, dsLocalizacao, dsObs, dsSoLinha, dsTipoArmazenagem, dsNomePlanilha FROM DbIntelliMetrics.TbDadosPlanilha order by cdPlanilha desc")  # Supondo que haja uma coluna `id` que indica a ordem
-        with engine.connect() as conn:
-            result = conn.execute(query)
-            dados = result.fetchall()
+    ^FO680,240^GB210,300,100,B^FS 
+    ^FO700,280^CF0,100^FR^FWB^FD???^FS
+    ^FWN 
+    ^CF0,20
+    ^FO0,500^GB880,1,3,B^FS ; LINHA
+    ^FO10,520^FDDOC^FS
+    ^FO10,570^FD1^FS
+    ^FO0,550^GB880,1,3,B^FS ; LINHA
+    ^FO0,500^GB880,1,3,B^FS ; LINHA
+    ^FO610,500^GB240,120,140,B^FS ; CAIXA PRETA
+    ^FO0,640^GB980,1,3,B^FS ; LINHA
+    ^FO630,520^CF0,50^FR^FD001/010^FS 
+    ^BY3,2,100
+    ^FO0,650^BC^FD43030229864308742^FS
+    ^FO10,790^CF0,20^FDCreado: 28/01/2025 às 15:20:10^FS
+    ^XZ
+    """
 
-        return render_template('dados.html', dados=dados)
-    except Exception as e:
-        return str(e), 400
+    # Substitua pelo IP e porta da sua impressora
+    imprimir_codigo_zpl('192.168.0.200', 9100, zpl_code)
+    return "Impressão enviada!"
 
+#if __name__ == '__main__':
+#    app.run(debug=True)
 
-def gravar_dados_no_banco(df):
-    # Cria a string de conexão com o banco de dados MySQL
-    banco_url = f'mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
-
-    # Cria a conexão com o banco de dados
-    engine = create_engine(banco_url)
-
-    # Insere os dados na tabela, substituindo os dados existentes ou adicionando
-    df.to_sql(TABLE_NAME, con=engine, if_exists='append', index=False)
-
-@app.route('/export', methods=['POST'])
-def export_data():
-    json_data = request.json
-    dados = json_data['dados']  # Os dados recebidos aqui
-    df = pd.DataFrame(dados)
-
-    # Usando BytesIO para criar um buffer de memória
-    output = BytesIO()
-    # Exportando para Excel
-    df.to_excel(output, index=False, engine='openpyxl', sheet_name='Dados')
-
-    # Rewind the buffer
-    output.seek(0)
-
-    # Enviando o arquivo
-    return send_file(output, download_name="planilha", mimetype='xlsx', as_attachment=True)
 
 def main():
     port = int(os.environ.get("PORT", 80))
-    app.run(host="192.168.15.200", port=port)
-
+    # Escuta em todos os endereços IP disponíveis
+    app.run(host="0.0.0.0", port=port)
 
 if __name__ == "__main__":
     main()
-
-
