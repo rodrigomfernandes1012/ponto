@@ -1,241 +1,34 @@
 body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    margin: 0;
+    padding: 20px;
 }
 
 .container {
+    width: 50%;
+    margin: auto;
     background: white;
     padding: 20px;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-h2 {
     text-align: center;
 }
 
-div {
-    margin-bottom: 15px;
+h1 {
+    color: #333;
 }
 
-label {
-    display: block;
-}
-
-input {
-    width: 100%;
-    padding: 8px;
-    box-sizing: border-box;
-}
-
-button {
-    width: 100%;
-    padding: 10px;
+.button {
+    padding: 10px 20px;
     background-color: #5cb85c;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-}
-
-button:hover {
-    background-color: #4cae4c;
-}
-
-#message {
-    text-align: center;
-    margin-top: 15px;
-    color: red;
-}
-
-.data-table {
-    width: 100%;
-    border-collapse: collapse; /* Para juntar bordas de células */
-}
-
-.data-table th, .data-table td {
-    border: 1px solid #ddd; /* Adiciona bordas a células */
-    padding: 10px;
-    text-align: left;
-}
-
-.data-table th {
-    background-color: #4CAF50; /* Cor do cabeçalho */
-    color: white;
-}
-
-.data-table tr:nth-child(even) {
-    background-color: #f2f2f2; /* Linhas pares devem ser brancas */
-}
-
-.data-table tr:nth-child(odd) {
-    background-color: #add8e6; /* Linhas ímpares devem ser azul claro */
-}
-
-.data-table tr:hover {
-    background-color: #ddd; /* Efeito de destaque quando o mouse passa sobre a linha */
-}
-
-.alert-row {
-    background-color: #ffcccc; /* Fundo vermelho claro */
-}
-body {
-    font-family: Arial, sans-serif;
-    background-color: white;
-
-    height: calc(100vh - 10cm); /* Ajusta a altura para levar em conta a margem */
-    margin: 10cm 0 0 0; /* Adiciona uma margem superior de 15 cm */
-}
-
-
-
-
-
-/* Botões */
-button {
-    background-color: black;
-    color: white;
-    border: none;
-    padding: 10px 20px;
     font-size: 16px;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-    display: flex;
-    gap: 25px;
 }
 
-button:hover {
-    background-color: darkgray;
-}
-
-
-        .barra-superior {
-            position: fixed; /* Fixa a barra no topo */
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3cm; /* Altura da barra superior */
-            background-color: white; /* Cor da barra */
-            color: green; /* Cor do texto */
-            display: flex; /* Alinha o conteúdo horizontalmente */
-            align-items: center; /* Alinha verticalmente no centro */
-            padding: 0 20px; /* Espaçamento lateral */
-            z-index: 900; /* Garante que a barra esteja acima de outros elementos */
-            justify-content: flex-start;
-        }
-
-        .barra-superior img {
-            width: 200px; /* Ajuste o tamanho da imagem conforme necessário */
-            height: auto; /* Mantém a proporção da imagem */
-            margin-right: 15px; /* Espaçamento à direita da imagem */
-        }
-
-        .barra-superior1 {
-            position: fixed; /* Fixa a barra no topo */
-            top: 3cm;
-            left: 0;
-            right: 0;
-            height: 2cm; /* Altura da barra superior */
-            background-color: yellow; /* Cor da barra */
-            color: black; /* Cor do texto */
-            display: flex; /* Alinha o conteúdo horizontalmente */
-            align-items: center; /* Alinha verticalmente no centro */
-            padding: 0 20px; /* Espaçamento lateral */
-            z-index: 900; /* Garante que a barra esteja acima de outros elementos */
-            justify-content: flex-start;
-        }
-        /*BARRA QUE RECEBE A TABELA DE DADOS*/
-        .barra-dados {
-            position: fixed; /* Fixa as barras abaixo da barra superior */
-            left: 0;
-            right: 0;
-            top: 6cm; /* Posiciona a barra logo abaixo da barra superior */
-            height: 4cm; /* Altura das barras de dados */
-            background-color: white; /* Cor da barra */
-            display: flex; /* Alinha o conteúdo horizontalmente */
-        }
-
-        .tabela-container {
-            flex: 2; /* Faz com que as tabelas ocupem todo o espaço disponível */
-            overflow-y: auto; /* Permite rolagem vertical */
-            padding: 1px; /* Espaçamento interno */
-        }
-
-        th, td {
-            border: 1px solid white; /* Bordas das células */
-            padding: 8px; /* Espaçamento interno das células */
-            text-align: left; /* Alinhamento do texto */
-        }
-
-        h2 {
-            margin: 0; /* Remove margem a partir do título */
-            padding: 10px; /* Espaçamento do título */
-        }
-
-        label {
-            margin-right: 10px; /* Espaçamento à direita da label */
-        }
-
-
-
-/* Tabela */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-    margin-bottom: 20px;
-}
-
-th, td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: left;
-}
-
-th {
-    background-color: white;
-}
-
-/* Seleção */
-.selected {
-    background-color: #d5f4e6;  /* Cor de fundo para a seleção */
-}
-
-.field-group {
-    display: flex;
-    justify-content: flex-start; /* Mantém os campos alinhados à esquerda */
-    align-items: center; /* Alinha verticalmente no centro */
-    margin-bottom: 10px; /* Espaçamento entre linhas de campos */
-}
-
-.input-container {
-    margin-right: 10px; /* Espaçamento entre campos na mesma linha */
-}
-
-.input-container label {
-    display: block; /* Faz com que o label e o input fiquem em colunas */
-    margin-bottom: 5px; /* Espaçamento entre label e input */
-}
-.large-input10 {
-    width: 10cm; /* Definindo a largura para 10 cm  */
-}
-.large-input17 {
-    width: 17cm; /* Definindo a largura para 10 cm  */
-}
-.large-input13 {
-    width: 13cm; /* Definindo a largura para 10 cm  */
-}
-.large-input13a {
-    width: 13.3cm; /* Definindo a largura para 10 cm  */
-}
-.large-input2 {
-    width: 2cm; /* Definindo a largura para 2 */
-}
-.large-input3 {
-    width: 3cm; /* Definindo a largura para 2 */
+.button:hover {
+    background-color: #4cae4c;
 }
