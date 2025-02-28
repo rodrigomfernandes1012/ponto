@@ -3,15 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <title>Imprimir Etiqueta</title
-        </head>
+    <title>Controle do Motor</title>
+    <script>
+        function controlarMotor(status) {
+            fetch(`/set_motor/${status}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Status do motor:', data.status);
+                alert('Motor ' + (data.status === 1 ? 'ativado' : 'desativado'));
+            })
+            .catch(error => console.error('Erro ao comunicar com a API:', error));
+        }
+    </script>
+</head>
 <body>
-    <div class="container">
-        <h1>Impressão de Etiqueta</h1>
-        <form method="POST" action="/imprimir">
-            <button type="submit" class="button">Imprimir</button>
-        </form>
-    </div>
+    <h1>Controle do Motor</h1>
+    <button onclick="controlarMotor(1)">Ativar Motor</button>
+    <button onclick="controlarMotor(0)">Desativar Motor</button>
 </body>
 </html>
