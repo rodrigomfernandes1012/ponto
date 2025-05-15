@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, render_template
+import os
 
 app = Flask(__name__)
 
@@ -24,5 +25,13 @@ def get_dados():
     else:
         return jsonify({"error": f"Erro {response.status_code}"}), response.status_code
 
-if __name__ == '__main__':
-    app.run(debug=True)
+
+def main():
+   # port = int(os.environ.get("PORT", 8080))
+   # app.run(host="127.0.0.1", port=port)
+    port = int(os.environ.get("PORT", 80))
+    app.run(host="192.168.0.200", port=port)
+
+
+if __name__ == "__main__":
+    main()
