@@ -1,142 +1,184 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dados da API</title>
-    <style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-    }
-    h1 {
-        text-align: center;
-    }
-    #tabela-dados {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-    }
-    #tabela-dados th, #tabela-dados td {
-        border: 1px solid #ddd;
-        padding: 8px;
-    }
-    #tabela-dados th {
-        background-color: #f2f2f2;
-        text-align: left;
-    }
-    #tabela-dados tr:nth-child(even) {
-        background-color: #f0f8ff; /* azul claro */
-    }
-    #tabela-dados tr:nth-child(odd) {
-        background-color: #ffffff; /* branco */
-    }
-    #carregando {
-        text-align: center;
-        margin-top: 20px;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dados da API</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+h1 {
+    text-align: center;
+}
+#botoes {
+    text-align: center;
+    margin-bottom: 15px;
+}
+button {
+    padding: 8px 16px;
+    font-size: 14px;
+    margin: 0 5px;
+}
+#tabela-dados {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+#tabela-dados th, #tabela-dados td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+#tabela-dados th {
+    background-color: #f2f2f2;
+    text-align: left;
+}
+#tabela-dados tr:nth-child(even) {
+    background-color: #f0f8ff; /* azul claro */
+}
+#tabela-dados tr:nth-child(odd) {
+    background-color: #ffffff; /* branco */
+}
+#carregando {
+    text-align: center;
+    margin-top: 20px;
+}
 </style>
 </head>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 <body>
-    <h1>Dados da Cubadora</h1>
-    <div id="carregando">Carregando dados...</div>
-    <table id="tabela-dados" style="display:none;">
-        <thead>
-            <tr id="cabecalho"></tr>
-        </thead>
-        <tbody id="corpo-tabela"></tbody>
-    </table>
+<h1>Dados da Cubadora</h1>
+<div id="botoes">
+    <button onclick="exportarParaExcel()">Exportar para Excel</button>
+</div>
+<div id="carregando">Carregando dados...</div>
+<table id="tabela-dados" style="display:none;">
+    <thead>
+        <tr id="cabecalho"></tr>
+    </thead>
+    <tbody id="corpo-tabela"></tbody>
+</table>
 
-    <script>// Função para formatar números com 4 casas decimais, incluindo zeros à esquerda
-function formatarDecimal(valor) {
-    if (valor === null || valor === undefined || valor === '') {
-        return '0.0000';
+<script>
+    // Função para formatar números com 4 casas decimais, incluindo zeros à esquerda
+    function formatarDecimal(valor) {
+        if (valor === null || valor === undefined || valor === '') {
+            return '0.0000';
+        }
+        let num = Number(valor);
+        if (isNaN(num)) {
+            return '0.0000';
+        }
+        return num.toFixed(4);
     }
-    let num = Number(valor);
-    if (isNaN(num)) {
-        return '0.0000';
+
+    function exportarParaExcel() {
+    const tabela = document.getElementById('tabela-dados');
+    if (!tabela || tabela.style.display === 'none') {
+        alert("Não há dados para exportar.");
+        return;
     }
-    return num.toFixed(4);
+
+    // Converte a tabela HTML em uma planilha
+    const sheet = XLSX.utils.table_to_sheet(tabela);
+
+    // Cria o workbook e adiciona a planilha
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, sheet, "Dados");
+
+    // Gera o buffer (arquivo .xlsx)
+    const wbout = XLSX.write(wb, {bookType: 'xlsx', type: 'array'});
+
+    // Cria uma URL para o arquivo e dispara o download
+    const blob = new Blob([wbout], {type: 'application/octet-stream'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'dados_cubadora.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Mapeamento dos nomes dos cabeçalhos
-    const nomesCabecalhos = {
-        'dsCodigoBarra': 'Código de Barras',
-        'vlAltura': 'Altura (cm)',
-        'vlLargura': 'Largura (cm)',
-        'vlCumprimento': 'Comprimento (cm)',
-        'vlPeso': 'Peso (kg)',
-        'dtOperacao': 'Data da Operação',
-        'dsUsuario': 'Usuário'
-    };
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mapeamento dos nomes dos cabeçalhos
+        const nomesCabecalhos = {
+            'dsCodigoBarra': 'Código de Barras',
+            'vlAltura': 'Altura (cm)',
+            'vlLargura': 'Largura (cm)',
+            'vlCumprimento': 'Comprimento (cm)',
+            'vlPeso': 'Peso (kg)',
+            'dtOperacao': 'Data da Operação',
+            'dsUsuario': 'Usuário'
+        };
 
-    fetch('/api/dados')
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('carregando').style.display = 'none';
+        fetch('/api/dados')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('carregando').style
+                document.getElementById('carregando').style.display = 'none';
 
-            if (data.error) {
-                alert('Erro ao buscar dados: ' + data.error);
-                return;
-            }
+                if (data.error) {
+                    alert('Erro ao buscar dados: ' + data.error);
+                    return;
+                }
 
-            const tabela = document.getElementById('tabela-dados');
-            const cabecalho = document.getElementById('cabecalho');
-            const corpoTabela = document.getElementById('corpo-tabela');
+                const tabela = document.getElementById('tabela-dados');
+                const cabecalho = document.getElementById('cabecalho');
+                const corpoTabela = document.getElementById('corpo-tabela');
 
-            const chavesDesejadas = [
-                'dsCodigoBarra',
-                'vlAltura',
-                'vlLargura',
-                'vlCumprimento',
-                'vlPeso',
-                'dtOperacao',
-                'dsUsuario'
-            ];
+                const chavesDesejadas = [
+                  'dsCodigoBarra',
+                  'vlAltura',
+                  'vlLargura',
+                  'vlCumprimento',
+                  'vlPeso',
+                  'dtOperacao',
+                  'dsUsuario'
+                ];
 
-            if (data.length > 0) {
-                // Cria cabeçalhos personalizados
-                chavesDesejadas.forEach(chave => {
-                    if (Object.prototype.hasOwnProperty.call(data[0], chave)) {
-                        const th = document.createElement('th');
-                        th.textContent = nomesCabecalhos[chave] || chave;
-                        cabecalho.appendChild(th);
-                    }
-                });
-
-                // Cria as linhas da tabela
-                data.forEach(item => {
-                    const tr = document.createElement('tr');
+                if (data.length > 0) {
+                    // Cria cabeçalhos personalizados
                     chavesDesejadas.forEach(chave => {
-                        if (Object.prototype.hasOwnProperty.call(item, chave)) {
-                            let valor = item[chave];
-                            // Aplica formatação para campos específicos
-                            if (chave === 'vlAltura' || chave === 'vlLargura' || chave === 'vlCumprimento') {
-                                valor = formatarDecimal(valor);
-                            }
-                            const td = document.createElement('td');
-                            td.textContent = valor;
-                            tr.appendChild(td);
-                        } else {
-                            const td = document.createElement('td');
-                            td.textContent = '';
-                            tr.appendChild(td);
+                        if (Object.prototype.hasOwnProperty.call(data[0], chave)) {
+                            const th = document.createElement('th');
+                            th.textContent = nomesCabecalhos[chave] || chave;
+                            cabecalho.appendChild(th);
                         }
                     });
-                    corpoTabela.appendChild(tr);
-                });
 
-                tabela.style.display = 'table';
-            } else {
-                document.getElementById('carregando').textContent = 'Nenhum dado encontrado.';
-            }
-        })
-        .catch(error => {
-            document.getElementById('carregando').style.display = 'none';
-            alert('Erro ao carregar os dados: ' + error);
-        });
-});
-    </script>
+                    // Cria as linhas da tabela
+                    data.forEach(item => {
+                        const tr = document.createElement('tr');
+                        chavesDesejadas.forEach(chave => {
+                            if (Object.prototype.hasOwnProperty.call(item, chave)) {
+                                let valor = item[chave];
+                                if (chave === 'vlAltura' || chave === 'vlLargura' || chave === 'vlCumprimento') {
+                                    valor = formatarDecimal(valor);
+                                }
+                                const td = document.createElement('td');
+                                td.textContent = valor;
+                                tr.appendChild(td);
+                            } else {
+                                const td = document.createElement('td');
+                                td.textContent = '';
+                                tr.appendChild(td);
+                            }
+                        });
+                        corpoTabela.appendChild(tr);
+                    });
+                    tabela.style.display = 'table';
+                } else {
+                    document.getElementById('carregando').textContent = 'Nenhum dado encontrado.';
+                }
+            })
+            .catch(error => {
+                document.getElementById('carregando').style.display = 'none';
+                alert('Erro ao carregar os dados: ' + error);
+            });
+    });
+</script>
 </body>
 </html>
