@@ -47,80 +47,96 @@
         <tbody id="corpo-tabela"></tbody>
     </table>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Mapeamento dos nomes dos cabeçalhos
-            const nomesCabecalhos = {
-                'dsCodigoBarra': 'Código de Barras',
-                'vlAltura': 'Altura (cm)',
-                'vlLargura': 'Largura (cm)',
-                'vlCumprimento': 'Comprimento (cm)',
-                'vlPeso': 'Peso (kg)',
-                'dtOperacao': 'Data da Operação',
-                'dsUsuario': 'Usuário'
-            };
+    <script>// Função para formatar números com 4 casas decimais, incluindo zeros à esquerda
+function formatarDecimal(valor) {
+    if (valor === null || valor === undefined || valor === '') {
+        return '0.0000';
+    }
+    let num = Number(valor);
+    if (isNaN(num)) {
+        return '0.0000';
+    }
+    return num.toFixed(4);
+}
 
-            fetch('/api/dados')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('carregando').style.display = 'none';
+document.addEventListener('DOMContentLoaded', function() {
+    // Mapeamento dos nomes dos cabeçalhos
+    const nomesCabecalhos = {
+        'dsCodigoBarra': 'Código de Barras',
+        'vlAltura': 'Altura (cm)',
+        'vlLargura': 'Largura (cm)',
+        'vlCumprimento': 'Comprimento (cm)',
+        'vlPeso': 'Peso (kg)',
+        'dtOperacao': 'Data da Operação',
+        'dsUsuario': 'Usuário'
+    };
 
-                    if (data.error) {
-                        alert('Erro ao buscar dados: ' + data.error);
-                        return;
+    fetch('/api/dados')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('carregando').style.display = 'none';
+
+            if (data.error) {
+                alert('Erro ao buscar dados: ' + data.error);
+                return;
+            }
+
+            const tabela = document.getElementById('tabela-dados');
+            const cabecalho = document.getElementById('cabecalho');
+            const corpoTabela = document.getElementById('corpo-tabela');
+
+            const chavesDesejadas = [
+                'dsCodigoBarra',
+                'vlAltura',
+                'vlLargura',
+                'vlCumprimento',
+                'vlPeso',
+                'dtOperacao',
+                'dsUsuario'
+            ];
+
+            if (data.length > 0) {
+                // Cria cabeçalhos personalizados
+                chavesDesejadas.forEach(chave => {
+                    if (Object.prototype.hasOwnProperty.call(data[0], chave)) {
+                        const th = document.createElement('th');
+                        th.textContent = nomesCabecalhos[chave] || chave;
+                        cabecalho.appendChild(th);
                     }
-
-                    const tabela = document.getElementById('tabela-dados');
-                    const cabecalho = document.getElementById('cabecalho');
-                    const corpoTabela = document.getElementById('corpo-tabela');
-
-                    const chavesDesejadas = [
-                        'dsCodigoBarra',
-                        'vlAltura',
-                        'vlLargura',
-                        'vlCumprimento',
-                        'vlPeso',
-                        'dtOperacao',
-                        'dsUsuario'
-                    ];
-
-                    if (data.length > 0) {
-                        // Cria cabeçalhos personalizados
-                        chavesDesejadas.forEach(chave => {
-                            if (Object.prototype.hasOwnProperty.call(data[0], chave)) {
-                                const th = document.createElement('th');
-                                th.textContent = nomesCabecalhos[chave] || chave;
-                                cabecalho.appendChild(th);
-                            }
-                        });
-
-                        // Cria as linhas da tabela
-                        data.forEach(item => {
-                            const tr = document.createElement('tr');
-                            chavesDesejadas.forEach(chave => {
-                                if (Object.prototype.hasOwnProperty.call(item, chave)) {
-                                    const td = document.createElement('td');
-                                    td.textContent = item[chave];
-                                    tr.appendChild(td);
-                                } else {
-                                    const td = document.createElement('td');
-                                    td.textContent = '';
-                                    tr.appendChild(td);
-                                }
-                            });
-                            corpoTabela.appendChild(tr);
-                        });
-
-                        tabela.style.display = 'table';
-                    } else {
-                        document.getElementById('carregando').textContent = 'Nenhum dado encontrado.';
-                    }
-                })
-                .catch(error => {
-                    document.getElementById('carregando').style.display = 'none';
-                    alert('Erro ao carregar os dados: ' + error);
                 });
+
+                // Cria as linhas da tabela
+                data.forEach(item => {
+                    const tr = document.createElement('tr');
+                    chavesDesejadas.forEach(chave => {
+                        if (Object.prototype.hasOwnProperty.call(item, chave)) {
+                            let valor = item[chave];
+                            // Aplica formatação para campos específicos
+                            if (chave === 'vlAltura' || chave === 'vlLargura' || chave === 'vlCumprimento') {
+                                valor = formatarDecimal(valor);
+                            }
+                            const td = document.createElement('td');
+                            td.textContent = valor;
+                            tr.appendChild(td);
+                        } else {
+                            const td = document.createElement('td');
+                            td.textContent = '';
+                            tr.appendChild(td);
+                        }
+                    });
+                    corpoTabela.appendChild(tr);
+                });
+
+                tabela.style.display = 'table';
+            } else {
+                document.getElementById('carregando').textContent = 'Nenhum dado encontrado.';
+            }
+        })
+        .catch(error => {
+            document.getElementById('carregando').style.display = 'none';
+            alert('Erro ao carregar os dados: ' + error);
         });
+});
     </script>
 </body>
 </html>
