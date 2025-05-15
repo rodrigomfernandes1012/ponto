@@ -1,26 +1,108 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle do Motor</title>
-    <script>
-        function controlarMotor(status) {
-            fetch(`/set_motor/${status}`, {
-                method: 'POST'
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Status do motor:', data.status);
-                alert('Motor ' + (data.status === 1 ? 'ativado' : 'desativado'));
-            })
-            .catch(error => console.error('Erro ao comunicar com a API:', error));
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dados da API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
         }
-    </script>
+        h1 {
+            text-align: center;
+        }
+        #tabela-dados {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        #tabela-dados th, #tabela-dados td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        #tabela-dados th {
+            background-color: #f2f2f2;
+            text-align: left;
+        }
+        #carregando {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Controle do Motor</h1>
-    <button onclick="controlarMotor(1)">Ativar Motor</button>
-    <button onclick="controlarMotor(0)">Desativar Motor</button>
+    <h1>Dados da Cubadora</h1>
+    <div id="carregando">Carregando dados...</div>
+    <table id="tabela-dados" style="display:none;">
+        <thead>
+            <tr id="cabecalho"></tr>
+        </thead>
+        <tbody id="corpo-tabela"></tbody>
+    </table>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/api/dados')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('carregando').style.display = 'none';
+                    if (data.error) {
+                        alert('Erro ao buscar dados: ' + data.error);
+                        return;
+                    }
+
+                    const tabela = document.getElementById('tabela-dados');
+                    const cabecalho = document.getElementById('cabecalho');
+                    const corpoTabela = document.getElementById('corpo-tabela');
+
+                    const chavesDesejadas = [
+                        'dsCodigoBarra',
+                        'vlAltura',
+                        'vlLargura',
+                        'vlCumprimento',
+                        'vlPeso',
+                        'dtOperacao',
+                        'dsUsuario'
+                    ];
+
+                    if (data.length > 0) {
+                        // Cria cabeçalhos apenas para as chaves desejadas
+                        chavesDesejadas.forEach(chave => {
+                            if (Object.prototype.hasOwnProperty.call(data[0], chave)) {
+                                const th = document.createElement('th');
+                                th.textContent = chave;
+                                cabecalho.appendChild(th);
+                            }
+                        });
+
+                        // Preenche as linhas
+                        data.forEach(item => {
+                            const tr = document.createElement('tr');
+                            chavesDesejadas.forEach(chave => {
+                                if (Object.prototype.hasOwnProperty.call(item, chave)) {
+                                    const td = document.createElement('td');
+                                    td.textContent = item[chave];
+                                    tr.appendChild(td);
+                                } else {
+                                    const td = document.createElement('td');
+                                    td.textContent = '';
+                                    tr.appendChild(td);
+                                }
+                            });
+                            corpoTabela.appendChild(tr);
+                        });
+
+                        tabela.style.display = 'table';
+                    } else {
+                        document.getElementById('carregando').textContent = 'Nenhum dado encontrado.';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('carregando').style.display = 'none';
+                    alert('Erro ao carregar os dados: ' + error);
+                });
+        });
+    </script>
 </body>
 </html>
