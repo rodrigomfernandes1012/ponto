@@ -12,65 +12,40 @@
             padding: 0;
             background-color: #f5f5f5;
             color: #333;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
         }
         
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
         }
         
-        /* Estilo do botão de função F10 - CENTRALIZADO E MAIOR */
+        /* Estilo do botão de função F10 */
         .function-buttons {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin: 50px 0;
-            width: 100%;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 20px;
         }
         
         .function-button {
             background-color: #FFFFFF;
             border: 1px solid #DDDDDD;
             border-radius: 3px;
-            padding: 20px 40px;
-            font-size: 24px;
+            padding: 10px 15px;
+            font-size: 14px;
             cursor: pointer;
-            text-align: center;
-            min-width: 400px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: all 0.2s ease;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            text-align: left;
+            min-width: 200px;
         }
         
         .function-button:hover {
             background-color: #f0f0f0;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
         
         .function-key {
             font-weight: bold;
-            margin-right: 15px;
-            font-size: 28px;
-        }
-        
-        .submenu {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
+            margin-right: 5px;
         }
         
         /* Estilo do formulário baseado no "Mensagem App" */
@@ -80,8 +55,6 @@
             border: 1px solid #DDDDDD;
             border-radius: 3px;
             margin-top: 10px;
-            width: 100%;
-            max-width: 800px;
         }
         
         .form-header {
@@ -267,35 +240,15 @@
                 padding-right: 0;
                 margin-bottom: 5px;
             }
-            
-            .function-button {
-                min-width: 300px;
-                padding: 15px 30px;
-                font-size: 20px;
-            }
-            
-            .function-key {
-                font-size: 22px;
-            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Botão principal F10 - CENTRALIZADO E MAIOR -->
-        <div id="mainButtonContainer" class="function-buttons">
+        <!-- Botões de função no estilo do painel Táxi Digital -->
+        <div class="function-buttons">
             <button id="btnF10" class="function-button">
                 <span class="function-key">F10</span> Gerar QRCode
-            </button>
-        </div>
-        
-        <!-- Submenu com F1 e F2 (inicialmente oculto) -->
-        <div id="submenuF10" class="function-buttons" style="display: none;">
-            <button id="btnF1" class="function-button">
-                <span class="function-key">F1</span> Novo QRCode
-            </button>
-            <button id="btnF2" class="function-button">
-                <span class="function-key">F2</span> QRCodes gerados
             </button>
         </div>
         
@@ -403,28 +356,14 @@
     </div>
     
     <script>
-        // Mostrar submenu ao clicar no botão F10
+        // Mostrar/ocultar formulário ao clicar no botão F10
         document.getElementById('btnF10').addEventListener('click', function() {
-            document.getElementById('mainButtonContainer').style.display = 'none';
-            document.getElementById('submenuF10').style.display = 'flex';
-        });
-        
-        // Botão F1 - Novo QRCode
-        document.getElementById('btnF1').addEventListener('click', function() {
             document.getElementById('qrcodeFormContainer').style.display = 'block';
-            document.getElementById('submenuF10').style.display = 'none';
-        });
-        
-        // Botão F2 - QRCodes gerados
-        document.getElementById('btnF2').addEventListener('click', function() {
-            window.location.href = '/list_qrcodes';
         });
         
         // Botão Cancelar
         document.getElementById('btnCancel').addEventListener('click', function() {
             document.getElementById('qrcodeFormContainer').style.display = 'none';
-            document.getElementById('mainButtonContainer').style.display = 'flex';
-            document.getElementById('submenuF10').style.display = 'none';
         });
         
         // Botão Gerar QRCode
@@ -453,19 +392,32 @@
             try {
                 console.log("Inicializando autocomplete do Google Places");
                 const input = document.getElementById('fixed_address');
+                
+                if (!input) {
+                    console.error("Elemento de entrada não encontrado");
+                    return;
+                }
+                
+                // Garantir que o input esteja habilitado e sem restrições
+                input.disabled = false;
+                input.readOnly = false;
+                
                 const options = {
                     componentRestrictions: { country: 'br' },
                     fields: ['address_components', 'geometry', 'name', 'formatted_address'],
                 };
                 
+                // Criar o objeto de autocomplete
                 const autocomplete = new google.maps.places.Autocomplete(input, options);
                 
-                // Quando o usuário selecionar um endereço
+                // Quando um lugar é selecionado
                 autocomplete.addListener('place_changed', function() {
                     const place = autocomplete.getPlace();
+                    console.log("Local selecionado:", place);
                     
                     if (!place.geometry) {
-                        console.log("Nenhum detalhe disponível para o endereço selecionado");
+                        // O usuário pressionou Enter sem selecionar um lugar da lista
+                        alert('Por favor, selecione um endereço da lista de sugestões.');
                         return;
                     }
                     
@@ -473,23 +425,23 @@
                     const lat = place.geometry.location.lat();
                     const lng = place.geometry.location.lng();
                     
-                    // Atualizar os campos ocultos
+                    // Preencher os campos ocultos
                     document.getElementById('address_lat').value = lat;
                     document.getElementById('address_lng').value = lng;
                     
-                    // Atualizar os displays
+                    // Exibir os detalhes da localização
                     document.getElementById('latDisplay').textContent = lat;
                     document.getElementById('lngDisplay').textContent = lng;
                     
-                    // Extrair cidade e outros componentes do endereço
+                    // Extrair cidade, número e CEP dos componentes do endereço
                     let city = '';
                     let number = '';
-                    let cep = '';
+                    let postalCode = '';
                     
                     for (const component of place.address_components) {
                         const types = component.types;
                         
-                        if (types.includes('administrative_area_level_2')) {
+                        if (types.includes('locality') || types.includes('administrative_area_level_2')) {
                             city = component.long_name;
                         }
                         
@@ -498,57 +450,57 @@
                         }
                         
                         if (types.includes('postal_code')) {
-                            cep = component.long_name;
+                            postalCode = component.long_name;
                         }
                     }
                     
-                    // Atualizar os campos ocultos
+                    // Preencher os campos ocultos adicionais
                     document.getElementById('address_city').value = city;
                     document.getElementById('address_number').value = number;
-                    document.getElementById('address_cep').value = cep;
+                    document.getElementById('address_cep').value = postalCode;
                     
-                    // Atualizar o display da cidade
-                    document.getElementById('cityDisplay').textContent = city || 'Não disponível';
+                    // Exibir a cidade
+                    document.getElementById('cityDisplay').textContent = city || 'Não detectada';
                     
                     // Mostrar os detalhes da localização
                     document.getElementById('locationDetails').classList.add('active');
                 });
-                
             } catch (error) {
-                console.error("Erro ao inicializar o autocomplete:", error);
+                console.error("Erro ao inicializar autocomplete:", error);
+                alert("Ocorreu um erro ao inicializar o autocomplete de endereços. Por favor, recarregue a página.");
             }
         }
         
-        // Carregar a API do Google Places
+        // Carregar a API do Google Places manualmente
         function loadGooglePlacesAPI() {
             const script = document.createElement('script');
-            script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyCyCpZiYyuRar3HTwcKce2KMwIbsit6Cc4&libraries=places&callback=initAutocomplete';
+            script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyCyCpZiYyuRar3HTwcKce2KMwIbsit6Cc4&libraries=places&callback=initAutocomplete";
             script.async = true;
             script.defer = true;
+            script.onerror = function() {
+                console.error("Erro ao carregar a API do Google Places");
+                alert("Não foi possível carregar a API do Google Places. Por favor, verifique sua conexão com a internet e recarregue a página.");
+            };
             document.head.appendChild(script);
         }
         
-        // Carregar a API quando a página estiver pronta
-        document.addEventListener('DOMContentLoaded', loadGooglePlacesAPI);
+        // Carregar a API quando a página estiver totalmente carregada
+        window.onload = function() {
+            loadGooglePlacesAPI();
+        };
         
         // Suporte para teclas de função
         document.addEventListener('keydown', function(e) {
-            // F10 - Mostrar submenu
+            // F10 - Abrir formulário
             if (e.key === 'F10') {
                 e.preventDefault();
                 document.getElementById('btnF10').click();
             }
             
-            // F1 - Novo QRCode
-            if (e.key === 'F1') {
+            // ESC - Fechar formulário
+            if (e.key === 'Escape') {
                 e.preventDefault();
-                document.getElementById('btnF1').click();
-            }
-            
-            // F2 - QRCodes gerados
-            if (e.key === 'F2') {
-                e.preventDefault();
-                document.getElementById('btnF2').click();
+                document.getElementById('btnCancel').click();
             }
         });
     </script>

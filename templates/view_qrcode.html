@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizar QRCode - Sistema de QRCode para Centrais de Táxi</title>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-dark: #0056b3;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .qrcode-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .qrcode-image {
+            max-width: 300px;
+            margin-bottom: 1rem;
+        }
+        
+        .qrcode-url {
+            word-break: break-all;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-family: monospace;
+        }
+        
+        .btn {
+            display: inline-block;
+            font-weight: 600;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            user-select: none;
+            border: 1px solid transparent;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: 5px;
+            transition: all 0.15s ease-in-out;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            color: #fff;
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+        
+        .btn-success {
+            color: #fff;
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+        
+        .btn-secondary {
+            color: #fff;
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .details-container {
+            margin-top: 2rem;
+        }
+        
+        .details-row {
+            display: flex;
+            border-bottom: 1px solid #eee;
+            padding: 0.75rem 0;
+        }
+        
+        .details-label {
+            font-weight: 600;
+            width: 30%;
+            color: var(--dark-color);
+        }
+        
+        .details-value {
+            width: 70%;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .details-row {
+                flex-direction: column;
+            }
+            
+            .details-label, .details-value {
+                width: 100%;
+            }
+            
+            .details-value {
+                margin-top: 0.5rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Sistema de QRCode para Centrais de Táxi</h1>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="card">
+            <h2 class="text-center">QRCode Gerado com Sucesso!</h2>
+            <p class="text-center">QRCode para o local: <strong>{{ qrcode.local_name }}</strong></p>
+            
+            <div class="qrcode-container">
+                <img src="data:image/png;base64,{{ qr_image_base64 }}" alt="QRCode" class="qrcode-image">
+                <div class="qrcode-url">{{ qr_url }}</div>
+            </div>
+            
+            <div class="action-buttons">
+                <a href="{{ url_for('download_qrcode', qrcode_id=qrcode.id) }}" class="btn btn-primary">Baixar QRCode</a>
+                <a href="{{ url_for('call_taxi', qrcode_id=qrcode.id) }}" class="btn btn-success">Testar Chamada de Táxi</a>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">Criar Novo QRCode</a>
+            </div>
+            
+            <div class="details-container">
+                <h3>Detalhes do QRCode</h3>
+                
+                <div class="details-row">
+                    <div class="details-label">ID:</div>
+                    <div class="details-value">{{ qrcode.id }}</div>
+                </div>
+                
+                <div class="details-row">
+                    <div class="details-label">Nome do Local:</div>
+                    <div class="details-value">{{ qrcode.local_name }}</div>
+                </div>
+                
+                <div class="details-row">
+                    <div class="details-label">Endereço Fixo:</div>
+                    <div class="details-value">{{ qrcode.fixed_address }}</div>
+                </div>
+                
+                <div class="details-row">
+                    <div class="details-label">Sigla da Central:</div>
+                    <div class="details-value">{{ qrcode.taxi_central_code }}</div>
+                </div>
+                
+                <div class="details-row">
+                    <div class="details-label">Número do Contrato:</div>
+                    <div class="details-value">{{ qrcode.contract_number }}</div>
+                </div>
+                
+                <div class="details-row">
+                    <div class="details-label">Prefixo do Booking Hash:</div>
+                    <div class="details-value">{{ qrcode.booking_hash_prefix }}</div>
+                </div>
+                
+                <div class="details-row">
+                    <div class="details-label">Credenciais API:</div>
+                    <div class="details-value">Usuário: {{ qrcode.auth_user }} / Senha: ********</div>
+                </div>
+                
+                <div class="details-row">
+                    <div class="details-label">Data de Criação:</div>
+                    <div class="details-value">{{ qrcode.created_at }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
