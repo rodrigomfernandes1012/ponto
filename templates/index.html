@@ -1,556 +1,184 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de QRCode para Centrais de Táxi</title>
-    <style>
-        /* Estilos baseados no painel Táxi Digital */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
-            color: #333;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        /* Estilo do botão de função F10 - CENTRALIZADO E MAIOR */
-        .function-buttons {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin: 50px 0;
-            width: 100%;
-        }
-        
-        .function-button {
-            background-color: #FFFFFF;
-            border: 1px solid #DDDDDD;
-            border-radius: 3px;
-            padding: 20px 40px;
-            font-size: 24px;
-            cursor: pointer;
-            text-align: center;
-            min-width: 400px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: all 0.2s ease;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .function-button:hover {
-            background-color: #f0f0f0;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-        
-        .function-key {
-            font-weight: bold;
-            margin-right: 15px;
-            font-size: 28px;
-        }
-        
-        .submenu {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-        }
-        
-        /* Estilo do formulário baseado no "Mensagem App" */
-        .form-container {
-            display: none;
-            background-color: white;
-            border: 1px solid #DDDDDD;
-            border-radius: 3px;
-            margin-top: 10px;
-            width: 100%;
-            max-width: 800px;
-        }
-        
-        .form-header {
-            background-color: #FFC107;
-            color: black;
-            padding: 10px;
-            font-weight: bold;
-            border-bottom: 1px solid #DDDDDD;
-        }
-        
-        .form-content {
-            padding: 20px;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        .form-row {
-            display: flex;
-            margin-bottom: 10px;
-        }
-        
-        .form-label {
-            width: 200px;
-            text-align: right;
-            padding-right: 15px;
-            padding-top: 8px;
-            font-weight: normal;
-        }
-        
-        .form-field {
-            flex: 1;
-        }
-        
-        .required::after {
-            content: " *";
-            color: red;
-        }
-        
-        input[type="text"],
-        input[type="password"],
-        input[type="number"],
-        textarea,
-        select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #DDDDDD;
-            border-radius: 3px;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
-        
-        input:focus,
-        textarea:focus,
-        select:focus {
-            border-color: #007BFF;
-            outline: none;
-        }
-        
-        .form-buttons {
-            text-align: right;
-            padding: 15px;
-            border-top: 1px solid #DDDDDD;
-        }
-        
-        .btn {
-            padding: 8px 15px;
-            border-radius: 3px;
-            font-size: 14px;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-        
-        .btn-primary {
-            background-color: #28A745;
-            color: white;
-            border: 1px solid #28A745;
-        }
-        
-        .btn-secondary {
-            background-color: #DC3545;
-            color: white;
-            border: 1px solid #DC3545;
-        }
-        
-        .btn-neutral {
-            background-color: #6C757D;
-            color: white;
-            border: 1px solid #6C757D;
-        }
-        
-        /* Estilos para o preview de imagem */
-        .image-preview {
-            width: 100%;
-            height: 150px;
-            border: 1px dashed #DDDDDD;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-top: 5px;
-            overflow: hidden;
-        }
-        
-        .image-preview img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-        
-        .image-preview-text {
-            color: #999;
-        }
-        
-        .file-input-container {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-            margin-top: 5px;
-        }
-        
-        .file-input {
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            cursor: pointer;
-            width: 100%;
-            height: 100%;
-        }
-        
-        /* Estilos para o Google Places */
-        .pac-container {
-            z-index: 1051 !important;
-        }
-        
-        .location-details {
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border-radius: 3px;
-            border: 1px solid #DDDDDD;
-            display: none;
-            font-size: 13px;
-        }
-        
-        .location-details.active {
-            display: block;
-        }
-        
-        .location-detail-item {
-            margin-bottom: 5px;
-        }
-        
-        .location-detail-label {
-            font-weight: bold;
-            display: inline-block;
-            width: 100px;
-        }
-        
-        .alert {
-            padding: 8px;
-            margin-top: 10px;
-            border-radius: 3px;
-            font-size: 13px;
-        }
-        
-        .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        /* Responsividade */
-        @media (max-width: 768px) {
-            .form-row {
-                flex-direction: column;
-            }
-            
-            .form-label {
-                width: 100%;
-                text-align: left;
-                padding-right: 0;
-                margin-bottom: 5px;
-            }
-            
-            .function-button {
-                min-width: 300px;
-                padding: 15px 30px;
-                font-size: 20px;
-            }
-            
-            .function-key {
-                font-size: 22px;
-            }
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dados da API</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+h1 {
+    text-align: center;
+}
+#botoes {
+    text-align: center;
+    margin-bottom: 15px;
+}
+button {
+    padding: 8px 16px;
+    font-size: 14px;
+    margin: 0 5px;
+}
+#tabela-dados {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+#tabela-dados th, #tabela-dados td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+#tabela-dados th {
+    background-color: #f2f2f2;
+    text-align: left;
+}
+#tabela-dados tr:nth-child(even) {
+    background-color: #f0f8ff; /* azul claro */
+}
+#tabela-dados tr:nth-child(odd) {
+    background-color: #ffffff; /* branco */
+}
+#carregando {
+    text-align: center;
+    margin-top: 20px;
+}
+</style>
 </head>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 <body>
-    <div class="container">
-        <!-- Botão principal F10 - CENTRALIZADO E MAIOR -->
-        <div id="mainButtonContainer" class="function-buttons">
-            <button id="btnF10" class="function-button">
-                <span class="function-key">F10</span> Gerar QRCode
-            </button>
-        </div>
-        
-        <!-- Submenu com F1 e F2 (inicialmente oculto) -->
-        <div id="submenuF10" class="function-buttons" style="display: none;">
-            <button id="btnF1" class="function-button">
-                <span class="function-key">F1</span> Novo QRCode
-            </button>
-            <button id="btnF2" class="function-button">
-                <span class="function-key">F2</span> QRCodes gerados
-            </button>
-        </div>
-        
-        <!-- Formulário no estilo do painel Táxi Digital -->
-        <div id="qrcodeFormContainer" class="form-container">
-            <div class="form-header">
-                Cadastro de Novo QRCode
-            </div>
-            
-            <div class="form-content">
-                <form id="qrcodeForm" action="/create_qrcode" method="POST" enctype="multipart/form-data">
-                    <!-- Nome do Local -->
-                    <div class="form-row">
-                        <div class="form-label required">Nome do Local</div>
-                        <div class="form-field">
-                            <input type="text" id="local_name" name="local_name" placeholder="Ex: Hospital das Clínicas, Shopping Itaquera" required>
-                        </div>
-                    </div>
-                    
-                    <!-- Endereço Fixo -->
-                    <div class="form-row">
-                        <div class="form-label required">Endereço Fixo do QRCode</div>
-                        <div class="form-field">
-                            <input type="text" id="fixed_address" name="fixed_address" placeholder="Digite o endereço completo" required>
-                            
-                            <!-- Detalhes da localização -->
-                            <div class="location-details" id="locationDetails">
-                                <div class="location-detail-item">
-                                    <span class="location-detail-label">Latitude:</span>
-                                    <span id="latDisplay">-</span>
-                                    <input type="hidden" id="address_lat" name="address_lat" required>
-                                </div>
-                                <div class="location-detail-item">
-                                    <span class="location-detail-label">Longitude:</span>
-                                    <span id="lngDisplay">-</span>
-                                    <input type="hidden" id="address_lng" name="address_lng" required>
-                                </div>
-                                <div class="location-detail-item">
-                                    <span class="location-detail-label">Cidade:</span>
-                                    <span id="cityDisplay">-</span>
-                                    <input type="hidden" id="address_city" name="address_city">
-                                </div>
-                                <input type="hidden" id="address_number" name="address_number">
-                                <input type="hidden" id="address_cep" name="address_cep">
-                                <div class="alert alert-success">
-                                    <strong>Endereço validado!</strong> Coordenadas capturadas automaticamente.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Sigla da Central de Táxi -->
-                    <div class="form-row">
-                        <div class="form-label required">Sigla da Central de Táxi</div>
-                        <div class="form-field">
-                            <input type="text" id="taxi_central_code" name="taxi_central_code" placeholder="Código alfanumérico da central" required>
-                        </div>
-                    </div>
-                    
-                    <!-- Número do Contrato -->
-                    <div class="form-row">
-                        <div class="form-label required">Número do Contrato</div>
-                        <div class="form-field">
-                            <input type="number" id="contract_number" name="contract_number" placeholder="Número do contrato" required>
-                        </div>
-                    </div>
-                    
-                    <!-- Usuário para Auth_Basic -->
-                    <div class="form-row">
-                        <div class="form-label required">Usuário para Auth_Basic</div>
-                        <div class="form-field">
-                            <input type="text" id="auth_user" name="auth_user" placeholder="Usuário para autenticação na API" required>
-                        </div>
-                    </div>
-                    
-                    <!-- Senha para Auth_Basic -->
-                    <div class="form-row">
-                        <div class="form-label required">Senha para Auth_Basic</div>
-                        <div class="form-field">
-                            <input type="password" id="auth_password" name="auth_password" placeholder="Senha para autenticação na API" required>
-                        </div>
-                    </div>
-                    
-                    <!-- Imagem de Plano de Fundo -->
-                    <div class="form-row">
-                        <div class="form-label required">Imagem de Plano de Fundo</div>
-                        <div class="form-field">
-                            <div class="image-preview" id="imagePreview">
-                                <span class="image-preview-text">Nenhuma imagem selecionada</span>
-                            </div>
-                            <div class="file-input-container">
-                                <button type="button" class="btn btn-neutral">Selecionar Imagem</button>
-                                <input type="file" id="background_image" name="background_image" class="file-input" accept="image/*" required>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            
-            <div class="form-buttons">
-                <button type="button" id="btnCancel" class="btn btn-secondary">Cancelar</button>
-                <button type="button" id="btnSubmit" class="btn btn-primary">Gerar QRCode</button>
-            </div>
-        </div>
-    </div>
-    
-    <script>
-        // Mostrar submenu ao clicar no botão F10
-        document.getElementById('btnF10').addEventListener('click', function() {
-            document.getElementById('mainButtonContainer').style.display = 'none';
-            document.getElementById('submenuF10').style.display = 'flex';
-        });
-        
-        // Botão F1 - Novo QRCode
-        document.getElementById('btnF1').addEventListener('click', function() {
-            document.getElementById('qrcodeFormContainer').style.display = 'block';
-            document.getElementById('submenuF10').style.display = 'none';
-        });
-        
-        // Botão F2 - QRCodes gerados
-        document.getElementById('btnF2').addEventListener('click', function() {
-            window.location.href = '/list_qrcodes';
-        });
-        
-        // Botão Cancelar
-        document.getElementById('btnCancel').addEventListener('click', function() {
-            document.getElementById('qrcodeFormContainer').style.display = 'none';
-            document.getElementById('mainButtonContainer').style.display = 'flex';
-            document.getElementById('submenuF10').style.display = 'none';
-        });
-        
-        // Botão Gerar QRCode
-        document.getElementById('btnSubmit').addEventListener('click', function() {
-            document.getElementById('qrcodeForm').submit();
-        });
-        
-        // Preview da imagem
-        document.getElementById('background_image').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            const preview = document.getElementById('imagePreview');
-            
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
-                };
-                reader.readAsDataURL(file);
-            } else {
-                preview.innerHTML = '<span class="image-preview-text">Nenhuma imagem selecionada</span>';
-            }
-        });
-        
-        // Função para inicializar o autocomplete quando a API do Google Places estiver carregada
-        function initAutocomplete() {
-            try {
-                console.log("Inicializando autocomplete do Google Places");
-                const input = document.getElementById('fixed_address');
-                const options = {
-                    componentRestrictions: { country: 'br' },
-                    fields: ['address_components', 'geometry', 'name', 'formatted_address'],
-                };
-                
-                const autocomplete = new google.maps.places.Autocomplete(input, options);
-                
-                // Quando o usuário selecionar um endereço
-                autocomplete.addListener('place_changed', function() {
-                    const place = autocomplete.getPlace();
-                    
-                    if (!place.geometry) {
-                        console.log("Nenhum detalhe disponível para o endereço selecionado");
-                        return;
-                    }
-                    
-                    // Extrair latitude e longitude
-                    const lat = place.geometry.location.lat();
-                    const lng = place.geometry.location.lng();
-                    
-                    // Atualizar os campos ocultos
-                    document.getElementById('address_lat').value = lat;
-                    document.getElementById('address_lng').value = lng;
-                    
-                    // Atualizar os displays
-                    document.getElementById('latDisplay').textContent = lat;
-                    document.getElementById('lngDisplay').textContent = lng;
-                    
-                    // Extrair cidade e outros componentes do endereço
-                    let city = '';
-                    let number = '';
-                    let cep = '';
-                    
-                    for (const component of place.address_components) {
-                        const types = component.types;
-                        
-                        if (types.includes('administrative_area_level_2')) {
-                            city = component.long_name;
-                        }
-                        
-                        if (types.includes('street_number')) {
-                            number = component.long_name;
-                        }
-                        
-                        if (types.includes('postal_code')) {
-                            cep = component.long_name;
-                        }
-                    }
-                    
-                    // Atualizar os campos ocultos
-                    document.getElementById('address_city').value = city;
-                    document.getElementById('address_number').value = number;
-                    document.getElementById('address_cep').value = cep;
-                    
-                    // Atualizar o display da cidade
-                    document.getElementById('cityDisplay').textContent = city || 'Não disponível';
-                    
-                    // Mostrar os detalhes da localização
-                    document.getElementById('locationDetails').classList.add('active');
-                });
-                
-            } catch (error) {
-                console.error("Erro ao inicializar o autocomplete:", error);
-            }
+<h1>Dados da Cubadora</h1>
+<div id="botoes">
+    <button onclick="exportarParaExcel()">Exportar para Excel</button>
+</div>
+<div id="carregando">Carregando dados...</div>
+<table id="tabela-dados" style="display:none;">
+    <thead>
+        <tr id="cabecalho"></tr>
+    </thead>
+    <tbody id="corpo-tabela"></tbody>
+</table>
+
+<script>
+    // Função para formatar números com 4 casas decimais, incluindo zeros à esquerda
+    function formatarDecimal(valor) {
+        if (valor === null || valor === undefined || valor === '') {
+            return '0.0000';
         }
-        
-        // Carregar a API do Google Places
-        function loadGooglePlacesAPI() {
-            const script = document.createElement('script');
-            script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyCyCpZiYyuRar3HTwcKce2KMwIbsit6Cc4&libraries=places&callback=initAutocomplete';
-            script.async = true;
-            script.defer = true;
-            document.head.appendChild(script);
+        let num = Number(valor);
+        if (isNaN(num)) {
+            return '0.0000';
         }
-        
-        // Carregar a API quando a página estiver pronta
-        document.addEventListener('DOMContentLoaded', loadGooglePlacesAPI);
-        
-        // Suporte para teclas de função
-        document.addEventListener('keydown', function(e) {
-            // F10 - Mostrar submenu
-            if (e.key === 'F10') {
-                e.preventDefault();
-                document.getElementById('btnF10').click();
-            }
-            
-            // F1 - Novo QRCode
-            if (e.key === 'F1') {
-                e.preventDefault();
-                document.getElementById('btnF1').click();
-            }
-            
-            // F2 - QRCodes gerados
-            if (e.key === 'F2') {
-                e.preventDefault();
-                document.getElementById('btnF2').click();
-            }
-        });
-    </script>
+        return num.toFixed(4);
+    }
+
+    function exportarParaExcel() {
+    const tabela = document.getElementById('tabela-dados');
+    if (!tabela || tabela.style.display === 'none') {
+        alert("Não há dados para exportar.");
+        return;
+    }
+
+    // Converte a tabela HTML em uma planilha
+    const sheet = XLSX.utils.table_to_sheet(tabela);
+
+    // Cria o workbook e adiciona a planilha
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, sheet, "Dados");
+
+    // Gera o buffer (arquivo .xlsx)
+    const wbout = XLSX.write(wb, {bookType: 'xlsx', type: 'array'});
+
+    // Cria uma URL para o arquivo e dispara o download
+    const blob = new Blob([wbout], {type: 'application/octet-stream'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'dados_cubadora.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mapeamento dos nomes dos cabeçalhos
+        const nomesCabecalhos = {
+            'dsCodigoBarra': 'Código de Barras',
+            'vlAltura': 'Altura (cm)',
+            'vlLargura': 'Largura (cm)',
+            'vlCumprimento': 'Comprimento (cm)',
+            'vlPeso': 'Peso (kg)',
+            'dtOperacao': 'Data da Operação',
+            'dsUsuario': 'Usuário'
+        };
+
+        fetch('/api/dados')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('carregando').style
+                document.getElementById('carregando').style.display = 'none';
+
+                if (data.error) {
+                    alert('Erro ao buscar dados: ' + data.error);
+                    return;
+                }
+
+                const tabela = document.getElementById('tabela-dados');
+                const cabecalho = document.getElementById('cabecalho');
+                const corpoTabela = document.getElementById('corpo-tabela');
+
+                const chavesDesejadas = [
+                  'dsCodigoBarra',
+                  'vlAltura',
+                  'vlLargura',
+                  'vlCumprimento',
+                  'vlPeso',
+                  'dtOperacao',
+                  'dsUsuario'
+                ];
+
+                if (data.length > 0) {
+                    // Cria cabeçalhos personalizados
+                    chavesDesejadas.forEach(chave => {
+                        if (Object.prototype.hasOwnProperty.call(data[0], chave)) {
+                            const th = document.createElement('th');
+                            th.textContent = nomesCabecalhos[chave] || chave;
+                            cabecalho.appendChild(th);
+                        }
+                    });
+
+                    // Cria as linhas da tabela
+                    data.forEach(item => {
+                        const tr = document.createElement('tr');
+                        chavesDesejadas.forEach(chave => {
+                            if (Object.prototype.hasOwnProperty.call(item, chave)) {
+                                let valor = item[chave];
+                                if (chave === 'vlAltura' || chave === 'vlLargura' || chave === 'vlCumprimento') {
+                                    valor = formatarDecimal(valor);
+                                }
+                                const td = document.createElement('td');
+                                td.textContent = valor;
+                                tr.appendChild(td);
+                            } else {
+                                const td = document.createElement('td');
+                                td.textContent = '';
+                                tr.appendChild(td);
+                            }
+                        });
+                        corpoTabela.appendChild(tr);
+                    });
+                    tabela.style.display = 'table';
+                } else {
+                    document.getElementById('carregando').textContent = 'Nenhum dado encontrado.';
+                }
+            })
+            .catch(error => {
+                document.getElementById('carregando').style.display = 'none';
+                alert('Erro ao carregar os dados: ' + error);
+            });
+    });
+</script>
 </body>
 </html>
