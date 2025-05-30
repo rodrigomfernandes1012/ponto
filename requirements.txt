@@ -1,4 +1,4 @@
-Flask==3.1.3  # Adicione a versão do Flask
+Flask==2.3.1  # Adicione a versão do Flask
 boto3==1.34.56 # Substitua pela versão instalada
 absl-py==2.3.0
 astunparse==1.6.3
