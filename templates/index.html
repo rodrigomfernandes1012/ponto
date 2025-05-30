@@ -2,183 +2,88 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Dados da API</title>
+<title>Reconhecimento Facial AWS</title>
 <style>
-body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
-}
-h1 {
-    text-align: center;
-}
-#botoes {
-    text-align: center;
-    margin-bottom: 15px;
-}
-button {
-    padding: 8px 16px;
-    font-size: 14px;
-    margin: 0 5px;
-}
-#tabela-dados {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-#tabela-dados th, #tabela-dados td {
-    border: 1px solid #ddd;
-    padding: 8px;
-}
-#tabela-dados th {
-    background-color: #f2f2f2;
-    text-align: left;
-}
-#tabela-dados tr:nth-child(even) {
-    background-color: #f0f8ff; /* azul claro */
-}
-#tabela-dados tr:nth-child(odd) {
-    background-color: #ffffff; /* branco */
-}
-#carregando {
-    text-align: center;
-    margin-top: 20px;
-}
+  body { font-family: Arial, sans-serif; margin: 20px; }
+  #video { width: 640px; height: 480px; border: 1px solid #ccc; }
+  #resultado { margin-top: 20px; }
+  button { padding: 10px 20px; font-size: 16px; margin-top: 10px; }
 </style>
 </head>
-<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 <body>
-<h1>Dados da Cubadora</h1>
-<div id="botoes">
-    <button onclick="exportarParaExcel()">Exportar para Excel</button>
-</div>
-<div id="carregando">Carregando dados...</div>
-<table id="tabela-dados" style="display:none;">
-    <thead>
-        <tr id="cabecalho"></tr>
-    </thead>
-    <tbody id="corpo-tabela"></tbody>
-</table>
+<h1>Webcam - Reconhecimento facial AWS</h1>
+<video id="video" autoplay></video>
+<button id="capture">Capturar e Detectar</button>
+<div id="resultado"></div>
 
 <script>
-    // Função para formatar números com 4 casas decimais, incluindo zeros à esquerda
-    function formatarDecimal(valor) {
-        if (valor === null || valor === undefined || valor === '') {
-            return '0.0000';
-        }
-        let num = Number(valor);
-        if (isNaN(num)) {
-            return '0.0000';
-        }
-        return num.toFixed(4);
-    }
+const video = document.getElementById('video');
+const btn = document.getElementById('capture');
+const resultadoDiv = document.getElementById('resultado');
 
-    function exportarParaExcel() {
-    const tabela = document.getElementById('tabela-dados');
-    if (!tabela || tabela.style.display === 'none') {
-        alert("Não há dados para exportar.");
+// Acessa a webcam
+navigator.mediaDevices.getUserMedia({ video:true }).then(stream => {
+    video.srcObject = stream;
+});
+
+// Botão de captura
+btn.onclick = () => {
+    // Cria canvas para captura
+    const canvas = document.createElement('canvas');
+    canvas.width=640;
+    canvas.height=480;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, 640, 480);
+    const dataUrl = canvas.toDataURL('image/jpeg');
+
+    // Envia a imagem ao backend
+    fetch('/detect', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify({ image: dataUrl })
+    })
+    .then(res=>res.json())
+    .then(data => mostrarResultados(data.faces))
+    .catch(err => {
+        resultadoDiv.innerHTML = '<p>Erro ao comunicar com o servidor.</p>';
+        console.error(err);
+    });
+};
+
+function mostrarResultados(faces) {
+    resultadoDiv.innerHTML = '';
+
+    if (faces.length === 0) {
+        resultadoDiv.innerHTML = '<p>Nenhum rosto detectado.</p>';
         return;
     }
 
-    // Converte a tabela HTML em uma planilha
-    const sheet = XLSX.utils.table_to_sheet(tabela);
+    faces.forEach((face, index) => {
+        const div = document.createElement('div');
+        div.style.border = '1px solid #444';
+        div.style.padding = '10px';
+        div.style.marginBottom = '15px';
+        // Dados do face
+        const bb = face.BoundingBox;
+        const posText = `Posição: (${(bb.Left*100).toFixed(1)}%, ${(bb.Top*100).toFixed(1)}%), Largura: ${(bb.Width*100).toFixed(1)}%, Altura: ${(bb.Height*100).toFixed(1)}%`;
+        const idade = `Idade: entre ${face.AgeRange.Low} e ${face.AgeRange.High}`;
+        const genero = `Gênero: ${face.Gender.Value} (${(face.Gender.Confidence*100).toFixed(1)}%)`;
+        // Emoções
+        let emoções = '';
+        face.Emotions.slice(0,3).forEach(e => {
+            emoções += `${e.Type} (${(e.Confidence*100).toFixed(1)}%), `;
+        });
 
-    // Cria o workbook e adiciona a planilha
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, sheet, "Dados");
-
-    // Gera o buffer (arquivo .xlsx)
-    const wbout = XLSX.write(wb, {bookType: 'xlsx', type: 'array'});
-
-    // Cria uma URL para o arquivo e dispara o download
-    const blob = new Blob([wbout], {type: 'application/octet-stream'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'dados_cubadora.xlsx';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // Mapeamento dos nomes dos cabeçalhos
-        const nomesCabecalhos = {
-            'dsCodigoBarra': 'Código de Barras',
-            'vlAltura': 'Altura (cm)',
-            'vlLargura': 'Largura (cm)',
-            'vlCumprimento': 'Comprimento (cm)',
-            'vlPeso': 'Peso (kg)',
-            'dtOperacao': 'Data da Operação',
-            'dsUsuario': 'Usuário'
-        };
-
-        fetch('/api/dados')
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('carregando').style
-                document.getElementById('carregando').style.display = 'none';
-
-                if (data.error) {
-                    alert('Erro ao buscar dados: ' + data.error);
-                    return;
-                }
-
-                const tabela = document.getElementById('tabela-dados');
-                const cabecalho = document.getElementById('cabecalho');
-                const corpoTabela = document.getElementById('corpo-tabela');
-
-                const chavesDesejadas = [
-                  'dsCodigoBarra',
-                  'vlAltura',
-                  'vlLargura',
-                  'vlCumprimento',
-                  'vlPeso',
-                  'dtOperacao',
-                  'dsUsuario'
-                ];
-
-                if (data.length > 0) {
-                    // Cria cabeçalhos personalizados
-                    chavesDesejadas.forEach(chave => {
-                        if (Object.prototype.hasOwnProperty.call(data[0], chave)) {
-                            const th = document.createElement('th');
-                            th.textContent = nomesCabecalhos[chave] || chave;
-                            cabecalho.appendChild(th);
-                        }
-                    });
-
-                    // Cria as linhas da tabela
-                    data.forEach(item => {
-                        const tr = document.createElement('tr');
-                        chavesDesejadas.forEach(chave => {
-                            if (Object.prototype.hasOwnProperty.call(item, chave)) {
-                                let valor = item[chave];
-                                if (chave === 'vlAltura' || chave === 'vlLargura' || chave === 'vlCumprimento') {
-                                    valor = formatarDecimal(valor);
-                                }
-                                const td = document.createElement('td');
-                                td.textContent = valor;
-                                tr.appendChild(td);
-                            } else {
-                                const td = document.createElement('td');
-                                td.textContent = '';
-                                tr.appendChild(td);
-                            }
-                        });
-                        corpoTabela.appendChild(tr);
-                    });
-                    tabela.style.display = 'table';
-                } else {
-                    document.getElementById('carregando').textContent = 'Nenhum dado encontrado.';
-                }
-            })
-            .catch(error => {
-                document.getElementById('carregando').style.display = 'none';
-                alert('Erro ao carregar os dados: ' + error);
-            });
+        div.innerHTML = `
+            <h3>Rosto ${index + 1}</h3>
+            <p>${posText}</p>
+            <p>${idade}</p>
+            <p>${genero}</p>
+            <p>Emoções principais: ${emoções}</p>
+        `;
+        resultadoDiv.appendChild(div);
     });
+}
 </script>
 </body>
 </html>
