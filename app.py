@@ -144,7 +144,7 @@ def detect(): # Renomeado de detect_old para detect
 if __name__ == '__main__':
     # Obtém a porta da variável de ambiente ou usa 8080 como padrão
     # É comum usar 8080 ou 5000 para desenvolvimento local
-    port = int(os.environ.get('PORT', 8080))
+    port = int(os.environ.get('PORT', 80))
     # debug=True não é recomendado em produção
     app.run(host='0.0.0.0', port=port, debug=False) # Alterado debug para False e porta padrão para 8080
 
