@@ -1,462 +1,89 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reconhecimento Facial AWS</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #3498db;
-            --secondary-color: #2980b9;
-            --accent-color: #e74c3c;
-            --text-color: #333;
-            --light-bg: #f5f7fa;
-            --card-bg: #fff;
-            --border-radius: 8px;
-            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--light-bg);
-            color: var(--text-color);
-            line-height: 1.6;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        h1 {
-            color: var(--primary-color);
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-        }
-
-        .subtitle {
-            color: #666;
-            font-size: 1.1rem;
-        }
-
-        .main-content {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-        }
-
-        .camera-section {
-            flex: 1;
-            min-width: 300px;
-            max-width: 640px;
-        }
-
-        .results-section {
-            flex: 1;
-            min-width: 300px;
-            max-width: 500px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        #video {
-            width: 100%;
-            height: auto;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            background-color: #000;
-        }
-
-        .controls {
-            margin-top: 15px;
-            display: flex;
-            justify-content: center;
-        }
-
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 1rem;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        button:hover {
-            background-color: var(--secondary-color);
-        }
-
-        button:active {
-            transform: translateY(1px);
-        }
-
-        .results-container {
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            padding: 20px;
-            overflow-y: auto;
-            max-height: 600px;
-            flex-grow: 1;
-        }
-
-        .results-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .results-title {
-            font-size: 1.3rem;
-            color: var(--primary-color);
-        }
-
-        .face-card {
-            background-color: var(--light-bg);
-            border-radius: var(--border-radius);
-            padding: 15px;
-            margin-bottom: 15px;
-            border-left: 4px solid var(--primary-color);
-            transition: transform 0.2s ease;
-        }
-
-        .face-card:hover {
-            transform: translateX(5px);
-        }
-
-        .face-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .face-title {
-            font-weight: bold;
-            color: var(--primary-color);
-            font-size: 1.1rem;
-        }
-
-        .face-confidence {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 3px 8px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-        }
-
-        .face-data {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-        }
-
-        .data-item {
-            margin-bottom: 8px;
-        }
-
-        .data-label {
-            font-weight: bold;
-            font-size: 0.9rem;
-            color: #666;
-        }
-
-        .data-value {
-            font-size: 1rem;
-        }
-
-        .emotion-tag {
-            display: inline-block;
-            background-color: #f0f0f0;
-            padding: 4px 8px;
-            border-radius: 4px;
-            margin-right: 5px;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-        }
-
-        .emotion-tag.primary {
-            background-color: rgba(52, 152, 219, 0.2);
-            border: 1px solid rgba(52, 152, 219, 0.4);
-        }
-
-        .emotion-tag.secondary {
-            background-color: rgba(46, 204, 113, 0.2);
-            border: 1px solid rgba(46, 204, 113, 0.4);
-        }
-
-        .emotion-tag.tertiary {
-            background-color: rgba(155, 89, 182, 0.2);
-            border: 1px solid rgba(155, 89, 182, 0.4);
-        }
-
-        .no-faces {
-            text-align: center;
-            padding: 30px;
-            color: #666;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 30px;
-        }
-
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border-left-color: var(--primary-color);
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .error-message {
-            background-color: rgba(231, 76, 60, 0.1);
-            border-left: 4px solid var(--accent-color);
-            padding: 15px;
-            border-radius: var(--border-radius);
-            margin-bottom: 15px;
-        }
-
-        /* Responsividade */
-        @media (max-width: 768px) {
-            .main-content {
-                flex-direction: column;
-            }
-
-            .camera-section, .results-section {
-                max-width: 100%;
-            }
-        }
-    </style>
+<meta charset="UTF-8" />
+<title>Reconhecimento Facial AWS</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; }
+  #video { width: 640px; height: 480px; border: 1px solid #ccc; }
+  #resultado { margin-top: 20px; }
+  button { padding: 10px 20px; font-size: 16px; margin-top: 10px; }
+</style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Reconhecimento Facial</h1>
-            <p class="subtitle">Detecção e análise de rostos em tempo real</p>
-        </header>
+<h1>Webcam - Reconhecimento facial AWS</h1>
+<video id="video" autoplay></video>
+<button id="capture">Capturar e Detectar</button>
+<div id="resultado"></div>
 
-        <div class="main-content">
-            <div class="camera-section">
-                <video id="video" autoplay></video>
-                <div class="controls">
-                    <button id="capture"><i class="fas fa-camera"></i> Capturar e Detectar</button>
-                </div>
-            </div>
+<script>
+const video = document.getElementById('video');
+const btn = document.getElementById('capture');
+const resultadoDiv = document.getElementById('resultado');
 
-            <div class="results-section">
-                <div class="results-container">
-                    <div class="results-header">
-                        <h2 class="results-title">Resultados da Análise</h2>
-                    </div>
-                    <div id="resultado">
-                        <div class="no-faces">
-                            <i class="fas fa-face-smile fa-3x" style="color: #ccc; margin-bottom: 15px;"></i>
-                            <p>Capture uma imagem para iniciar a análise facial</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+// Acessa a webcam
+navigator.mediaDevices.getUserMedia({ video:true }).then(stream => {
+    video.srcObject = stream;
+});
 
-    <script>
-        const video = document.getElementById('video');
-        const btn = document.getElementById('capture');
-        const resultadoDiv = document.getElementById('resultado');
+// Botão de captura
+btn.onclick = () => {
+    // Cria canvas para captura
+    const canvas = document.createElement('canvas');
+    canvas.width=640;
+    canvas.height=480;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, 640, 480);
+    const dataUrl = canvas.toDataURL('image/jpeg');
 
-        // Acessa a webcam
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                video.srcObject = stream;
-            })
-            .catch(err => {
-                resultadoDiv.innerHTML = `
-                    <div class="error-message">
-                        <h3><i class="fas fa-exclamation-triangle"></i> Erro de Câmera</h3>
-                        <p>Não foi possível acessar a webcam. Verifique as permissões do navegador.</p>
-                    </div>
-                `;
-                console.error('Erro ao acessar a câmera:', err);
-            });
+    // Envia a imagem ao backend
+    fetch('/detect', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify({ image: dataUrl })
+    })
+    .then(res=>res.json())
+    .then(data => mostrarResultados(data.faces))
+    .catch(err => {
+        resultadoDiv.innerHTML = '<p>Erro ao comunicar com o servidor.</p>';
+        console.error(err);
+    });
+};
 
-        // Botão de captura
-        btn.onclick = () => {
-            // Mostra indicador de carregamento
-            resultadoDiv.innerHTML = `
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <p>Processando imagem...</p>
-                </div>
-            `;
+function mostrarResultados(faces) {
+    resultadoDiv.innerHTML = '';
 
-            // Cria canvas para captura
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth || 640;
-            canvas.height = video.videoHeight || 480;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const dataUrl = canvas.toDataURL('image/jpeg');
+    if (faces.length === 0) {
+        resultadoDiv.innerHTML = '<p>Nenhum rosto detectado.</p>';
+        return;
+    }
 
-            // Envia a imagem ao backend
-            fetch('/detect', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ image: dataUrl })
-            })
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error(`Erro HTTP: ${res.status}`);
-                }
-                return res.json();
-            })
-            .then(data => mostrarResultados(data.faces))
-            .catch(err => {
-                resultadoDiv.innerHTML = `
-                    <div class="error-message">
-                        <h3><i class="fas fa-exclamation-triangle"></i> Erro de Comunicação</h3>
-                        <p>Não foi possível processar a imagem. Tente novamente mais tarde.</p>
-                        <p class="error-details">Detalhes: ${err.message}</p>
-                    </div>
-                `;
-                console.error('Erro ao comunicar com o servidor:', err);
-            });
-        };
+    faces.forEach((face, index) => {
+        const div = document.createElement('div');
+        div.style.border = '1px solid #444';
+        div.style.padding = '10px';
+        div.style.marginBottom = '15px';
+        // Dados do face
+        const bb = face.BoundingBox;
+        const posText = `Posição: (${(bb.Left*100).toFixed(1)}%, ${(bb.Top*100).toFixed(1)}%), Largura: ${(bb.Width*100).toFixed(1)}%, Altura: ${(bb.Height*100).toFixed(1)}%`;
+        const idade = `Idade: entre ${face.AgeRange.Low} e ${face.AgeRange.High}`;
+        const genero = `Gênero: ${face.Gender.Value} (${(face.Gender.Confidence*100).toFixed(1)}%)`;
+        // Emoções
+        let emoções = '';
+        face.Emotions.slice(0,3).forEach(e => {
+            emoções += `${e.Type} (${(e.Confidence*100).toFixed(1)}%), `;
+        });
 
-        function mostrarResultados(faces) {
-            resultadoDiv.innerHTML = '';
-
-            if (!faces || faces.length === 0) {
-                resultadoDiv.innerHTML = `
-                    <div class="no-faces">
-                        <i class="fas fa-face-meh fa-3x" style="color: #ccc; margin-bottom: 15px;"></i>
-                        <p>Nenhum rosto detectado na imagem.</p>
-                        <p>Tente novamente com uma iluminação melhor ou posicionamento diferente.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            faces.forEach((face, index) => {
-                // Usando as chaves em português conforme API refatorada
-                const bb = face.CaixaDelimitadora;
-                const posicaoX = bb ? (bb.Left * 100).toFixed(1) : 'N/A';
-                const posicaoY = bb ? (bb.Top * 100).toFixed(1) : 'N/A';
-                const largura = bb ? (bb.Width * 100).toFixed(1) : 'N/A';
-                const altura = bb ? (bb.Height * 100).toFixed(1) : 'N/A';
-
-                const faixaEtaria = face.FaixaEtaria ?
-                    `${face.FaixaEtaria.Low} - ${face.FaixaEtaria.High} anos` : 'Não disponível';
-
-                const genero = face.Genero ?
-                    `${face.Genero.Valor} (${(face.Genero.Confianca).toFixed(1)}%)` : 'Não disponível';
-
-                const confianca = face.Confianca ?
-                    `${face.Confianca.toFixed(1)}%` : 'N/A';
-
-                // Criando tags para as emoções
-                let emocoesHTML = '';
-                if (face.Emocoes && face.Emocoes.length > 0) {
-                    const classes = ['primary', 'secondary', 'tertiary'];
-                    face.Emocoes.slice(0, 3).forEach((e, i) => {
-                        const confiancaEmocao = e.Confianca ? (e.Confianca).toFixed(1) : 0;
-                        emocoesHTML += `
-                            <span class="emotion-tag ${classes[i] || ''}">
-                                ${e.Tipo}: ${confiancaEmocao}%
-                            </span>
-                        `;
-                    });
-                } else {
-                    emocoesHTML = '<span class="emotion-tag">Não detectadas</span>';
-                }
-
-                // Informações adicionais
-                const sorrindo = face.Sorrindo ?
-                    `${face.Sorrindo.Valor} (${(face.Sorrindo.Confianca).toFixed(1)}%)` : 'Não disponível';
-
-                const olhosAbertos = face.OlhosAbertos ?
-                    `${face.OlhosAbertos.Valor} (${(face.OlhosAbertos.Confianca).toFixed(1)}%)` : 'Não disponível';
-
-                const bocaAberta = face.BocaAberta ?
-                    `${face.BocaAberta.Valor} (${(face.BocaAberta.Confianca).toFixed(1)}%)` : 'Não disponível';
-
-                // Criando o card para o rosto
-                const faceCard = document.createElement('div');
-                faceCard.className = 'face-card';
-                faceCard.innerHTML = `
-                    <div class="face-header">
-                        <h3 class="face-title">Rosto ${index + 1}</h3>
-                        <span class="face-confidence">Confiança: ${confianca}</span>
-                    </div>
-                    <div class="face-data">
-                        <div class="data-item">
-                            <div class="data-label">Posição</div>
-                            <div class="data-value">X: ${posicaoX}%, Y: ${posicaoY}%</div>
-                        </div>
-                        <div class="data-item">
-                            <div class="data-label">Dimensões</div>
-                            <div class="data-value">L: ${largura}%, A: ${altura}%</div>
-                        </div>
-                        <div class="data-item">
-                            <div class="data-label">Faixa Etária</div>
-                            <div class="data-value">${faixaEtaria}</div>
-                        </div>
-                        <div class="data-item">
-                            <div class="data-label">Gênero</div>
-                            <div class="data-value">${genero}</div>
-                        </div>
-                        <div class="data-item">
-                            <div class="data-label">Sorrindo</div>
-                            <div class="data-value">${sorrindo}</div>
-                        </div>
-                        <div class="data-item">
-                            <div class="data-label">Olhos Abertos</div>
-                            <div class="data-value">${olhosAbertos}</div>
-                        </div>
-                        <div class="data-item">
-                            <div class="data-label">Boca Aberta</div>
-                            <div class="data-value">${bocaAberta}</div>
-                        </div>
-                    </div>
-                    <div class="data-item" style="grid-column: 1 / -1; margin-top: 10px;">
-                        <div class="data-label">Emoções Principais</div>
-                        <div class="data-value" style="margin-top: 5px;">
-                            ${emocoesHTML}
-                        </div>
-                    </div>
-                `;
-                resultadoDiv.appendChild(faceCard);
-            });
-        }
-    </script>
+        div.innerHTML = `
+            <h3>Rosto ${index + 1}</h3>
+            <p>${posText}</p>
+            <p>${idade}</p>
+            <p>${genero}</p>
+            <p>Emoções principais: ${emoções}</p>
+        `;
+        resultadoDiv.appendChild(div);
+    });
+}
+</script>
 </body>
 </html>
